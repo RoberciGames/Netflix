@@ -160,7 +160,7 @@ function filtrarPorGenero(genreId) {
     const heroBanner = document.getElementById('hero-banner');
     wrapper.innerHTML = '';
     heroBanner.style.display = 'none';
-    wrapper.style.paddingTop = "150px";
+    wrapper.style.paddingTop = "140px";
     
     let tipo = abaAtual === 'filmes' ? 'movie' : 'tv';
     let nomeCategoria = document.getElementById('genre-selector').options[document.getElementById('genre-selector').selectedIndex].text;
@@ -179,7 +179,7 @@ async function carregarDashboard(aba) {
     
     if (aba === 'minhalista') {
         heroBanner.style.display = 'none';
-        wrapper.style.paddingTop = "140px"; 
+        wrapper.style.paddingTop = "120px"; 
         injetarEstruturaRow('row-watchlist', 'Minha Lista');
         renderizarMinhaLista();
         return;
@@ -194,7 +194,7 @@ async function carregarDashboard(aba) {
     try {
         const resTrending = await fetch(heroUrl);
         const dataTrending = await resTrending.json();
-        if(dataTrending.results.length > 0) configuringHero(dataTrending.results[0]);
+        if(dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
     } catch(e) { console.error(e); }
 
     if (aba === 'inicio') {
@@ -218,7 +218,7 @@ async function carregarDashboard(aba) {
 // ==========================================
 // RENDERIZAÇÃO DE UI (HERO E LINHAS)
 // ==========================================
-function configuringHero(item) {
+function configurarHero(item) {
     const bgUrl = item.backdrop_path ? IMG_BASE + item.backdrop_path : '';
     document.getElementById('hero-banner').style.backgroundImage = `url('${bgUrl}')`;
     document.getElementById('hero-title').innerText = item.title || item.name;
@@ -229,7 +229,7 @@ function configuringHero(item) {
     };
     document.getElementById('hero-play-btn').onclick = () => {
         abrirModal(item.id, item.title ? 'movie' : 'tv');
-        setTimeout(abrirPlayerAtual, 500);
+        setTimeout(abrirPlayerAtual, 400);
     };
 }
 
@@ -274,7 +274,7 @@ async function montarPosters(url, containerId, defaultType) {
 }
 
 // ==========================================
-// SISTEMA DE BUSCA TRATADO
+// SISTEMA DE BUSCA
 // ==========================================
 document.getElementById('search-input').addEventListener('input', async (e) => {
     const query = e.target.value.trim();
@@ -397,7 +397,7 @@ function salvarCritica() {
     minhaListaDB[currentUser][id].stars = currentStars;
     minhaListaDB[currentUser][id].review = document.getElementById('review-text').value;
     localStorage.setItem('cineNetLista', JSON.stringify(minhaListaDB));
-    alert("Crítica salva no CineNet!");
+    alert("Avaliação salva!");
 }
 
 function renderizarMinhaLista() {
@@ -424,30 +424,56 @@ function renderizarMinhaLista() {
 }
 
 // ==========================================
-// PLAYER DE VÍDEO COMPLETO VIA EMBED (NETFLIX UI)
+// MOTOR DE REPRODUÇÃO AVANÇADO MULTI-SERVIDORES (NETFLIX ENGINE)
 // ==========================================
 function abrirPlayerAtual() {
     if (!currentItem) return;
 
-    let embedUrl = "";
-    const id = currentItem.id;
+    const serverSelect = document.getElementById('player-server-select');
+    const epBox = document.getElementById('episodes-selectors-box');
 
+    // Injeta servidores disponíveis dinamicamente
+    serverSelect.innerHTML = `
+        <option value="smashy">Servidor Premium 1</option>
+        <option value="super">Servidor Premium 2</option>
+        <option value="vidsrc">Servidor Alternativo</option>
+    `;
+
+    if (currentItem.media_type === 'tv') {
+        epBox.style.display = 'flex';
+    } else {
+        epBox.style.display = 'none';
+    }
+
+    mudarMidiaPlayer();
+
+    document.getElementById('detailsModal').style.display = 'none';
+    document.getElementById('playerModal').style.display = 'block';
+    document.body.style.overflow = 'hidden'; 
+}
+
+function mudarMidiaPlayer() {
+    if (!currentItem) return;
+    
     document.getElementById('playerLoader').style.display = 'flex';
+    const id = currentItem.id;
+    const servidor = document.getElementById('player-server-select').value;
+    const season = document.getElementById('player-season-input').value || 1;
+    const episode = document.getElementById('player-episode-input').value || 1;
+    
+    let finalUrl = "";
 
     if (currentItem.media_type === 'movie') {
-        embedUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}`;
-    } else if (currentItem.media_type === 'tv') {
-        embedUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}&season=1&episode=1`;
+        if (servidor === 'smashy') finalUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}`;
+        else if (servidor === 'super') finalUrl = `https://embed.superembed.com/api/movie?tmdb=${id}`;
+        else if (servidor === 'vidsrc') finalUrl = `https://vidsrc.to/embed/movie/${id}`;
+    } else {
+        if (servidor === 'smashy') finalUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${season}&episode=${episode}`;
+        else if (servidor === 'super') finalUrl = `https://embed.superembed.com/api/tv?tmdb=${id}&sea=${season}&epi=${episode}`;
+        else if (servidor === 'vidsrc') finalUrl = `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`;
     }
 
-    if (embedUrl) {
-        document.getElementById('videoPlayer').src = embedUrl;
-        document.getElementById('detailsModal').style.display = 'none';
-        document.getElementById('playerModal').style.display = 'block';
-        document.body.style.overflow = 'hidden'; 
-    } else {
-        alert('Este título não está disponível no servidor de reprodução.');
-    }
+    document.getElementById('videoPlayer').src = finalUrl;
 }
 
 function esconderLoader() {
