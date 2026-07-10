@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineNet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="auth-bg"></div>
+        <div class="auth-header">
+            <h1 class="logo-auth">CINENET</h1>
+        </div>
+        <div class="auth-box-wrapper">
+            <div class="auth-box">
+                <h2 id="auth-title">Entrar</h2>
+                
+                <div class="cinenet-concept" id="cinenet-text">
+                    <p>Sua biblioteca digital personalizada.</p>
+                </div>
+
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <div class="input-group">
+                        <input type="text" id="auth-user" required>
+                        <label>Email ou número de telefone</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="auth-pass" required>
+                        <label>Senha</label>
+                    </div>
+                    <button type="submit" class="btn-auth" id="auth-btn">Entrar</button>
+                    
+                    <div class="auth-options">
+                        <label class="checkbox-label"><input type="checkbox" checked> Lembre-se de mim</label>
+                        <a href="#" class="help-link">Precisa de ajuda?</a>
+                    </div>
+                </form>
+                
+                <p class="auth-switch">
+                    <span id="auth-msg" style="color: #737373;">Novo por aqui?</span>
+                    <a href="#" onclick="toggleAuthMode()" id="auth-link">Assine agora.</a>
+                </p>
+                <p id="auth-error" style="color: #e87c03; display: none; margin-top: 15px; font-size: 14px; background: rgba(232, 124, 3, 0.1); padding: 10px; border-radius: 4px; border-left: 3px solid #e87c03;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" style="display: none;">
+        <header id="navbar">
+            <div class="nav-left">
+                <a href="#" class="logo" onclick="mudarAba('inicio')">CINENET</a>
+                <ul class="nav-links">
+                    <li><a href="#" id="nav-inicio" class="active-nav" onclick="mudarAba('inicio')">Início</a></li>
+                    <li><a href="#" id="nav-series" onclick="mudarAba('series')">Séries</a></li>
+                    <li><a href="#" id="nav-filmes" onclick="mudarAba('filmes')">Filmes</a></li>
+                    <li><a href="#" id="nav-minhalista" onclick="mudarAba('minhalista')">Minha Lista</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="search-box">
+                    <span style="color: white; margin-right: 8px;">🔍</span>
+                    <input type="text" id="search-input" placeholder="Títulos, gente e gêneros">
+                </div>
+                
+                <div class="user-profile">
+                    <div class="profile-dropdown">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" id="nav-avatar" class="profile-icon">
+                        <span class="dropdown-arrow">▼</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-header" style="display: flex; align-items: center; gap: 10px; padding: 10px 15px;">
+                                <img src="" id="drop-avatar" width="30" style="border-radius:4px;">
+                                <span id="nav-username" style="color: white; font-weight: bold;">Usuário</span>
+                            </div>
+                            <hr style="border-color: #333; margin: 5px 0;">
+                            <div class="dropdown-item" onclick="abrirPerfil()">✎ Gerenciar Perfil</div>
+                            <div class="dropdown-item" onclick="fazerLogout()">Sair do CineNet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="sub-header" class="sub-header" style="display: none;">
+            <h2 id="sub-header-title">Filmes</h2>
+            <div class="genre-dropdown">
+                <select id="genre-selector" onchange="filtrarPorGenero(this.value)"></select>
+            </div>
+        </div>
+
+        <div id="search-results-section" style="display: none; padding: 100px 4% 50px;">
+            <h2 class="row-title" id="search-title">Resultados da Busca</h2>
+            <div class="search-grid" id="search-grid"></div>
+        </div>
+
+        <div id="homepage-content">
+            <div class="hero-banner" id="hero-banner">
+                <div class="hero-vignette"></div>
+                <div class="hero-content">
+                    <h1 class="hero-title" id="hero-title">Carregando...</h1>
+                    <p class="hero-synopsis" id="hero-synopsis">Buscando as produções mais recomendadas...</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-play" id="hero-play-btn"><span class="btn-icon">▶</span> Assistir</button>
+                        <button class="btn btn-info" id="hero-info-btn"><span class="btn-icon">ⓘ</span> Mais informações</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-container" id="rows-wrapper-layout"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="profileModal" style="z-index: 4000;">
+        <div class="profile-edit-box" style="background: #141414; padding: 40px; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid #333;">
+            <h2 style="font-size: 30px; margin-bottom: 20px;">Editar Perfil</h2>
+            <div class="profile-edit-content">
+                <h4 style="color: #fff; margin-bottom: 12px; font-weight: 500;">Escolha um Avatar:</h4>
+                <div class="avatar-selection" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="avatar-option" onclick="escolherAvatar(this, this.src)" width="60" style="cursor:pointer; border-radius:4px;">
+                    <img src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/84c20033850498.56ba69ac290ea.png" class="avatar-option" onclick="escolherAvatar(this, this.src)" width="60" style="cursor:pointer; border-radius:4px;">
+                    <img src="https://avatarfiles.alphacoders.com/165/165285.png" class="avatar-option" onclick="escolherAvatar(this, this.src)" width="60" style="cursor:pointer; border-radius:4px;">
+                    <img src="https://avatarfiles.alphacoders.com/318/318884.jpg" class="avatar-option" onclick="escolherAvatar(this, this.src)" width="60" style="cursor:pointer; border-radius:4px;">
+                </div>
+                
+                <input type="text" id="edit-profile-name" placeholder="Seu nome" style="width: 100%; padding: 15px; background: #333; border: none; color: white; border-radius: 4px; margin-bottom: 30px; font-size: 16px;">
+                
+                <div class="profile-actions" style="display: flex; gap: 15px;">
+                    <button class="btn-save" onclick="salvarPerfil()" style="padding: 10px 24px; background: white; color: black; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;">Salvar</button>
+                    <button class="btn-cancel" onclick="fecharPerfil()" style="padding: 10px 24px; background: transparent; color: white; border: 1px solid gray; font-weight: bold; cursor: pointer; border-radius: 4px;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-close-btn" onclick="fecharModal()">✕</div>
+            <div class="modal-hero" id="modal-hero-bg">
+                <div class="modal-hero-vignette"></div>
+                <div class="modal-hero-content">
+                    <h2 id="modal-title" class="modal-title-text">Nome da Produção</h2>
+                    <div class="modal-actions">
+                        <button class="btn btn-play" onclick="abrirPlayerAtual()">
+                            <span>▶</span> Assistir
+                        </button>
+                        <button class="btn-circle-outline" id="modal-watchlist-btn" onclick="toggleWatchlist()" title="Quero Assistir">＋</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-info-column">
+                    <div class="meta-container">
+                        <span class="match-score" id="modal-match">98% Relevante</span>
+                        <span id="modal-year" class="meta-text">Ano</span>
+                        <span class="info-tag-hd">HD</span>
+                    </div>
+                    <p id="modal-desc" class="modal-synopsis-text"></p>
+                </div>
+                
+                <div class="modal-review-column">
+                    <div class="meta-side-info">
+                        <span class="meta-label">Gênero:</span> <span id="modal-genre" class="meta-value">Gênero</span>
+                    </div>
+                    
+                    <div class="review-card-area" style="background: #2b2b2b; padding: 20px; border-radius: 8px;">
+                        <b style="font-size: 14px; color: #fff;">Sua Crítica do CineNet</b>
+                        
+                        <div class="stars" id="star-rating" style="color: #555; font-size: 24px; cursor: pointer; margin: 10px 0;">
+                            <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)">★</span><span onclick="definirEstrelas(3)">★</span><span onclick="definirEstrelas(4)">★</span><span onclick="definirEstrelas(5)">★</span>
+                        </div>
+                        
+                        <textarea class="review-input" id="review-text" placeholder="Adicione uma nota sobre o que achou..." style="width: 100%; height: 80px; background: #141414; border: 1px solid #444; color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px; resize: none;"></textarea>
+                        <button class="mini-btn-save" onclick="salvarCritica()" style="background: white; color: black; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer;">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="player-modal" id="playerModal">
+        <button class="player-back-btn" onclick="fecharPlayer()" title="Voltar para o CineNet">←</button>
+        <div class="player-loader" id="playerLoader">
+            <div class="netflix-spinner"></div>
+        </div>
+        <div class="player-content">
+            <iframe id="videoPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen onload="esconderLoader()"></iframe>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
