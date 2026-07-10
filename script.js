@@ -13,7 +13,7 @@ let minhaListaDB = JSON.parse(localStorage.getItem('cineNetLista')) || {};
 let servidorSelecionado = 'smashy'; 
 
 // ==========================================
-// INICIALIZAÇÃO
+// INICIALIZAÇÃO E FECHAMENTO SEGURO
 // ==========================================
 window.onload = () => {
     const savedUser = localStorage.getItem('cineNetCurrentUser');
@@ -32,6 +32,15 @@ window.onload = () => {
     }
 };
 
+// Permite fechar os modais ao clicar no fundo escuro
+window.addEventListener('click', function(event) {
+    const detailsModal = document.getElementById('detailsModal');
+    const profileModal = document.getElementById('profileModal');
+
+    if (event.target === detailsModal) fecharModal();
+    if (event.target === profileModal) fecharPerfil();
+});
+
 function alternarScrollBody(travar) {
     if (travar) document.body.classList.add('modal-open');
     else document.body.classList.remove('modal-open');
@@ -43,8 +52,8 @@ function alternarScrollBody(travar) {
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Criar Conta';
-    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registrar';
-    document.getElementById('auth-link').innerText = isLoginMode ? 'Assine agora.' : 'Entrar agora.';
+    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registar';
+    document.getElementById('auth-link').innerText = isLoginMode ? 'Subscreva agora.' : 'Entrar agora.';
     document.getElementById('auth-error').style.display = 'none';
 }
 
@@ -62,7 +71,7 @@ function handleAuth(event) {
             localStorage.setItem('cineNetCurrentUser', user);
             iniciarAplicativo();
         } else {
-            errorBox.innerText = "Senha incorreta ou usuário não encontrado.";
+            errorBox.innerText = "Palavra-passe incorreta ou utilizador não encontrado.";
             errorBox.style.display = 'block';
         }
     } else {
@@ -70,7 +79,7 @@ function handleAuth(event) {
             errorBox.innerText = "Esta conta já existe. Tente fazer login.";
             errorBox.style.display = 'block';
         } else {
-            usersDB[user] = { pass: pass, name: 'Usuário', avatar: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' };
+            usersDB[user] = { pass: pass, name: 'Utilizador', avatar: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' };
             localStorage.setItem('cineNetUsersDB', JSON.stringify(usersDB));
             currentUser = user;
             localStorage.setItem('cineNetCurrentUser', user);
@@ -83,9 +92,8 @@ function fazerLogout() {
     localStorage.removeItem('cineNetCurrentUser');
     currentUser = null;
     document.getElementById('main-app').style.display = 'none';
-    document.getElementById('profileModal').style.display = 'none';
+    fecharPerfil(); // Garante que tira a classe .show e limpa o scroll
     document.getElementById('auth-screen').style.display = 'flex';
-    alternarScrollBody(false);
 }
 
 function iniciarAplicativo() {
@@ -105,8 +113,12 @@ function mudarAba(aba) {
     abaAtual = aba;
     fecharCatalogoMobile();
     fecharPerfil();
+    fecharModal();
     
     document.getElementById('search-input').value = '';
+    const mobileSearch = document.getElementById('search-input-mobile');
+    if(mobileSearch) mobileSearch.value = '';
+    
     document.getElementById('search-results-section').style.display = 'none';
     
     document.querySelectorAll('.menu-items a').forEach(l => l.classList.remove('active'));
@@ -128,8 +140,19 @@ function ativarMenuMobile(elemento) {
     elemento.classList.add('active-mobile-nav');
 }
 
-function abrirCatalogoMobile() { document.getElementById('mobile-catalog').style.display = 'flex'; alternarScrollBody(true); }
-function fecharCatalogoMobile() { document.getElementById('mobile-catalog').style.display = 'none'; alternarScrollBody(false); }
+function abrirCatalogoMobile() { 
+    const cat = document.getElementById('mobile-catalog');
+    cat.style.display = 'flex'; 
+    setTimeout(() => cat.classList.add('show'), 10);
+    alternarScrollBody(true); 
+}
+function fecharCatalogoMobile() { 
+    const cat = document.getElementById('mobile-catalog');
+    if(cat) {
+        cat.classList.remove('show');
+        setTimeout(() => { cat.style.display = 'none'; alternarScrollBody(false); }, 300);
+    }
+}
 function abrirPerfilMobile() { fecharCatalogoMobile(); abrirPerfil(); }
 
 // ==========================================
@@ -157,7 +180,7 @@ async function carregarDashboard(aba) {
 
     try {
         let itemDestaque = null;
-        // 50% de chance de mostrar Teen Wolf, 50% de chance de mostrar um popular aleatório da semana
+        // 50% de probabilidade de mostrar Teen Wolf, 50% de mostrar um popular aleatório
         const mostrarEspecial = Math.random() > 0.5;
 
         if (mostrarEspecial) {
@@ -223,7 +246,7 @@ function configurarHeroDashboard(item) {
 }
 
 // ==========================================
-// WIDGET CONTINUE ASSISTINDO (DIREITA) E DESTAQUES FIXOS
+// WIDGET CONTINUE A ASSISTIR E DESTAQUES FIXOS
 // ==========================================
 function atualizarContinueAssistindoWidget() {
     const container = document.getElementById('continue-list-dynamic');
@@ -259,7 +282,6 @@ async function carregarDestaquesFixos(containerId) {
     const container = document.getElementById(containerId);
     if(!container) return;
     
-    // Lista com Teen Wolf Série e Filme
     const itensFixos = [
         { id: 34524, type: 'tv' },      
         { id: 894205, type: 'movie' }   
@@ -318,7 +340,7 @@ async function montarPosters(url, containerId, defaultType) {
 }
 
 // ==========================================
-// BUSCA E MINHA LISTA SECTION
+// PESQUISA E A MINHA LISTA SECTION
 // ==========================================
 async function realizarBusca(query) {
     if (query.length > 2) {
@@ -357,7 +379,7 @@ function renderizarPaginaMinhaLista() {
     const ids = Object.keys(lista).reverse();
     
     if(ids.length === 0) {
-        grid.innerHTML = '<p style="color:#b3b3b3;">Sua lista está vazia.</p>';
+        grid.innerHTML = '<p style="color:#b3b3b3;">A sua lista está vazia.</p>';
         return;
     }
     
@@ -372,7 +394,7 @@ function renderizarPaginaMinhaLista() {
 }
 
 // ==========================================
-// MODAL DE DETALHES POPUP
+// MODAL DE DETALHES POPUP COM ANIMAÇÃO SEGURA
 // ==========================================
 async function abrirModal(id, type) {
     try {
@@ -391,18 +413,28 @@ async function abrirModal(id, type) {
         document.getElementById('modal-hero-bg').style.backgroundImage = `url('${bg}')`;
 
         const btnWatch = document.getElementById('modal-watchlist-btn');
-        btnWatch.innerHTML = (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-plus"></i>';
+        if(btnWatch) {
+            btnWatch.innerHTML = (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-plus"></i>';
+        }
 
-        document.getElementById('detailsModal').style.display = 'flex';
+        const modal = document.getElementById('detailsModal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+        
         alternarScrollBody(true);
     } catch(e) {}
 }
 
 function fecharModal() {
-    document.getElementById('detailsModal').style.display = 'none';
-    alternarScrollBody(false);
-    if(abaAtual === 'minhalista') carregarDashboard('minhalista');
-    else if(abaAtual === 'inicio') atualizarContinueAssistindoWidget(); 
+    const modal = document.getElementById('detailsModal');
+    if(!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        alternarScrollBody(false); // Libera o ecrã
+        if(abaAtual === 'minhalista') carregarDashboard('minhalista');
+        else if(abaAtual === 'inicio') atualizarContinueAssistindoWidget(); 
+    }, 300);
 }
 
 function toggleWatchlist() {
@@ -444,8 +476,9 @@ function abrirPlayerAtual() {
 
     atualizarIframePlayer();
 
-    document.getElementById('detailsModal').style.display = 'none';
-    document.getElementById('playerModal').style.display = 'block';
+    fecharModal(); // Fecha o de detalhes primeiro
+    const playerModal = document.getElementById('playerModal');
+    playerModal.style.display = 'block';
     alternarScrollBody(true);
 }
 
@@ -479,7 +512,7 @@ function fecharPlayer() {
 }
 
 // ==========================================
-// PERFIL
+// PERFIL SEGURO COM ANIMAÇÃO
 // ==========================================
 let tempAvatar = "";
 function abrirPerfil() {
@@ -487,12 +520,20 @@ function abrirPerfil() {
     let data = usersDB[currentUser];
     document.getElementById('edit-profile-name').value = data.name || currentUser;
     tempAvatar = data.avatar;
-    document.getElementById('profileModal').style.display = 'flex';
+    
+    const modal = document.getElementById('profileModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
     alternarScrollBody(true);
 }
 function fecharPerfil() { 
-    document.getElementById('profileModal').style.display = 'none'; 
-    alternarScrollBody(false);
+    const modal = document.getElementById('profileModal');
+    if(!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        alternarScrollBody(false);
+    }, 300);
 }
 function escolherAvatar(el, src) {
     tempAvatar = src;
