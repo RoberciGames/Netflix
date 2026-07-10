@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CineNet</title>
+    <title>CineNet - Biblioteca Premium</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -86,7 +86,8 @@
                     <div class="modal-hero-content">
                         <h2 id="modal-title">Título</h2>
                         <div class="modal-actions">
-                            <button class="btn btn-play" style="padding: 10px 24px; font-size: 15px;" onclick="abrirPlayerAtual()">▶ Assistir Filme / Série</button>
+                            <button class="btn btn-play" style="padding: 10px 24px; font-size: 15px;" onclick="abrirPlayerAtual('geral')">▶ Assistir Obra Completa</button>
+                            <button class="btn btn-play" style="padding: 10px 24px; font-size: 15px; background: #e5e5e5; margin-left: 10px;" id="btn-player-especifico" onclick="abrirPlayerAtual('especifico')">🔢 Escolher Ep. Específico</button>
                             <button class="btn btn-info" style="padding: 10px 24px; font-size: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4);" id="modal-watchlist-btn" onclick="toggleWatchlist()">+ A Minha Lista</button>
                         </div>
                     </div>
@@ -104,7 +105,7 @@
                         <div class="review-card-area">
                             <b style="font-size: 13px; display:block; margin-bottom:6px; color: #999;">AVALIAR OBRA</b>
                             <div class="stars" id="star-rating">
-                                <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)">★</span><span onclick="definirEstrelas(3)">★</span><span onclick="definirEstrelas(4)">★</span><span onclick="definirEstrelas(5)">★</span>
+                                <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)\">★</span><span onclick="definirEstrelas(3)\">★</span><span onclick="definirEstrelas(4)\">★</span><span onclick="definirEstrelas(5)\">★</span>
                             </div>
                             <textarea class="review-input" id="review-text" placeholder="Gostou? Escreva as suas notas aqui..."></textarea>
                             <button class="mini-btn" style="background: white; color: black; width: 100%; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="salvarCritica()">Guardar Avaliação</button>
@@ -120,9 +121,9 @@
                 
                 <div class="player-controls-panel" id="episodes-selectors-box" style="display:none;">
                     <label>Temp:</label>
-                    <input type="number" id="player-season-input" value="1" min="1" onchange="atualizarIframePlayer()">
+                    <input type="number" id="player-season-input" value="1" min="1" onchange="atualizarIframePlayer('especifico')">
                     <label>Ep:</label>
-                    <input type="number" id="player-episode-input" value="1" min="1" onchange="atualizarIframePlayer()">
+                    <input type="number" id="player-episode-input" value="1" min="1" onchange="atualizarIframePlayer('especifico')">
                 </div>
             </div>
 

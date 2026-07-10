@@ -6,6 +6,7 @@ let itemSelecionado = null;
 let estrelasAtivas = 0;
 let timerBusca; 
 let currentUserUID = null;
+let modoPlayerAtual = 'geral'; // Define se vai abrir a listagem ou episódio fixo
 
 // ==========================================
 // CONFIGURAÇÃO DO FIREBASE OFICIAL
@@ -19,7 +20,6 @@ const firebaseConfig = {
     appId: "1:1098247355110:web:c9f867826f26b0ef171927"
 };
 
-// Inicializa o Firebase limpo e direto
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -39,7 +39,6 @@ auth.onAuthStateChanged((user) => {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         
-        // Puxa a lista do usuário na nuvem
         db.collection("usuarios").doc(user.uid).get().then((doc) => {
             if (doc.exists) biblioteca = doc.data().biblioteca || { watchlist: {}, reviews: {} };
             else biblioteca = { watchlist: {}, reviews: {} };
@@ -140,7 +139,6 @@ function scrollRow(idElemento, direcao) {
     container.scrollBy({ left: scrollAmount * direcao, behavior: 'smooth' });
 }
 
-// Busca várias páginas da API e junta tudo
 async function montarPostersMultiPage(urls, targetId, tipoFixo) {
     const container = document.getElementById(targetId);
     if(!container) return;
@@ -183,7 +181,6 @@ async function carregarDashboard() {
         if(dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
     } catch(e) {}
 
-    // Multi-fetch de conteúdo
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
         `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&with_genres=28&page=1`
@@ -218,7 +215,7 @@ function configurarHero(item) {
 
     item.custom_type = item.media_type || (item.title ? 'movie' : 'tv');
     
-    document.getElementById('hero-play-btn').onclick = () => { itemSelecionado = item; abrirPlayerAtual(); };
+    document.getElementById('hero-play-btn').onclick = () => { itemSelecionado = item; abrirPlayerAtual('geral'); };
 }
 
 function renderizarMinhaLista() {
@@ -299,6 +296,7 @@ function limparBusca() {
 function abrirModal(item) {
     itemSelecionado = item;
     const id = item.id;
+    const tipo = item.custom_type || (item.title ? 'movie' : 'tv');
 
     document.getElementById('modal-hero-bg').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
     document.getElementById('modal-title').innerText = item.title || item.name;
@@ -309,6 +307,14 @@ function abrirModal(item) {
     
     const dataLancamento = item.release_date || item.first_air_date || '2026';
     document.getElementById('modal-year').innerText = dataLancamento.substring(0,4);
+
+    // Ocultar seletor específico se for um filme (Filmes não têm temporadas na API do MyEmbed)
+    const btnEspecifico = document.getElementById('btn-player-especifico');
+    if (tipo === 'movie') {
+        btnEspecifico.style.display = 'none';
+    } else {
+        btnEspecifico.style.display = 'inline-flex';
+    }
 
     const btnList = document.getElementById('modal-watchlist-btn');
     if(biblioteca.watchlist[id]) {
@@ -361,19 +367,27 @@ function salvarCritica() {
 }
 
 // ==========================================
-// PLAYER DE VÍDEO (MYEMBED.BIZ)
+// PLAYER DE VÍDEO INTEGRADO COM A API SOLICITADA (MYEMBED.BIZ)
 // ==========================================
-function abrirPlayerAtual() {
+function abrirPlayerAtual(modo = 'geral') {
     if(!itemSelecionado) return;
     
-    const tipo = itemSelecionado.custom_type; 
+    modoPlayerAtual = modo;
+    const tipo = itemSelecionado.custom_type || (itemSelecionado.title ? 'movie' : 'tv'); 
     const modal = document.getElementById('playerModal');
     const epBox = document.getElementById('episodes-selectors-box');
+    const player = document.getElementById('videoPlayer');
 
-    if (tipo === 'tv') {
+    // Regra da API: Se for série e o usuário clicou para escolher ep específico, mostra a barra de controle
+    if (tipo === 'tv' && modo === 'especifico') {
         epBox.style.display = 'flex';
+        player.style.height = '600px'; // Altura de episódio único
+    } else if (tipo === 'tv' && modo === 'geral') {
+        epBox.style.display = 'none';
+        player.style.height = '700px'; // Recomendação da API para listagem completa de temporadas
     } else {
         epBox.style.display = 'none';
+        player.style.height = '600px'; // Altura recomendada para Filmes
     }
 
     fecharModal(); 
@@ -387,17 +401,24 @@ function atualizarIframePlayer() {
     if (!itemSelecionado) return;
     
     const id = itemSelecionado.id;
-    const tipo = itemSelecionado.custom_type;
+    const tipo = itemSelecionado.custom_type || (itemSelecionado.title ? 'movie' : 'tv');
     const player = document.getElementById('videoPlayer');
     
     let urlDoVideo = "";
 
     if (tipo === 'movie') {
+        // Estrutura de Filme da API
         urlDoVideo = `https://myembed.biz/filme/${id}`; 
     } else {
-        const season = document.getElementById('player-season-input').value || 1;
-        const episode = document.getElementById('player-episode-input').value || 1;
-        urlDoVideo = `https://myembed.biz/serie/${id}/${season}/${episode}`; 
+        if (modoPlayerAtual === 'geral') {
+            // Estrutura de Série (Todas as Temporadas em Lista) da API
+            urlDoVideo = `https://myembed.biz/serie/${id}`;
+        } else {
+            // Estrutura de Episódio Específico da API
+            const season = document.getElementById('player-season-input').value || 1;
+            const episode = document.getElementById('player-episode-input').value || 1;
+            urlDoVideo = `https://myembed.biz/serie/${id}/${season}/${episode}`; 
+        }
     }
 
     player.src = urlDoVideo;
