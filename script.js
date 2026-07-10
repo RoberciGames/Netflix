@@ -1,22 +1,113 @@
-const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778';
+// ==========================================
+// CONFIGURAÇÕES GERAIS E API
+// ==========================================
+const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778'; 
 let itemSelecionado = null;
 let estrelasAtivas = 0;
 let timerBusca; 
+let currentUserUID = null;
 
-// Base de dados local
-let biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
+// ==========================================
+// CONFIGURAÇÃO DO FIREBASE OFICIAL
+// ==========================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAfPWvnGdvPKZ_lrVwOuag14WHLY9AgML8",
+    authDomain: "cinenet-ifpb.firebaseapp.com",
+    projectId: "cinenet-ifpb",
+    storageBucket: "cinenet-ifpb.firebasestorage.app",
+    messagingSenderId: "1098247355110",
+    appId: "1:1098247355110:web:c9f867826f26b0ef171927"
+};
 
-function salvarDados() {
-    localStorage.setItem('cineNetflixLibV2', JSON.stringify(biblioteca));
-    renderizarMinhaLista();
+// Inicializa o Firebase limpo e direto
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
 }
 
+const auth = firebase.auth();
+const db = firebase.firestore();
+let biblioteca = { watchlist: {}, reviews: {} };
+
+// ==========================================
+// SISTEMA DE LOGIN NA NUVEM
+// ==========================================
+let isLoginMode = true;
+
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        currentUserUID = user.uid;
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        
+        // Puxa a lista do usuário na nuvem
+        db.collection("usuarios").doc(user.uid).get().then((doc) => {
+            if (doc.exists) biblioteca = doc.data().biblioteca || { watchlist: {}, reviews: {} };
+            else biblioteca = { watchlist: {}, reviews: {} };
+            carregarDashboard();
+        });
+    } else {
+        currentUserUID = null;
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
+    }
+});
+
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('auth-title').innerText = isLoginMode ? 'Aceder ao Portal' : 'Criar Nova Conta';
+    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registar Conta';
+    document.getElementById('auth-link').innerText = isLoginMode ? 'Registe-se agora.' : 'Entrar agora.';
+    document.getElementById('auth-error').style.display = 'none';
+}
+
+function handleAuth(event) {
+    event.preventDefault();
+    const email = document.getElementById('auth-user').value.trim();
+    const pass = document.getElementById('auth-pass').value.trim();
+    const errorBox = document.getElementById('auth-error');
+    const btn = document.getElementById('auth-btn');
+
+    btn.innerText = "Aguarde...";
+    btn.disabled = true;
+
+    if (isLoginMode) {
+        auth.signInWithEmailAndPassword(email, pass).catch((error) => {
+            errorBox.innerText = "Erro: Email ou senha inválidos.";
+            errorBox.style.display = 'block';
+            btn.disabled = false; btn.innerText = "Entrar";
+        });
+    } else {
+        auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
+            db.collection("usuarios").doc(userCredential.user.uid).set({
+                email: email,
+                biblioteca: { watchlist: {}, reviews: {} }
+            });
+            btn.disabled = false;
+        }).catch((error) => {
+            errorBox.innerText = "Erro: " + error.message;
+            errorBox.style.display = 'block';
+            btn.disabled = false; btn.innerText = "Registar Conta";
+        });
+    }
+}
+
+function fazerLogout() { auth.signOut(); }
+
+function salvarDados() {
+    if (currentUserUID) {
+        db.collection("usuarios").doc(currentUserUID).update({ biblioteca: biblioteca })
+        .then(() => renderizarMinhaLista()).catch((error) => console.error("Erro ao salvar: ", error));
+    }
+}
+
+// ==========================================
+// RENDERIZAÇÃO DA INTERFACE E CARROSSEIS
+// ==========================================
 function alternarScrollBody(travar) {
     if (travar) document.body.classList.add('modal-open');
     else document.body.classList.remove('modal-open');
 }
 
-// Fecha modal clicando fora do quadro
 window.addEventListener('click', function(event) {
     const detailsModal = document.getElementById('detailsModal');
     if (event.target === detailsModal) fecharModal();
@@ -28,9 +119,6 @@ window.addEventListener('scroll', () => {
     else navbar.classList.remove('scrolled');
 });
 
-// ==========================================
-// RENDERIZAÇÃO DAS CATEGORIAS (MUITAS IMAGENS)
-// ==========================================
 function injetarEstruturaRow(idContainer, tituloRow) {
     const wrapper = document.getElementById('rows-wrapper-layout');
     const rowHtml = `
@@ -52,7 +140,7 @@ function scrollRow(idElemento, direcao) {
     container.scrollBy({ left: scrollAmount * direcao, behavior: 'smooth' });
 }
 
-// INJETA MULTIPLAS PÁGINAS DA API PARA MAIOR VARIEDADE
+// Busca várias páginas da API e junta tudo
 async function montarPostersMultiPage(urls, targetId, tipoFixo) {
     const container = document.getElementById(targetId);
     if(!container) return;
@@ -68,19 +156,11 @@ async function montarPostersMultiPage(urls, targetId, tipoFixo) {
                 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = (e) => { 
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
-                    abrirModal(item); 
-                };
+                card.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirModal(item); };
                 
                 const estaNaLista = biblioteca.watchlist[item.id] ? `<div class="watched-bar"></div>` : "";
                 const titulo = item.title || item.name;
-                
-                card.innerHTML = `
-                    <img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${titulo}" loading="lazy">
-                    ${estaNaLista}
-                `;
+                card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${titulo}" loading="lazy">${estaNaLista}`;
                 container.appendChild(card);
             });
         } catch (err) { console.error(err); }
@@ -91,42 +171,37 @@ async function carregarDashboard() {
     const wrapper = document.getElementById('rows-wrapper-layout');
     wrapper.innerHTML = '';
 
-    // As Categorias baseadas no Nav
-    injetarEstruturaRow('row-movies', 'Filmes em Alta e Ação');
-    injetarEstruturaRow('row-series', 'Séries de TV Mais Assistidas');
-    injetarEstruturaRow('row-animes', 'Animes e Cultura Pop Japonesa');
-    injetarEstruturaRow('row-cartoons', 'Desenhos Animados e Clássicos');
-    injetarEstruturaRow('row-watchlist', 'Minha Lista');
+    injetarEstruturaRow('row-movies', '🎬 Filmes Blockbusters');
+    injetarEstruturaRow('row-series', '📺 Séries e Maratonas');
+    injetarEstruturaRow('row-animes', '🗡️ Universo Anime');
+    injetarEstruturaRow('row-cartoons', '🎨 Desenhos e Clássicos');
+    injetarEstruturaRow('row-watchlist', '⭐ A Minha Lista de Favoritos');
 
     try {
         const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
         const dataTrending = await resTrending.json();
         if(dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
 
-    // Multi-fetch para encher os carrosséis de conteúdo
+    // Multi-fetch de conteúdo
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
-        `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&with_genres=28&page=1`,
-        `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&with_genres=35&page=1`
+        `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&with_genres=28&page=1`
     ], 'row-movies', 'movie');
 
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=18&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=10759&page=1`
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=18&page=1`
     ], 'row-series', 'tv');
 
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=2`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=3`
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=2`
     ], 'row-animes', 'tv');
 
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=en&sort_by=popularity.desc&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=en&sort_by=popularity.desc&page=2`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=en&sort_by=popularity.desc&page=3`
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=en&sort_by=popularity.desc&page=2`
     ], 'row-cartoons', 'tv');
 
     renderizarMinhaLista();
@@ -144,12 +219,13 @@ function configurarHero(item) {
     item.custom_type = item.media_type || (item.title ? 'movie' : 'tv');
     
     document.getElementById('hero-play-btn').onclick = () => { itemSelecionado = item; abrirPlayerAtual(); };
-    document.getElementById('hero-info-btn').onclick = () => abrirModal(item);
 }
 
 function renderizarMinhaLista() {
     const container = document.getElementById('row-watchlist');
     const section = document.getElementById('row-watchlist-section');
+    if(!container || !section) return;
+
     const itens = Object.values(biblioteca.watchlist).reverse();
 
     if(itens.length === 0) {
@@ -165,16 +241,13 @@ function renderizarMinhaLista() {
         card.className = 'movie-card';
         card.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirModal(item); };
         const titulo = item.title || item.name;
-        card.innerHTML = `
-            <img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${titulo}">
-            <div class="watched-bar"></div>
-        `;
+        card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${titulo}"><div class="watched-bar"></div>`;
         container.appendChild(card);
     });
 }
 
 // ==========================================
-// PESQUISA RÁPIDA DEBOUNCE
+// PESQUISA RÁPIDA (DEBOUNCE)
 // ==========================================
 document.getElementById('search-input').addEventListener('input', (e) => {
     clearTimeout(timerBusca);
@@ -184,10 +257,7 @@ document.getElementById('search-input').addEventListener('input', (e) => {
         const searchSection = document.getElementById('search-results-section');
         const grid = document.getElementById('search-grid');
 
-        if(!termo.trim()) {
-            limparBusca();
-            return;
-        }
+        if(!termo.trim()) { limparBusca(); return; }
 
         home.style.display = 'none';
         searchSection.style.display = 'block';
@@ -210,12 +280,11 @@ document.getElementById('search-input').addEventListener('input', (e) => {
                 card.className = 'movie-card';
                 card.style.width = '100%';
                 card.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirModal(item); };
-                
                 card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}">`;
                 grid.appendChild(card);
             });
         } catch(err) { console.error(err); }
-    }, 500);
+    }, 500); 
 });
 
 function limparBusca() {
@@ -225,7 +294,7 @@ function limparBusca() {
 }
 
 // ==========================================
-// MODAL CLÁSSICO E AVALIAÇÕES (NOTAS)
+// MODAL DE DETALHES E AVALIAÇÃO
 // ==========================================
 function abrirModal(item) {
     itemSelecionado = item;
@@ -233,7 +302,7 @@ function abrirModal(item) {
 
     document.getElementById('modal-hero-bg').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
     document.getElementById('modal-title').innerText = item.title || item.name;
-    document.getElementById('modal-desc').innerText = item.overview || "Esta obra ainda não possui uma sinopse disponível em português.";
+    document.getElementById('modal-desc').innerText = item.overview || "Esta obra ainda não possui uma sinopse disponível.";
     
     const baseMatch = item.vote_average ? Math.floor(item.vote_average * 10) : 85;
     document.getElementById('modal-match').innerText = `${baseMatch}% de correspondência`;
@@ -272,7 +341,7 @@ function toggleWatchlist() {
     if(biblioteca.watchlist[id]) delete biblioteca.watchlist[id];
     else biblioteca.watchlist[id] = itemSelecionado;
     salvarDados();
-    abrirModal(itemSelecionado);
+    abrirModal(itemSelecionado); 
 }
 
 function definirEstrelas(nota, cliqueUsuario = true) {
@@ -288,11 +357,11 @@ function salvarCritica() {
     const texto = document.getElementById('review-text').value;
     biblioteca.reviews[itemSelecionado.id] = { rating: estrelasAtivas, text: texto };
     salvarDados();
-    alert("Anotação e avaliação salvas com sucesso!");
+    alert("Anotação e avaliação salvas com sucesso no banco de dados!");
 }
 
 // ==========================================
-// PLAYER DE VÍDEO (API: MYEMBED.BIZ)
+// PLAYER DE VÍDEO (MYEMBED.BIZ)
 // ==========================================
 function abrirPlayerAtual() {
     if(!itemSelecionado) return;
@@ -301,7 +370,6 @@ function abrirPlayerAtual() {
     const modal = document.getElementById('playerModal');
     const epBox = document.getElementById('episodes-selectors-box');
 
-    // Se for Série ou Anime (TV), mostrar inputs de Temporada/Episódio
     if (tipo === 'tv') {
         epBox.style.display = 'flex';
     } else {
@@ -315,7 +383,6 @@ function abrirPlayerAtual() {
     alternarScrollBody(true);
 }
 
-// Atualiza o link do Iframe baseado nas regras dadas
 function atualizarIframePlayer() {
     if (!itemSelecionado) return;
     
@@ -328,7 +395,6 @@ function atualizarIframePlayer() {
     if (tipo === 'movie') {
         urlDoVideo = `https://myembed.biz/filme/${id}`; 
     } else {
-        // Se for série, capta os valores dos inputs (por padrão 1 e 1)
         const season = document.getElementById('player-season-input').value || 1;
         const episode = document.getElementById('player-episode-input').value || 1;
         urlDoVideo = `https://myembed.biz/serie/${id}/${season}/${episode}`; 
@@ -342,6 +408,3 @@ function fecharPlayer() {
     document.getElementById('videoPlayer').src = "";
     alternarScrollBody(false);
 }
-
-// Inicia tudo
-carregarDashboard();
