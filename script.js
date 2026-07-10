@@ -33,12 +33,6 @@ const db = firebase.firestore();
 let biblioteca = { watchlist: {}, reviews: {} };
 let isLoginMode = true;
 
-// FUNÇÃO CRÍTICA AUSENTE: Gerencia a rolagem da página ao abrir modais
-function alternarScrollBody(travar) {
-    if (travar) document.body.classList.add('modal-open');
-    else document.body.classList.remove('modal-open');
-}
-
 // ESCUTA DE SESSÃO
 auth.onAuthStateChanged((user) => {
     if (user) {
@@ -62,25 +56,11 @@ auth.onAuthStateChanged((user) => {
             carregarDashboard(); 
         });
     } else {
-        if (!currentUserUID) {
-            currentUserUID = null;
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('auth-screen').style.display = 'flex';
-        }
+        currentUserUID = null;
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
     }
 });
-
-function entrarComoConvidado() {
-    currentUserUID = null;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    
-    biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
-    perfilUsuario = JSON.parse(localStorage.getItem('cineNetflixPerfil')) || { username: "Convidado_VIP", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
-    
-    atualizarInterfacePerfil();
-    carregarDashboard();
-}
 
 function recuperarCacheFallback(user) {
     biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
@@ -88,6 +68,7 @@ function recuperarCacheFallback(user) {
 }
 
 function atualizarInterfacePerfil() {
+    // Atualiza nome e foto na navbar do PC (Se existir)
     const pcTxt = document.getElementById('nav-username-txt-pc');
     const pcImg = document.getElementById('nav-avatar-img-pc');
     if(pcTxt) pcTxt.innerText = perfilUsuario.username;
@@ -133,13 +114,7 @@ function handleAuth(event) {
     }
 }
 
-function fazerLogout() { 
-    auth.signOut().then(() => {
-        window.location.reload();
-    }).catch(() => {
-        window.location.reload();
-    });
-}
+function fazerLogout() { auth.signOut(); }
 
 function salvarDados() {
     localStorage.setItem('cineNetflixLibV2', JSON.stringify(biblioteca)); 
@@ -201,6 +176,7 @@ function injetarEstruturaRow(idContainer, tituloRow) {
     const wrapper = document.getElementById('rows-wrapper-layout');
     if (!wrapper || document.getElementById(`${idContainer}-section`)) return;
     
+    // Adicionamos o SPAN DO CONTADOR (id="count-{idContainer}")
     const rowHtml = `
         <div class="movie-row" id="${idContainer}-section">
             <div class="row-header">
@@ -223,75 +199,24 @@ function scrollRow(idElemento, direcao) {
     container.scrollBy({ left: scrollAmount * direcao, behavior: 'smooth' });
 }
 
-// Função de Escolha de Catálogos Dinâmica
-function filtrarCatalogo(idSection, event) {
-    if(event) {
-        document.querySelectorAll('.catalog-btn').forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    }
-
-    const sections = ['row-movies', 'row-series', 'row-animes', 'row-cartoons', 'row-watchlist'];
-    
-    sections.forEach(secId => {
-        const el = document.getElementById(`${secId}-section`);
-        if (!el) return;
-        
-        if (idSection === 'todos') {
-            if (secId === 'row-watchlist') {
-                const itens = Object.values(biblioteca.watchlist);
-                el.style.display = itens.length === 0 ? 'none' : 'block';
-            } else {
-                el.style.display = 'block';
-            }
-        } else {
-            if (secId === idSection) el.style.display = 'block';
-            else el.style.display = 'none';
-        }
-    });
-}
-
-// Função que puxa conteúdo com tratamento contra falhas da API (Fallback Integrado)
+// Função que puxa conteúdo E FAZ A CONTAGEM
 async function montarPostersMultiPage(urls, targetId, tipoFixo) {
     const container = document.getElementById(targetId);
     if(!container) return;
     container.innerHTML = ''; 
 
-    let totalItemsCarregados = 0;
-    let sucessoAPI = false;
-
-    // Catálogo de Contingência Local caso a API falhe/bloqueie
-    const fallbacksLocais = {
-        'row-movies': [
-            { id: 101, title: 'Interestelar', overview: 'Aventuras além das galáxias e do tempo em busca de salvação.', vote_average: 8.6, release_date: '2014' },
-            { id: 102, title: 'Blade Runner 2049', overview: 'Um novo caçador de replicantes descobre um segredo enterrado.', vote_average: 8.2, release_date: '2017' },
-            { id: 103, title: 'Matrix Resurrections', overview: 'Retorno ao mundo de duas realidades com Neo e Trinity.', vote_average: 7.0, release_date: '2021' }
-        ],
-        'row-series': [
-            { id: 201, name: 'Cyberpunk: Edgerunners', overview: 'Um garoto de rua tenta sobreviver numa cidade do futuro.', vote_average: 8.6, first_air_date: '2022' },
-            { id: 202, name: 'Stranger Things', overview: 'Eventos sobrenaturais atingem uma pacata cidade americana.', vote_average: 8.7, first_air_date: '2016' }
-        ],
-        'row-animes': [
-            { id: 301, name: 'Demon Slayer', overview: 'Tanjiro caça demônios para curar sua amada irmã Nezuko.', vote_average: 8.8, first_air_date: '2019' },
-            { id: 302, name: 'Attack on Titan', overview: 'A batalha desesperada da humanidade contra gigantes misteriosos.', vote_average: 8.9, first_air_date: '2013' }
-        ],
-        'row-cartoons': [
-            { id: 401, name: 'Liga da Justiça', overview: 'Os maiores heróis da Terra unidos contra as forças cósmicas.', vote_average: 8.5, first_air_date: '2001' },
-            { id: 402, name: 'Avatar: A Lenda de Aang', overview: 'O jovem sucessor místico deve dominar os quatro elementos.', vote_average: 8.9, first_air_date: '2005' }
-        ]
-    };
+    let totalItemsCarregados = 0; // Inicia o contador para a categoria atual
 
     for (let url of urls) {
         try {
             const res = await fetch(url);
-            if(!res.ok) throw new Error("Chave ou limite atingido.");
             const data = await res.json();
-            if(!data.results || data.results.length === 0) continue;
+            if(!data.results) continue;
 
-            sucessoAPI = true;
             data.results.forEach(item => {
                 if(!item.poster_path) return;
                 
-                totalItemsCarregados++;
+                totalItemsCarregados++; // Soma ao contador
                 item.custom_type = tipoFixo || item.media_type || (item.name ? 'tv' : 'movie');
                 
                 const card = document.createElement('div');
@@ -302,35 +227,10 @@ async function montarPostersMultiPage(urls, targetId, tipoFixo) {
                 card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${item.title || item.name}" loading="lazy">${estaNaLista}`;
                 container.appendChild(card);
             });
-        } catch (err) { 
-            console.warn(`Servidor TMDB instável na categoria ${targetId}. Acionando backup.`);
-        }
+        } catch (err) { console.error(err); }
     }
 
-    // Se o fetch online falhar, monta o Catálogo Backup com imagens conceituais do Unsplash
-    if (!sucessoAPI && fallbacksLocais[targetId]) {
-        fallbacksLocais[targetId].forEach((item) => {
-            totalItemsCarregados++;
-            item.custom_type = tipoFixo;
-            item.backdrop_path = "";
-            item.poster_path = "";
-
-            const card = document.createElement('div');
-            card.className = 'movie-card';
-            card.onclick = () => abrirModal(item);
-            
-            const estaNaLista = biblioteca.watchlist[item.id] ? `<div class="watched-bar"></div>` : "";
-            card.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" alt="${item.title || item.name}" style="object-fit:cover;">
-                <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center; font-weight:700; border-top:1px solid var(--primary-neon); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    ${item.title || item.name}
-                </div>
-                ${estaNaLista}
-            `;
-            container.appendChild(card);
-        });
-    }
-
+    // Atualiza o contador visual da interface
     const counterEl = document.getElementById(`count-${targetId}`);
     if(counterEl) {
         counterEl.innerText = `[ ${totalItemsCarregados} ARQUIVOS ]`;
@@ -348,15 +248,7 @@ async function carregarDashboard() {
         const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
         const dataTrending = await resTrending.json();
         if(dataTrending.results && dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
-        else throw new Error();
-    } catch(e) { 
-        configurarHero({
-            id: 999,
-            title: "CineNet Core Ativo",
-            overview: "Hub central carregado com sucesso. Selecione acima o seu catálogo favorito para transmissão contínua de metadados.",
-            custom_type: "movie"
-        });
-    }
+    } catch(e) { console.error(e); }
 
     // Alimentação Massiva
     montarPostersMultiPage([
@@ -384,15 +276,9 @@ async function carregarDashboard() {
 function configurarHero(item) {
     const banner = document.getElementById('hero-banner');
     if(!banner) return;
-    
-    if (item.backdrop_path) {
-        banner.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
-    } else {
-        banner.style.backgroundImage = `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=80')`;
-    }
-    
+    banner.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
     document.getElementById('hero-title').innerText = item.title || item.name;
-    document.getElementById('hero-synopsis').innerText = item.overview ? item.overview.substring(0, 180) + "..." : "Sinopse operacional em atualização estrutural.";
+    document.getElementById('hero-synopsis').innerText = item.overview ? item.overview.substring(0, 180) + "..." : "Sinopse em atualização estrutural.";
     
     item.custom_type = item.media_type || (item.name ? 'tv' : 'movie');
     document.getElementById('hero-play-btn').onclick = () => { itemSelecionado = item; abrirPlayerAtual('geral'); };
@@ -412,12 +298,7 @@ function renderizarMinhaLista() {
         return; 
     }
 
-    // Se o catálogo geral "Tudo" estiver ativo, exibe a row normalmente
-    const activeBtn = document.querySelector('.catalog-btn.active');
-    if (!activeBtn || activeBtn.getAttribute('onclick').includes('todos') || activeBtn.getAttribute('onclick').includes('row-watchlist')) {
-        section.style.display = 'block';
-    }
-    
+    section.style.display = 'block';
     if(counterEl) counterEl.innerText = `[ ${itens.length} ARQUIVOS ]`;
     container.innerHTML = '';
     
@@ -425,16 +306,7 @@ function renderizarMinhaLista() {
         const card = document.createElement('div');
         card.className = 'movie-card';
         card.onclick = () => abrirModal(item);
-        
-        if (item.poster_path) {
-            card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}"><div class="watched-bar"></div>`;
-        } else {
-            card.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" style="object-fit:cover;">
-                <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center;">${item.title || item.name}</div>
-                <div class="watched-bar"></div>
-            `;
-        }
+        card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}"><div class="watched-bar"></div>`;
         container.appendChild(card);
     });
 }
@@ -477,7 +349,7 @@ async function executarBuscaGlobal(termo) {
     try {
         const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`);
         const data = await res.json();
-        const filtrados = data.results.filter(i => i.media_type !== 'person' && (i.poster_path || i.id));
+        const filtrados = data.results.filter(i => i.media_type !== 'person' && i.poster_path);
         
         grid.innerHTML = '';
         if(filtrados.length === 0) { grid.innerHTML = '<p style="color: #666; padding: 20px;">Nenhum registo encontrado.</p>'; return; }
@@ -487,15 +359,7 @@ async function executarBuscaGlobal(termo) {
             const card = document.createElement('div');
             card.className = 'movie-card'; card.style.width = '100%';
             card.onclick = () => abrirModal(item);
-            
-            if (item.poster_path) {
-                card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}">`;
-            } else {
-                card.innerHTML = `
-                    <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" style="object-fit:cover;">
-                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center;">${item.title || item.name}</div>
-                `;
-            }
+            card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}">`;
             grid.appendChild(card);
         });
     } catch(err) { console.error(err); }
@@ -515,15 +379,9 @@ function abrirModal(item) {
     const id = item.id;
     const tipo = item.custom_type;
 
-    const modalBg = document.getElementById('modal-hero-bg');
-    if (item.backdrop_path || item.poster_path) {
-        modalBg.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
-    } else {
-        modalBg.style.backgroundImage = `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80')`;
-    }
-    
+    document.getElementById('modal-hero-bg').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
     document.getElementById('modal-title').innerText = item.title || item.name;
-    document.getElementById('modal-desc').innerText = item.overview || "Ficheiro protegido em ambiente local de contingência.";
+    document.getElementById('modal-desc').innerText = item.overview || "Ficheiro protegido. Sem descrição associada.";
     
     const baseMatch = item.vote_average ? Math.floor(item.vote_average * 10) : 88;
     document.getElementById('modal-match').innerText = `${baseMatch}% de Match`;
@@ -636,3 +494,14 @@ window.addEventListener('scroll', () => {
         if(a.getAttribute('href') === `#${current}`) a.classList.add('active');
     });
 });
+
+// ==========================================
+// FUNÇÃO CRÍTICA AUSENTE: GERENCIADOR DE SCROLL
+// ==========================================
+function alternarScrollBody(travar) {
+    if (travar) {
+        document.body.classList.add('modal-open');
+    } else {
+        document.body.classList.remove('modal-open');
+    }
+}
