@@ -6,7 +6,7 @@ let itemSelecionado = null;
 let estrelasAtivas = 0;
 let timerBusca; 
 let currentUserUID = null;
-let modoPlayerAtual = 'geral'; // Define se vai abrir a listagem ou episódio fixo
+let modoPlayerAtual = 'geral';
 
 // ==========================================
 // CONFIGURAÇÃO DO FIREBASE OFICIAL
@@ -29,7 +29,7 @@ const db = firebase.firestore();
 let biblioteca = { watchlist: {}, reviews: {} };
 
 // ==========================================
-// SISTEMA DE LOGIN NA NUVEM
+// SISTEMA DE LOGIN NA NUVEM + FALLBACK LOCAL
 // ==========================================
 let isLoginMode = true;
 
@@ -39,10 +39,18 @@ auth.onAuthStateChanged((user) => {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         
+        // Tenta puxar da nuvem. Se falhar, usa o localStorage para não travar a tela!
         db.collection("usuarios").doc(user.uid).get().then((doc) => {
-            if (doc.exists) biblioteca = doc.data().biblioteca || { watchlist: {}, reviews: {} };
-            else biblioteca = { watchlist: {}, reviews: {} };
+            if (doc.exists) {
+                biblioteca = doc.data().biblioteca || { watchlist: {}, reviews: {} };
+            } else {
+                biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
+            }
             carregarDashboard();
+        }).catch((error) => {
+            console.warn("Aviso: Firebase bloqueado ou sem permissão. Entrando em modo local.", error);
+            biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
+            carregarDashboard(); // ISSO GARANTE QUE A TELA NÃO TRAVE!
         });
     } else {
         currentUserUID = null;
@@ -80,7 +88,7 @@ function handleAuth(event) {
             db.collection("usuarios").doc(userCredential.user.uid).set({
                 email: email,
                 biblioteca: { watchlist: {}, reviews: {} }
-            });
+            }).catch(e => console.warn("Erro ao criar perfil no BD, seguindo fluxo...", e));
             btn.disabled = false;
         }).catch((error) => {
             errorBox.innerText = "Erro: " + error.message;
@@ -93,9 +101,17 @@ function handleAuth(event) {
 function fazerLogout() { auth.signOut(); }
 
 function salvarDados() {
+    localStorage.setItem('cineNetflixLibV2', JSON.stringify(biblioteca)); // Backup local constante
+    
     if (currentUserUID) {
         db.collection("usuarios").doc(currentUserUID).update({ biblioteca: biblioteca })
-        .then(() => renderizarMinhaLista()).catch((error) => console.error("Erro ao salvar: ", error));
+        .then(() => renderizarMinhaLista())
+        .catch((error) => {
+            console.warn("Erro ao salvar na nuvem, salvo apenas localmente.", error);
+            renderizarMinhaLista();
+        });
+    } else {
+        renderizarMinhaLista();
     }
 }
 
@@ -120,6 +136,7 @@ window.addEventListener('scroll', () => {
 
 function injetarEstruturaRow(idContainer, tituloRow) {
     const wrapper = document.getElementById('rows-wrapper-layout');
+    if (!wrapper) return;
     const rowHtml = `
         <div class="movie-row" id="${idContainer}-section">
             <div class="row-title">${tituloRow}</div>
@@ -167,7 +184,7 @@ async function montarPostersMultiPage(urls, targetId, tipoFixo) {
 
 async function carregarDashboard() {
     const wrapper = document.getElementById('rows-wrapper-layout');
-    wrapper.innerHTML = '';
+    wrapper.innerHTML = ''; // Limpa pra garantir que não vai duplicar
 
     injetarEstruturaRow('row-movies', '🎬 Filmes Blockbusters');
     injetarEstruturaRow('row-series', '📺 Séries e Maratonas');
@@ -178,8 +195,14 @@ async function carregarDashboard() {
     try {
         const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
         const dataTrending = await resTrending.json();
-        if(dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
-    } catch(e) {}
+        if(dataTrending.results && dataTrending.results.length > 0) {
+            configurarHero(dataTrending.results[0]);
+        }
+    } catch(e) { 
+        console.error("Falha ao puxar o Hero Banner.", e);
+        document.getElementById('hero-title').innerText = "Catálogo Offline";
+        document.getElementById('hero-synopsis').innerText = "Verifique sua conexão, mas navegue pelos itens abaixo.";
+    }
 
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
@@ -308,12 +331,11 @@ function abrirModal(item) {
     const dataLancamento = item.release_date || item.first_air_date || '2026';
     document.getElementById('modal-year').innerText = dataLancamento.substring(0,4);
 
-    // Ocultar seletor específico se for um filme (Filmes não têm temporadas na API do MyEmbed)
     const btnEspecifico = document.getElementById('btn-player-especifico');
     if (tipo === 'movie') {
-        btnEspecifico.style.display = 'none';
+        if(btnEspecifico) btnEspecifico.style.display = 'none';
     } else {
-        btnEspecifico.style.display = 'inline-flex';
+        if(btnEspecifico) btnEspecifico.style.display = 'inline-flex';
     }
 
     const btnList = document.getElementById('modal-watchlist-btn');
@@ -363,11 +385,11 @@ function salvarCritica() {
     const texto = document.getElementById('review-text').value;
     biblioteca.reviews[itemSelecionado.id] = { rating: estrelasAtivas, text: texto };
     salvarDados();
-    alert("Anotação e avaliação salvas com sucesso no banco de dados!");
+    alert("Anotação e avaliação salvas com sucesso!");
 }
 
 // ==========================================
-// PLAYER DE VÍDEO INTEGRADO COM A API SOLICITADA (MYEMBED.BIZ)
+// PLAYER DE VÍDEO INTEGRADO (MYEMBED.BIZ)
 // ==========================================
 function abrirPlayerAtual(modo = 'geral') {
     if(!itemSelecionado) return;
@@ -378,16 +400,15 @@ function abrirPlayerAtual(modo = 'geral') {
     const epBox = document.getElementById('episodes-selectors-box');
     const player = document.getElementById('videoPlayer');
 
-    // Regra da API: Se for série e o usuário clicou para escolher ep específico, mostra a barra de controle
     if (tipo === 'tv' && modo === 'especifico') {
-        epBox.style.display = 'flex';
-        player.style.height = '600px'; // Altura de episódio único
+        if(epBox) epBox.style.display = 'flex';
+        player.style.height = '600px'; 
     } else if (tipo === 'tv' && modo === 'geral') {
-        epBox.style.display = 'none';
-        player.style.height = '700px'; // Recomendação da API para listagem completa de temporadas
+        if(epBox) epBox.style.display = 'none';
+        player.style.height = '700px'; 
     } else {
-        epBox.style.display = 'none';
-        player.style.height = '600px'; // Altura recomendada para Filmes
+        if(epBox) epBox.style.display = 'none';
+        player.style.height = '600px'; 
     }
 
     fecharModal(); 
@@ -407,14 +428,11 @@ function atualizarIframePlayer() {
     let urlDoVideo = "";
 
     if (tipo === 'movie') {
-        // Estrutura de Filme da API
         urlDoVideo = `https://myembed.biz/filme/${id}`; 
     } else {
         if (modoPlayerAtual === 'geral') {
-            // Estrutura de Série (Todas as Temporadas em Lista) da API
             urlDoVideo = `https://myembed.biz/serie/${id}`;
         } else {
-            // Estrutura de Episódio Específico da API
             const season = document.getElementById('player-season-input').value || 1;
             const episode = document.getElementById('player-episode-input').value || 1;
             urlDoVideo = `https://myembed.biz/serie/${id}/${season}/${episode}`; 
