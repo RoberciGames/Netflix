@@ -66,6 +66,10 @@
                         <span class="search-icon">🔍</span>
                         <input type="text" class="search-input-field" placeholder="Pesquisar catálogo...">
                     </div>
+                    <div class="profile-menu-container" onclick="abrirModalPerfil()">
+                        <img id="nav-avatar-img-pc" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar">
+                        <span id="nav-username-txt-pc" class="nav-username">Utilizador</span>
+                    </div>
                     <button onclick="fazerLogout()" class="btn-disconnect">Sair</button>
                 </div>
             </div>
@@ -82,11 +86,11 @@
                 <a href="#row-series-section" class="mobile-tab">
                     <span class="tab-icon">📺</span><span class="tab-label">Séries</span>
                 </a>
-                <a href="#row-watchlist-section" class="mobile-tab">
-                    <span class="tab-icon">⭐</span><span class="tab-label">Lista</span>
-                </a>
                 <a href="#" class="mobile-tab" onclick="ativarBuscaMobile(event)">
                     <span class="tab-icon">🔍</span><span class="tab-label">Buscar</span>
+                </a>
+                <a href="#" class="mobile-tab" onclick="abrirModalPerfil()">
+                    <span class="tab-icon">👤</span><span class="tab-label">Perfil</span>
                 </a>
             </div>
         </nav>
@@ -117,6 +121,36 @@
             </section>
 
             <main class="content-wrapper" id="rows-wrapper-layout"></main>
+        </div>
+
+        <div class="modal-overlay" id="profileModal">
+            <div class="modal-window profile-window">
+                <button class="modal-dismiss" onclick="fecharModalPerfil()">✕</button>
+                <div class="profile-header-bg"></div>
+                <div class="profile-body">
+                    <h2 class="text-glow" style="margin-top:0; color: var(--primary-neon); text-transform: uppercase;">Acesso & Identidade</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 25px;">Personalize a sua interface no Sistema CineNet.</p>
+                    
+                    <div class="input-field" style="margin-bottom: 30px;">
+                        <input type="text" id="edit-profile-username" required placeholder=" ">
+                        <label>Nome de Operador (Exibição)</label>
+                        <div class="bar"></div>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="color: var(--text-secondary); font-size: 12px; font-weight: bold; letter-spacing: 1px;">SELECIONE O SEU AVATAR NEON</label>
+                        <div class="avatar-selection-grid">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="selectable-avatar active" onclick="selecionarAvatarNoModal(this, 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png')">
+                            <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-v71399zk7g1wrl4v.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, 'https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-v71399zk7g1wrl4v.jpg')">
+                            <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, 'https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.jpg')">
+                            <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-288jscbe7v398aba.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, 'https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-288jscbe7v398aba.jpg')">
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="margin-top: 25px; box-shadow: 0 0 20px rgba(255,0,60,0.6);" onclick="guardarAlteracoesPerfil()">SINCRONIZAR PERFIL</button>
+                    <button class="btn-secondary mobile-only" style="width: 100%; margin-top: 15px; border-color: var(--primary-neon); color: var(--primary-neon);" onclick="fazerLogout()">DESCONECTAR SISTEMA</button>
+                </div>
+            </div>
         </div>
 
         <div class="modal-overlay" id="detailsModal">
