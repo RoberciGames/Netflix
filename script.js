@@ -9,7 +9,7 @@ let currentUserUID = null;
 let modoPlayerAtual = 'geral';
 
 let perfilUsuario = {
-    username: "Operador",
+    username: "Utilizador",
     avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
 };
 let avatarTemp = "";
@@ -32,11 +32,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 let biblioteca = { watchlist: {}, reviews: {} };
 let isLoginMode = true;
-
-function alternarScrollBody(travar) {
-    if (travar) document.body.classList.add('modal-open');
-    else document.body.classList.remove('modal-open');
-}
 
 // ESCUTA DE SESSÃO
 auth.onAuthStateChanged((user) => {
@@ -75,7 +70,7 @@ function entrarComoConvidado() {
     document.getElementById('main-app').style.display = 'block';
     
     biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
-    perfilUsuario = JSON.parse(localStorage.getItem('cineNetflixPerfil')) || { username: "Convidado_VIP", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
+    perfilUsuario = JSON.parse(localStorage.getItem('cineNetflixPerfil')) || { username: "Convidado", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
     
     atualizarInterfacePerfil();
     carregarDashboard();
@@ -83,7 +78,7 @@ function entrarComoConvidado() {
 
 function recuperarCacheFallback(user) {
     biblioteca = JSON.parse(localStorage.getItem('cineNetflixLibV2')) || { watchlist: {}, reviews: {} };
-    perfilUsuario = JSON.parse(localStorage.getItem('cineNetflixPerfil')) || { username: user ? user.email.split('@')[0] : "Operador", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
+    perfilUsuario = JSON.parse(localStorage.getItem('cineNetflixPerfil')) || { username: user ? user.email.split('@')[0] : "Utilizador", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
 }
 
 function atualizarInterfacePerfil() {
@@ -95,10 +90,10 @@ function atualizarInterfacePerfil() {
 
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? 'NÚCLEO DE TRANSMISSÃO' : 'REQUISITAR NOVO ACESSO';
-    document.getElementById('auth-btn').innerText = isLoginMode ? 'AUTENTICAR SISTEMA' : 'REGISTRAR CREDENCIAIS';
-    document.getElementById('auth-switch-text').innerText = isLoginMode ? 'Novo por aqui?' : 'Já possui registro?';
-    document.getElementById('auth-link').innerText = isLoginMode ? 'Criar conta de acesso' : 'Fazer Login';
+    document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Registar';
+    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Criar Conta';
+    document.getElementById('auth-switch-text').innerText = isLoginMode ? 'Novo por aqui?' : 'Já tem conta?';
+    document.getElementById('auth-link').innerText = isLoginMode ? 'Registe-se agora.' : 'Entrar.';
     document.getElementById('auth-error').style.display = 'none';
 }
 
@@ -109,13 +104,13 @@ function handleAuth(event) {
     const errorBox = document.getElementById('auth-error');
     const btn = document.getElementById('auth-btn');
 
-    btn.innerText = "SINCRO_PROCESSANDO..."; btn.disabled = true;
+    btn.innerText = "Aguarde..."; btn.disabled = true;
     errorBox.style.display = 'none';
 
     if (isLoginMode) {
         auth.signInWithEmailAndPassword(email, pass).catch((error) => {
-            errorBox.innerText = "Falha na validação. Verifique seus parâmetros.";
-            errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "AUTENTICAR SISTEMA";
+            errorBox.innerText = "Email ou palavra-passe incorretos. Tente novamente.";
+            errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "Entrar";
         });
     } else {
         auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
@@ -127,7 +122,7 @@ function handleAuth(event) {
             btn.disabled = false;
         }).catch((error) => {
             errorBox.innerText = "Erro: " + error.message;
-            errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "REGISTRAR CREDENCIAIS";
+            errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "Criar Conta";
         });
     }
 }
@@ -155,8 +150,13 @@ function salvarDados() {
 }
 
 // ==========================================
-// MÓDULO DE PERFIL FUTURISTA
+// MÓDULO DE PERFIL E MODAIS
 // ==========================================
+function alternarScrollBody(travar) {
+    if (travar) document.body.classList.add('modal-open');
+    else document.body.classList.remove('modal-open');
+}
+
 function abrirModalPerfil() {
     document.getElementById('edit-profile-username').value = perfilUsuario.username;
     avatarTemp = perfilUsuario.avatar;
@@ -194,7 +194,7 @@ function guardarAlteracoesPerfil() {
 }
 
 // ==========================================
-// ENGINE DE CARROSSEIS + CONTADOR DE CONTEÚDO
+// ENGINE DE CARROSSEIS + CONTADOR HUD
 // ==========================================
 function injetarEstruturaRow(idContainer, tituloRow) {
     const wrapper = document.getElementById('rows-wrapper-layout');
@@ -222,7 +222,6 @@ function scrollRow(idElemento, direcao) {
     container.scrollBy({ left: scrollAmount * direcao, behavior: 'smooth' });
 }
 
-// Função de Escolha de Catálogos Dinâmica
 function filtrarCatalogo(idSection, event) {
     if(event) {
         document.querySelectorAll('.catalog-btn').forEach(btn => btn.classList.remove('active'));
@@ -249,7 +248,6 @@ function filtrarCatalogo(idSection, event) {
     });
 }
 
-// Função que puxa conteúdo com tratamento contra falhas da API (Fallback Integrado)
 async function montarPostersMultiPage(urls, targetId, tipoFixo) {
     const container = document.getElementById(targetId);
     if(!container) return;
@@ -258,26 +256,10 @@ async function montarPostersMultiPage(urls, targetId, tipoFixo) {
     let totalItemsCarregados = 0;
     let sucessoAPI = false;
 
-    const fallbacksLocais = {
-        'row-movies': [
-            { id: 101, title: 'Interestelar', overview: 'Aventuras além das galáxias e do tempo em busca de salvação.', vote_average: 8.6, release_date: '2014' },
-            { id: 102, title: 'Blade Runner 2049', overview: 'Um novo caçador de replicantes descobre um segredo enterrado.', vote_average: 8.2, release_date: '2017' }
-        ],
-        'row-series': [
-            { id: 201, name: 'Cyberpunk: Edgerunners', overview: 'Um garoto de rua tenta sobreviver numa cidade do futuro.', vote_average: 8.6, first_air_date: '2022' }
-        ],
-        'row-animes': [
-            { id: 301, name: 'Demon Slayer', overview: 'Tanjiro caça demônios para curar sua amada irmã Nezuko.', vote_average: 8.8, first_air_date: '2019' }
-        ],
-        'row-cartoons': [
-            { id: 401, name: 'Liga da Justiça', overview: 'Os maiores heróis da Terra unidos contra as forças cósmicas.', vote_average: 8.5, first_air_date: '2001' }
-        ]
-    };
-
     for (let url of urls) {
         try {
             const res = await fetch(url);
-            if(!res.ok) throw new Error("Chave ou limite atingido.");
+            if(!res.ok) throw new Error();
             const data = await res.json();
             if(!data.results || data.results.length === 0) continue;
 
@@ -296,32 +278,7 @@ async function montarPostersMultiPage(urls, targetId, tipoFixo) {
                 card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${item.title || item.name}" loading="lazy">${estaNaLista}`;
                 container.appendChild(card);
             });
-        } catch (err) { 
-            console.warn(`Servidor TMDB instável na categoria ${targetId}. Acionando backup.`);
-        }
-    }
-
-    if (!sucessoAPI && fallbacksLocais[targetId]) {
-        fallbacksLocais[targetId].forEach((item) => {
-            totalItemsCarregados++;
-            item.custom_type = tipoFixo;
-            item.backdrop_path = "";
-            item.poster_path = "";
-
-            const card = document.createElement('div');
-            card.className = 'movie-card';
-            card.onclick = () => abrirModal(item);
-            
-            const estaNaLista = biblioteca.watchlist[item.id] ? `<div class="watched-bar"></div>` : "";
-            card.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" alt="${item.title || item.name}" style="object-fit:cover;">
-                <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center; font-weight:700; border-top:1px solid var(--primary-neon); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    ${item.title || item.name}
-                </div>
-                ${estaNaLista}
-            `;
-            container.appendChild(card);
-        });
+        } catch (err) { }
     }
 
     const counterEl = document.getElementById(`count-${targetId}`);
@@ -335,39 +292,31 @@ async function carregarDashboard() {
     injetarEstruturaRow('row-series', '📺 Séries e Produções');
     injetarEstruturaRow('row-animes', '🗡️ Universo Anime');
     injetarEstruturaRow('row-cartoons', '🎨 Desenhos Clássicos');
-    injetarEstruturaRow('row-watchlist', '⭐ Minha Lista Pessoal');
+    injetarEstruturaRow('row-watchlist', '⭐ A Minha Lista');
 
     try {
-        const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
+        const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-PT`);
         const dataTrending = await resTrending.json();
         if(dataTrending.results && dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
-        else throw new Error();
-    } catch(e) { 
-        configurarHero({
-            id: 999,
-            title: "CineNet Core Ativo",
-            overview: "Hub central carregado com sucesso. Selecione acima o seu catálogo favorito para transmissão contínua de metadados.",
-            custom_type: "movie"
-        });
-    }
+    } catch(e) {}
 
     montarPostersMultiPage([
-        `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
-        `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&with_genres=28&page=1`
+        `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-PT&page=1`,
+        `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-PT&with_genres=28&page=1`
     ], 'row-movies', 'movie');
 
     montarPostersMultiPage([
-        `https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=18&page=1`
+        `https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-PT&page=1`,
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-PT&with_genres=18&page=1`
     ], 'row-series', 'tv');
 
     montarPostersMultiPage([
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&page=2`
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-PT&with_genres=16&with_original_language=ja&page=1`,
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-PT&with_genres=16&with_original_language=ja&page=2`
     ], 'row-animes', 'tv');
 
     montarPostersMultiPage([
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=en&page=1`
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-PT&with_genres=16&with_original_language=en&page=1`
     ], 'row-cartoons', 'tv');
 
     renderizarMinhaLista();
@@ -379,12 +328,10 @@ function configurarHero(item) {
     
     if (item.backdrop_path) {
         banner.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
-    } else {
-        banner.style.backgroundImage = `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=80')`;
-    }
+    } 
     
     document.getElementById('hero-title').innerText = item.title || item.name;
-    document.getElementById('hero-synopsis').innerText = item.overview ? item.overview.substring(0, 180) + "..." : "Sinopse operacional em atualização estrutural.";
+    document.getElementById('hero-synopsis').innerText = item.overview ? item.overview.substring(0, 180) + "..." : "Sinopse indisponível.";
     
     item.custom_type = item.media_type || (item.name ? 'tv' : 'movie');
     document.getElementById('hero-play-btn').onclick = () => { itemSelecionado = item; abrirPlayerAtual('geral'); };
@@ -416,16 +363,7 @@ function renderizarMinhaLista() {
         const card = document.createElement('div');
         card.className = 'movie-card';
         card.onclick = () => abrirModal(item);
-        
-        if (item.poster_path) {
-            card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}"><div class="watched-bar"></div>`;
-        } else {
-            card.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" style="object-fit:cover;">
-                <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center;">${item.title || item.name}</div>
-                <div class="watched-bar"></div>
-            `;
-        }
+        card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}"><div class="watched-bar"></div>`;
         container.appendChild(card);
     });
 }
@@ -463,10 +401,10 @@ async function executarBuscaGlobal(termo) {
     if(!termo.trim()) { limparBusca(); return; }
 
     home.style.display = 'none'; searchSection.style.display = 'block';
-    grid.innerHTML = '<p style="color: var(--primary-neon); padding: 20px;">Pesquisando servidores...</p>';
+    grid.innerHTML = '<p style="color: #fff; padding: 20px;">A pesquisar nos servidores...</p>';
 
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`);
+        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-PT&query=${encodeURIComponent(termo)}`);
         const data = await res.json();
         const filtrados = data.results.filter(i => i.media_type !== 'person' && (i.poster_path || i.id));
         
@@ -483,8 +421,7 @@ async function executarBuscaGlobal(termo) {
                 card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}">`;
             } else {
                 card.innerHTML = `
-                    <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" style="object-fit:cover;">
-                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center;">${item.title || item.name}</div>
+                    <div style="background:#111; height:100%; display:flex; align-items:center; justify-content:center; text-align:center; padding:10px; font-size:12px;">${item.title || item.name}</div>
                 `;
             }
             grid.appendChild(card);
@@ -509,12 +446,10 @@ function abrirModal(item) {
     const modalBg = document.getElementById('modal-hero-bg');
     if (item.backdrop_path || item.poster_path) {
         modalBg.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
-    } else {
-        modalBg.style.backgroundImage = `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80')`;
-    }
+    } 
     
     document.getElementById('modal-title').innerText = item.title || item.name;
-    document.getElementById('modal-desc').innerText = item.overview || "Ficheiro protegido. Sem descrição associada.";
+    document.getElementById('modal-desc').innerText = item.overview || "Sem descrição disponível.";
     
     const baseMatch = item.vote_average ? Math.floor(item.vote_average * 10) : 88;
     document.getElementById('modal-match').innerText = `${baseMatch}% de Match`;
@@ -526,10 +461,10 @@ function abrirModal(item) {
     const btnList = document.getElementById('modal-watchlist-btn');
     if(biblioteca.watchlist[id]) {
         btnList.innerText = '✓ Na Minha Lista';
-        btnList.style.borderColor = '#00ff88'; btnList.style.color = '#00ff88'; btnList.style.background = 'rgba(0, 255, 136, 0.1)';
+        btnList.style.borderColor = '#46d369'; btnList.style.color = '#46d369'; btnList.style.background = 'transparent';
     } else {
         btnList.innerText = '+ A Minha Lista';
-        btnList.style.borderColor = 'rgba(255,255,255,0.2)'; btnList.style.color = 'white'; btnList.style.background = 'rgba(255,255,255,0.05)';
+        btnList.style.borderColor = 'rgba(255,255,255,0.4)'; btnList.style.color = 'white'; btnList.style.background = 'transparent';
     }
 
     const dadosReview = biblioteca.reviews[id] || { rating: 0, text: "" };
@@ -561,11 +496,11 @@ function definirEstrelas(nota, cliqueUsuario = true) {
 
 function salvarCritica() {
     biblioteca.reviews[itemSelecionado.id] = { rating: estrelasAtivas, text: document.getElementById('review-text').value };
-    salvarDados(); alert("Alterações registadas com sucesso.");
+    salvarDados(); alert("Avaliação guardada com sucesso.");
 }
 
 // ==========================================
-// REPRODUTOR DE VIDEO COM NOVA API (SUPERFLIXAPI)
+// REPRODUTOR API NATIVA (MGEB.TOP COM EFEITO NETFLIX)
 // ==========================================
 function abrirPlayerAtual(modo = 'geral') {
     if(!itemSelecionado) return;
@@ -592,16 +527,16 @@ function atualizarIframePlayer() {
     const tipo = itemSelecionado.custom_type;
     const player = document.getElementById('videoPlayer');
 
-    // Substituição de myembed.biz por superflixapi.top para evitar os erros de IDs (Teen Wolf/Dorama)
+    // Usando a API mgeb.top com a cor Vermelha estilo Netflix (e50914)
     if (tipo === 'movie') {
-        player.src = `https://superflixapi.top/filme/${id}`; 
+        player.src = `https://mgeb.top/embed/${id}#color:e50914`; 
     } else {
         if (modoPlayerAtual === 'geral') {
-            player.src = `https://superflixapi.top/serie/${id}`;
+            player.src = `https://mgeb.top/embed/${id}#color:e50914`;
         } else {
             const season = document.getElementById('player-season-input').value || 1;
             const episode = document.getElementById('player-episode-input').value || 1;
-            player.src = `https://superflixapi.top/serie/${id}/${season}/${episode}`; 
+            player.src = `https://mgeb.top/embed/${id}/${season}/${episode}#color:e50914`; 
         }
     }
 }
@@ -612,6 +547,7 @@ function fecharPlayer() {
     alternarScrollBody(false);
 }
 
+// Sincronizador de abas ativas
 window.addEventListener('scroll', () => {
     if(window.innerWidth < 769) return;
     const sections = ['homepage-content', 'row-movies-section', 'row-series-section', 'row-animes-section', 'row-cartoons-section', 'row-watchlist-section'];

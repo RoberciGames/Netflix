@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -14,38 +14,30 @@
 <body>
 
     <div id="auth-screen">
-        <div class="auth-bg"></div>
-        <div class="auth-container">
-            <div class="auth-card">
-                <div class="app-brand">
-                    <span class="brand-accent">CINE</span><span class="brand-light">NET</span>
+        <div class="auth-bg-netflix"></div>
+        <div class="auth-container-netflix">
+            <h2 id="auth-title">Entrar</h2>
+            
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <div class="input-netflix">
+                    <input type="email" id="auth-user" required placeholder=" ">
+                    <label>Email</label>
                 </div>
-                <h2 id="auth-title">NÚCLEO DE TRANSMISSÃO</h2>
-                <p class="auth-subtitle">Insira as suas credenciais de acesso</p>
-                
-                <form id="auth-form" onsubmit="handleAuth(event)">
-                    <div class="input-field">
-                        <input type="email" id="auth-user" required placeholder=" ">
-                        <label>Email de Utilizador</label>
-                        <div class="bar"></div>
-                    </div>
-                    <div class="input-field">
-                        <input type="password" id="auth-pass" required placeholder=" ">
-                        <label>Chave de Segurança</label>
-                        <div class="bar"></div>
-                    </div>
-                    <button type="submit" class="btn-primary" id="auth-btn">AUTENTICAR SISTEMA</button>
-                </form>
-                
-                <div class="auth-footer" style="flex-direction: column; gap: 12px; align-items: center; margin-top: 15px;">
-                    <div>
-                        <span id="auth-switch-text">Novo por aqui?</span>
-                        <button onclick="toggleAuthMode()" id="auth-link">Criar conta de acesso</button>
-                    </div>
-                    <button onclick="entrarComoConvidado()" class="btn-secondary" style="width: 100%; padding: 8px 16px; font-size: 12px; border-color: rgba(0, 255, 255, 0.4); color: #00ffff; margin-top: 5px;">⚡ IGNORAR & ENTRAR COMO CONVIDADO</button>
+                <div class="input-netflix">
+                    <input type="password" id="auth-pass" required placeholder=" ">
+                    <label>Palavra-passe</label>
                 </div>
-                <div id="auth-error" class="alert-box" style="display:none;"></div>
+                <button type="submit" class="btn-netflix" id="auth-btn">Entrar</button>
+            </form>
+            
+            <div class="auth-footer-netflix">
+                <div class="auth-switch-wrapper">
+                    <span id="auth-switch-text" style="color: #737373;">Novo por aqui?</span>
+                    <button onclick="toggleAuthMode()" id="auth-link">Registe-se agora.</button>
+                </div>
+                <button onclick="entrarComoConvidado()" class="btn-guest">Aceder como Convidado</button>
             </div>
+            <div id="auth-error" class="alert-box" style="display:none;"></div>
         </div>
     </div>
 
@@ -62,7 +54,7 @@
                     <li><a href="#row-series-section">Séries</a></li>
                     <li><a href="#row-animes-section">Animes</a></li>
                     <li><a href="#row-cartoons-section">Desenhos</a></li>
-                    <li><a href="#row-watchlist-section">Minha Lista</a></li>
+                    <li><a href="#row-watchlist-section">A Minha Lista</a></li>
                 </ul>
                 <div class="nav-actions">
                     <div class="search-bar">
@@ -70,7 +62,7 @@
                         <input type="text" class="search-input-field" placeholder="Pesquisar catálogo...">
                     </div>
                     <div class="profile-menu-container" onclick="abrirModalPerfil()">
-                        <img id="nav-avatar-img-pc" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar">
+                        <img id="nav-avatar-img-pc" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar" alt="Avatar">
                         <span id="nav-username-txt-pc" class="nav-username">Utilizador</span>
                     </div>
                     <button onclick="fazerLogout()" class="btn-disconnect">Sair</button>
@@ -100,7 +92,7 @@
 
         <div id="mobile-search-overlay" class="mobile-only">
             <div class="mobile-search-header">
-                <input type="text" id="mobile-search-input" placeholder="Digite filmes, séries, animes...">
+                <input type="text" id="mobile-search-input" placeholder="Pesquisar filmes, séries...">
                 <button onclick="fecharBuscaMobile()" class="btn-close-search">Fechar</button>
             </div>
         </div>
@@ -114,11 +106,11 @@
             <section class="hero-showcase" id="hero-banner">
                 <div class="hero-overlay-shadow"></div>
                 <div class="hero-inner">
-                    <span class="hero-badge">EM DESTAQUE</span>
+                    <span class="hero-badge">NÚCLEO EM DESTAQUE</span>
                     <h1 class="hero-title-text" id="hero-title">A Carregar Fluxo...</h1>
-                    <p class="hero-description" id="hero-synopsis">A sincronizar metadados com a base central do TMDB...</p>
+                    <p class="hero-description" id="hero-synopsis">A sincronizar metadados com os servidores centrais...</p>
                     <div class="hero-cta-group">
-                        <button class="btn-primary-action" id="hero-play-btn">▶ REPRODUZIR AGORA</button>
+                        <button class="btn-primary-action" id="hero-play-btn">▶ REPRODUZIR</button>
                     </div>
                 </div>
             </section>
@@ -129,7 +121,7 @@
                 <button class="catalog-btn" onclick="filtrarCatalogo('row-series', event)">📺 Séries</button>
                 <button class="catalog-btn" onclick="filtrarCatalogo('row-animes', event)">🗡️ Animes</button>
                 <button class="catalog-btn" onclick="filtrarCatalogo('row-cartoons', event)">🎨 Desenhos</button>
-                <button class="catalog-btn" onclick="filtrarCatalogo('row-watchlist', event)">⭐ Minha Lista</button>
+                <button class="catalog-btn" onclick="filtrarCatalogo('row-watchlist', event)">⭐ A Minha Lista</button>
             </div>
 
             <main class="content-wrapper" id="rows-wrapper-layout"></main>
@@ -141,16 +133,15 @@
                 <div class="profile-header-bg"></div>
                 <div class="profile-body">
                     <h2 class="text-glow" style="margin-top:0; color: var(--primary-neon); text-transform: uppercase;">Acesso & Identidade</h2>
-                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 25px;">Personalize a sua interface no Sistema CineNet.</p>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 25px;">Personalize a interface do Sistema CineNet.</p>
                     
-                    <div class="input-field" style="margin-bottom: 30px;">
+                    <div class="input-netflix" style="margin-bottom: 30px;">
                         <input type="text" id="edit-profile-username" required placeholder=" ">
-                        <label>Nome de Operador (Exibição)</label>
-                        <div class="bar"></div>
+                        <label>Nome do Operador</label>
                     </div>
 
                     <div style="margin-bottom: 10px;">
-                        <label style="color: var(--text-secondary); font-size: 12px; font-weight: bold; letter-spacing: 1px;">SELECIONE O SEU AVATAR NEON</label>
+                        <label style="color: var(--text-secondary); font-size: 12px; font-weight: bold; letter-spacing: 1px;">SELECIONE O SEU AVATAR</label>
                         <div class="avatar-selection-grid">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="selectable-avatar active" onclick="selecionarAvatarNoModal(this, 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png')">
                             <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-v71399zk7g1wrl4v.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, 'https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-v71399zk7g1wrl4v.jpg')">
@@ -159,7 +150,7 @@
                         </div>
                     </div>
 
-                    <button class="btn-primary" style="margin-top: 25px; box-shadow: 0 0 20px rgba(255,0,60,0.6);" onclick="guardarAlteracoesPerfil()">SINCRONIZAR PERFIL</button>
+                    <button class="btn-netflix" style="margin-top: 25px; width: 100%;" onclick="guardarAlteracoesPerfil()">GUARDAR ALTERAÇÕES</button>
                     <button class="btn-secondary mobile-only" style="width: 100%; margin-top: 15px; border-color: var(--primary-neon); color: var(--primary-neon);" onclick="fazerLogout()">DESCONECTAR SISTEMA</button>
                 </div>
             </div>
@@ -174,7 +165,7 @@
                         <div class="modal-controls">
                             <button class="btn-primary" onclick="abrirPlayerAtual('geral')">▶ ASSISTIR AGORA</button>
                             <button class="btn-secondary" id="btn-player-especifico" onclick="abrirPlayerAtual('especifico')">🔢 SELECIONAR EPISÓDIO</button>
-                            <button class="btn-tertiary" id="modal-watchlist-btn" onclick="toggleWatchlist()">+ MINHA LISTA</button>
+                            <button class="btn-tertiary" id="modal-watchlist-btn" onclick="toggleWatchlist()">+ A MINHA LISTA</button>
                         </div>
                     </div>
                 </div>
@@ -194,7 +185,7 @@
                                 <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)">★</span><span onclick="definirEstrelas(3)">★</span><span onclick="definirEstrelas(4)">★</span><span onclick="definirEstrelas(5)">★</span>
                             </div>
                             <textarea id="review-text" class="input-textarea-glass" placeholder="Escreva as suas impressões ou notas sobre a temporada..."></textarea>
-                            <button class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="salvarCritica()">SALVAR NO BANCO</button>
+                            <button class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="salvarCritica()">GUARDAR NO BANCO</button>
                         </div>
                     </div>
                 </div>
