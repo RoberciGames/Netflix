@@ -11,6 +11,7 @@ let currentUser = null;
 let currentItem = null; 
 let minhaListaDB = JSON.parse(localStorage.getItem('cineNetLista')) || {};
 let servidorSelecionado = 'smashy'; 
+let timeoutBusca; // Variável para o Debounce
 
 // ==========================================
 // INICIALIZAÇÃO E FECHAMENTO SEGURO
@@ -32,7 +33,6 @@ window.onload = () => {
     }
 };
 
-// Permite fechar os modais ao clicar no fundo escuro
 window.addEventListener('click', function(event) {
     const detailsModal = document.getElementById('detailsModal');
     const profileModal = document.getElementById('profileModal');
@@ -92,7 +92,7 @@ function fazerLogout() {
     localStorage.removeItem('cineNetCurrentUser');
     currentUser = null;
     document.getElementById('main-app').style.display = 'none';
-    fecharPerfil(); // Garante que tira a classe .show e limpa o scroll
+    fecharPerfil(); 
     document.getElementById('auth-screen').style.display = 'flex';
 }
 
@@ -172,7 +172,6 @@ async function carregarDashboard(aba) {
     document.getElementById('homepage-content').style.display = 'grid'; 
     document.getElementById('minha-lista-section').style.display = 'none';
 
-    // --- LÓGICA DE DESTAQUE DINÂMICO (Hero Banner) ---
     const destaquesEspeciais = [
         { id: 34524, type: 'tv' },     // Teen Wolf Série
         { id: 894205, type: 'movie' }  // Teen Wolf Filme
@@ -180,7 +179,6 @@ async function carregarDashboard(aba) {
 
     try {
         let itemDestaque = null;
-        // 50% de probabilidade de mostrar Teen Wolf, 50% de mostrar um popular aleatório
         const mostrarEspecial = Math.random() > 0.5;
 
         if (mostrarEspecial) {
@@ -306,7 +304,7 @@ async function carregarDestaquesFixos(containerId) {
 }
 
 // ==========================================
-// CARROSSEIS (ROWS)
+// CARROSSEIS E PESQUISA OTIMIZADA (DEBOUNCE)
 // ==========================================
 function injetarEstruturaRow(id, title) {
     const wrapper = document.getElementById('rows-wrapper-layout');
@@ -339,22 +337,37 @@ async function montarPosters(url, containerId, defaultType) {
     } catch (e) {}
 }
 
-// ==========================================
-// PESQUISA E A MINHA LISTA SECTION
-// ==========================================
+function aoDigitarBusca(valor) {
+    clearTimeout(timeoutBusca);
+    timeoutBusca = setTimeout(() => {
+        realizarBusca(valor);
+    }, 500); // Aguarda meio segundo após parar de escrever
+}
+
 async function realizarBusca(query) {
     if (query.length > 2) {
         document.getElementById('homepage-content').style.display = 'none';
         document.getElementById('minha-lista-section').style.display = 'none';
-        fecharCatalogoMobile();
+        
+        // Em telemóveis: Fecha o overlay de pesquisa para mostrar os resultados
+        const catMobile = document.getElementById('mobile-catalog');
+        if(catMobile && catMobile.style.display === 'flex') {
+            fecharCatalogoMobile(); 
+        }
+
         document.getElementById('search-results-section').style.display = 'block';
         
         const grid = document.getElementById('search-grid');
-        grid.innerHTML = '';
+        grid.innerHTML = '<p style="color:white;">A procurar...</p>';
         try {
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-BR&query=${query}`);
             const data = await res.json();
+            grid.innerHTML = ''; // Limpa o "procurando"
             
+            if(data.results.length === 0) {
+                grid.innerHTML = '<p style="color:#b3b3b3;">Nenhum resultado encontrado.</p>';
+            }
+
             data.results.forEach(item => {
                 if (!item.poster_path) return;
                 const type = item.media_type;
@@ -431,7 +444,7 @@ function fecharModal() {
     modal.classList.remove('show');
     setTimeout(() => {
         modal.style.display = 'none';
-        alternarScrollBody(false); // Libera o ecrã
+        alternarScrollBody(false); 
         if(abaAtual === 'minhalista') carregarDashboard('minhalista');
         else if(abaAtual === 'inicio') atualizarContinueAssistindoWidget(); 
     }, 300);
@@ -459,7 +472,7 @@ function toggleWatchlist() {
 }
 
 // ==========================================
-// SISTEMA DE PLAYER (MULTI-SERVIDORES)
+// SISTEMA DE PLAYER (MOBILE/PC) FULLSCREEN
 // ==========================================
 function selecionarServidorGlobal(btn, server) {
     document.querySelectorAll('.server-btn').forEach(el => el.classList.remove('active'));
@@ -476,7 +489,7 @@ function abrirPlayerAtual() {
 
     atualizarIframePlayer();
 
-    fecharModal(); // Fecha o de detalhes primeiro
+    fecharModal(); 
     const playerModal = document.getElementById('playerModal');
     playerModal.style.display = 'block';
     alternarScrollBody(true);

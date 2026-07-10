@@ -16,24 +16,19 @@
 body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; display: flex; height: 100vh; -webkit-font-smoothing: antialiased; }
 body.modal-open { overflow: hidden; padding-right: 8px; }
 
-/* SCROLLBAR */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-color); }
 ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 
-/* UTILIDADES */
 .mobile-only { display: none !important; }
 .desktop-only { display: flex !important; }
 
-/* =========================================
-   SIDEBAR (BARRA LATERAL DESKTOP)
-   ========================================= */
+/* SIDEBAR E TOPBAR */
 .sidebar { width: var(--sidebar-width); background-color: var(--bg-sidebar); height: 100vh; position: fixed; left: 0; top: 0; display: flex; flex-direction: column; padding: 30px 0; z-index: 1000; border-right: 1px solid var(--border-color); }
 .logo-container { padding: 0 25px; margin-bottom: 40px; }
 .logo { font-size: 28px; font-weight: 700; text-decoration: none; display: flex; align-items: center; letter-spacing: -0.5px; }
 .logo .cine { color: var(--accent-red); }
 .logo .net { color: var(--text-main); }
-
 .menu-section { margin-bottom: 35px; }
 .menu-title { font-size: 13px; color: #777; text-transform: uppercase; letter-spacing: 1px; padding: 0 25px; margin-bottom: 15px; font-weight: 500; }
 .menu-items { list-style: none; }
@@ -43,15 +38,11 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .menu-items a.active { color: var(--text-main); border-left-color: var(--accent-red); background: rgba(255,255,255,0.05); }
 .menu-items i { font-size: 18px; width: 20px; text-align: center; }
 
-/* =========================================
-   MAIN WRAPPER & TOPBAR
-   ========================================= */
 .main-wrapper { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(15,15,15,0.95); position: sticky; top: 0; z-index: 900; }
 .top-nav-links { display: flex; gap: 30px; }
 .top-nav-links a { color: var(--text-muted); text-decoration: none; font-size: 15px; font-weight: 500; position: relative; transition: var(--transition-speed); }
-.top-nav-links a:hover { color: var(--text-main); }
-.top-nav-links a.active { color: var(--text-main); }
+.top-nav-links a:hover, .top-nav-links a.active { color: var(--text-main); }
 .top-nav-links a.active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 2px; background: var(--accent-red); }
 
 .top-right { display: flex; align-items: center; gap: 20px; }
@@ -62,12 +53,8 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .profile-btn { cursor: pointer; }
 .profile-btn img { width: 35px; height: 35px; border-radius: 4px; object-fit: cover; }
 
-/* =========================================
-   DASHBOARD GRID (DESIGN PREMIUM)
-   ========================================= */
+/* DASHBOARD */
 .dashboard { padding: 20px 40px 40px; display: grid; grid-template-columns: 320px 1fr; gap: 40px; }
-
-/* Coluna Esquerda */
 .left-column { display: flex; flex-direction: column; gap: 20px; }
 .main-poster { width: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); object-fit: cover; aspect-ratio: 2/3; display: block; }
 .media-info h1 { font-size: 26px; font-weight: 700; margin-bottom: 5px; line-height: 1.2; }
@@ -75,10 +62,7 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .media-desc-title { font-size: 14px; color: var(--text-muted); margin-bottom: 5px; }
 .media-desc-text { font-size: 14px; line-height: 1.5; color: #ccc; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* Coluna Direita */
 .right-column { display: flex; flex-direction: column; gap: 30px; overflow: hidden; }
-
-/* Fake Player */
 .player-container { width: 100%; aspect-ratio: 21/9; border-radius: 10px; background-size: cover; background-position: center; position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .player-title-overlay { padding: 20px; text-align: center; font-size: 22px; font-weight: 500; text-shadow: 2px 2px 5px rgba(0,0,0,1); background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
 .player-controls { padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); display: flex; align-items: center; justify-content: space-between; z-index: 2; }
@@ -89,7 +73,6 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .control-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; transition: 0.2s; opacity: 0.8; }
 .control-btn:hover { opacity: 1; transform: scale(1.1); }
 
-/* Servidores e Continue */
 .middle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 .section-header { font-size: 18px; font-weight: 500; margin-bottom: 15px; color: var(--text-main); }
 .servers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -105,12 +88,12 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .continue-progress { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--accent-red); }
 .continue-info h4 { font-size: 13px; font-weight: 500; line-height: 1.3; }
 
-/* CARROSSEIS (ROWS) & BUSCA */
+/* FILMES/SÉRIES */
 .movie-row { margin-bottom: 30px; position: relative; }
 .row-title { font-size: 1.2rem; color: #e5e5e5; margin-bottom: 12px; font-weight: 500; }
 .row-posters { display: flex; gap: 12px; overflow-x: auto; scroll-behavior: smooth; padding: 10px 0; }
 .row-posters::-webkit-scrollbar { display: none; }
-.movie-card { position: relative; flex: 0 0 calc(100% / 6 - 12px); min-width: 140px; aspect-ratio: 2/3; border-radius: 8px; cursor: pointer; transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--transition-speed); background-color: var(--surface-color); overflow: hidden; }
+.movie-card { position: relative; flex: 0 0 calc(100% / 6 - 12px); min-width: 140px; aspect-ratio: 2/3; border-radius: 8px; cursor: pointer; transition: transform var(--transition-speed), box-shadow var(--transition-speed); background-color: var(--surface-color); overflow: hidden; }
 .movie-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .movie-card:hover { transform: scale(1.05) translateY(-5px); z-index: 5; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
 .watched-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--accent-red); width: 100%; }
@@ -118,14 +101,10 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .search-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
 .search-grid .movie-card { width: 100%; flex: none; }
 
-/* =========================================
-   TELAS E MODAIS
-   ========================================= */
-/* Auth */
+/* MODAIS */
 #auth-screen { position: fixed; top:0; left:0; width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 5000; background: #000; }
 .auth-bg { position: absolute; top:0; left:0; right:0; bottom:0; background: url('https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-eca797920445/834a3623-2882-4467-bbdf-ecbc0ffef657/BR-pt-20240311-popsignuptwoweeks-perspective_alpha_website_large.jpg') center/cover; opacity: 0.4; }
 .auth-box { background: rgba(0,0,0,0.85); padding: 50px 40px; border-radius: 8px; width: 100%; max-width: 400px; position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-.auth-box h2 { font-size: 28px; margin-bottom: 25px; }
 .input-group { position: relative; margin-bottom: 15px; }
 .input-group input { width: 100%; padding: 22px 15px 8px; background: #333; border: none; border-radius: 4px; color: white; font-size: 15px; }
 .input-group input:focus { background: #444; outline: none; }
@@ -133,66 +112,38 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
 .input-group input:focus ~ label, .input-group input:not(:placeholder-shown) ~ label { top: 12px; font-size: 11px; }
 .btn-auth { width: 100%; padding: 15px; background: var(--accent-red); color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
 .btn-auth:hover { background: #c90812; }
-.auth-switch { margin-top: 25px; font-size: 15px; }
-.auth-switch a { color: white; text-decoration: none; font-weight: 500; }
-.error-message { display: none; margin-top: 15px; font-size: 14px; background: #e87c03; color: white; padding: 10px; border-radius: 4px; text-align: center; }
 
-/* Modais Gerais */
 .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 3000; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
 .modal.show { opacity: 1; }
-
 .modal-content { background: var(--bg-color); width: 100%; max-width: 900px; max-height: 85vh; overflow-y: auto; border-radius: 12px; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,1); transform: translateY(20px); transition: transform 0.3s ease; }
 .modal.show .modal-content { transform: translateY(0); }
-.modal-content-anim { transform: translateY(20px); transition: transform 0.3s ease; }
-.modal.show .modal-content-anim { transform: translateY(0); }
-
 .modal-hero { height: 350px; background-size: cover; background-position: center; position: relative; }
 .modal-hero-vignette-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to top, var(--bg-color) 0%, transparent 70%); }
 .modal-close-btn { position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; background: var(--bg-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; cursor: pointer; z-index: 10; font-size: 18px; }
 .modal-hero-content { position: absolute; bottom: 30px; left: 40px; right: 40px; }
 .modal-title-text { font-size: 32px; font-weight: 700; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
 
-.btn { padding: 12px 28px; font-size: 1.1rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-.btn-play { background: white; color: black; margin-right: 15px; }
-.btn-play:hover { background: rgba(255,255,255,0.75); }
+.btn-play { background: white; color: black; padding: 10px 24px; font-size: 16px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
 .btn-circle-outline { background: rgba(42,42,42,0.6); border: 2px solid rgba(255,255,255,0.5); color: white; width: 42px; height: 42px; border-radius: 50%; font-size: 18px; margin-left: 10px; cursor: pointer; }
 .modal-body { padding: 0 40px 40px; }
 .meta-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; font-weight: 500; }
 .match-score { color: var(--match-green); }
 .info-tag-hd { border: 1px solid rgba(255,255,255,0.4); border-radius: 3px; padding: 2px 6px; font-size: 12px; }
-.modal-synopsis-text { font-size: 15px; line-height: 1.6; color: #ccc; max-width: 600px; }
 
-/* Perfil Modal */
-.profile-edit-box { background: var(--surface-color); padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; }
-.profile-edit-box h2 { font-size: 24px; margin-bottom: 25px; }
-.avatar-selection { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-.avatar-option { width: 60px; border-radius: 4px; cursor: pointer; transition: transform 0.2s; }
-.avatar-option:hover { transform: scale(1.1); }
-#edit-profile-name { width: 100%; padding: 12px; background: #333; border: none; color: white; border-radius: 4px; margin-bottom: 25px; text-align: center; font-size: 15px; }
-.profile-actions { display: flex; flex-direction: column; gap: 10px; }
-.profile-actions button { padding: 12px; border-radius: 4px; font-weight: bold; border: none; cursor: pointer; font-size: 15px; }
-.btn-save { background: white; color: black; }
-.btn-cancel { background: transparent; border: 1px solid #777 !important; color: white; }
-.btn-logout { background: transparent; border: 1px solid #E50914 !important; color: #E50914; }
-
-/* Player de Vídeo Real */
-.player-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; }
-.player-back-btn { position: absolute; top: 20px; left: 20px; width: 45px; height: 45px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; color: white; font-size: 20px; z-index: 10005; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.player-controls-panel { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 10px 15px; border-radius: 8px; display: flex; gap: 15px; z-index: 10005; border: 1px solid #333; }
+/* PLAYER MOBILE OTIMIZADO (100dvh e Z-INDEX SUPERIOR) */
+.player-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000; z-index: 99999; }
+.player-back-btn { position: absolute; top: 20px; left: 20px; width: 45px; height: 45px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 50%; color: white; font-size: 20px; z-index: 100000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.player-controls-panel { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 10px 15px; border-radius: 8px; display: flex; gap: 15px; z-index: 100000; border: 1px solid #333; }
 .control-group { display: flex; align-items: center; gap: 8px; }
 .control-group label { font-size: 13px; font-weight: bold; color: #aaa; }
 .control-group input { background: #222; border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; width: 50px; text-align: center; }
 .player-content { width: 100%; height: 100%; }
 .player-content iframe { width: 100%; height: 100%; border: none; }
-.player-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; z-index: 10002; pointer-events: none; }
+.player-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; z-index: 100000; pointer-events: none; }
 .netflix-spinner { width: 50px; height: 50px; border: 4px solid rgba(229, 9, 20, 0.15); border-top-color: var(--accent-red); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* =========================================
-   MOBILE RESPONSIVO APP STYLE
-   ========================================= */
-.mobile-bottom-nav { display: none !important; }
-
+/* RESPONSIVIDADE MOBILE */
 @media (max-width: 900px) {
     .desktop-only { display: none !important; }
     .mobile-only { display: flex !important; }
@@ -211,33 +162,24 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
     .middle-row { grid-template-columns: 1fr; gap: 20px; }
     .servers-grid { grid-template-columns: repeat(3, 1fr); }
     
-    .movie-card { flex: 0 0 calc(100% / 3.2); min-width: 105px; }
+    .movie-card { flex: 0 0 calc(100% / 3 - 8px); min-width: 105px; border-radius: 6px; }
     .movie-card:hover { transform: none; box-shadow: none; }
 
-    /* MENU INFERIOR MOBILE COM EFEITO BLUR */
+    /* MENU INFERIOR BLUR (ESTILO IPHONE) */
     .mobile-bottom-nav { 
         display: flex !important; 
-        position: fixed; 
-        bottom: 0; left: 0; width: 100%; height: 70px; 
+        position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; 
         background: rgba(20, 20, 20, 0.85); 
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
+        backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
         border-top: 1px solid rgba(255, 255, 255, 0.1); 
-        z-index: 2000; 
-        justify-content: space-around; 
-        align-items: center; 
+        z-index: 2000; justify-content: space-around; align-items: center; 
         padding-bottom: env(safe-area-inset-bottom);
     }
     
-    .nav-item { 
-        display: flex; flex-direction: column; align-items: center; 
-        color: var(--text-muted); font-size: 10px; font-weight: 500; 
-        gap: 6px; cursor: pointer; transition: color 0.2s; 
-    }
-    .nav-item .icon { font-size: 20px; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 10px; font-weight: 500; gap: 6px; cursor: pointer; transition: color 0.2s; }
     .active-mobile-nav { color: white; }
 
-    /* MODAL MOBILE (Estilo Bottom Sheet) */
+    /* MODAL MOBILE */
     .modal { align-items: flex-end; padding: 0; }
     .modal-content { max-height: 95vh; border-radius: 12px 12px 0 0; margin-top: auto; }
     .modal-body { padding: 0 20px 20px; }
@@ -250,6 +192,6 @@ body.modal-open { overflow: hidden; padding-right: 8px; }
     .mobile-catalog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; margin-top: 10px; }
     .mobile-catalog-header h2 { font-size: 22px; font-weight: 500; }
     .mobile-catalog-header button { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+    .mobile-search input { width: 100%; padding: 15px; background: #333; border: none; border-radius: 4px; color: white; font-size: 16px; margin-bottom: 25px; }
     .cat-btn { width: 100%; text-align: left; background: #222; padding: 18px 15px; border: none; border-radius: 6px; color: white; font-size: 16px; margin-bottom: 12px; font-weight: 500; display: flex; gap: 15px; align-items: center; }
-    .cat-btn i { color: var(--accent-red); width: 20px; text-align: center; font-size: 18px; }
 }

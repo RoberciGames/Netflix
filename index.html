@@ -79,7 +79,7 @@
                 <div class="top-right">
                     <div class="search-bar">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="search-input" placeholder="Títulos, géneros..." oninput="realizarBusca(this.value)">
+                        <input type="text" id="search-input" placeholder="Títulos, géneros..." oninput="aoDigitarBusca(this.value)">
                     </div>
                     <div class="profile-btn desktop-only">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" id="nav-avatar" onclick="abrirPerfil()">
@@ -181,7 +181,7 @@
                 <button onclick="fecharCatalogoMobile()">✕</button>
             </div>
             <div class="mobile-search">
-                <input type="text" id="search-input-mobile" placeholder="Pesquisar..." oninput="realizarBusca(this.value)">
+                <input type="text" id="search-input-mobile" placeholder="Pesquisar filmes e séries..." oninput="aoDigitarBusca(this.value)">
             </div>
             <div class="mobile-categories">
                 <button class="cat-btn" onclick="mudarAba('series'); fecharCatalogoMobile()"><i class="fa-solid fa-tv"></i> Séries em Alta</button>
@@ -256,7 +256,7 @@
             <div class="netflix-spinner"></div>
         </div>
         <div class="player-content">
-            <iframe id="videoPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen onload="esconderLoader()"></iframe>
+            <iframe id="videoPlayer" src="" allow="autoplay; encrypted-media; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" onload="esconderLoader()"></iframe>
         </div>
     </div>
 
