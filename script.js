@@ -1,5 +1,5 @@
 // ==========================================
-// CONFIGURAÇÃO DA API (CHAVE DO USUÁRIO INSERIDA)
+// CONFIGURAÇÃO DA API 
 // ==========================================
 const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778'; 
 const IMG_BASE = 'https://image.tmdb.org/t/p/original';
@@ -9,11 +9,11 @@ let abaAtual = 'inicio';
 let isLoginMode = true;
 let currentUser = null;
 let currentItem = null; 
-let currentStars = 0;
 let minhaListaDB = JSON.parse(localStorage.getItem('cineNetLista')) || {};
+let servidorSelecionado = 'smashy'; 
 
 // ==========================================
-// SISTEMA DE LOGIN / AUTENTICAÇÃO
+// INICIALIZAÇÃO
 // ==========================================
 window.onload = () => {
     const savedUser = localStorage.getItem('cineNetCurrentUser');
@@ -22,225 +22,276 @@ window.onload = () => {
         iniciarAplicativo();
     }
     
-    window.addEventListener('scroll', () => {
-        const header = document.getElementById('navbar');
-        if (window.scrollY > 50) header.classList.add('scrolled');
-        else header.classList.remove('scrolled');
-    });
+    const wrapper = document.querySelector('.main-wrapper');
+    if(wrapper) {
+        wrapper.addEventListener('scroll', () => {
+            const header = document.getElementById('navbar');
+            if (wrapper.scrollTop > 10) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+    }
 };
 
+function alternarScrollBody(travar) {
+    if (travar) document.body.classList.add('modal-open');
+    else document.body.classList.remove('modal-open');
+}
+
+// ==========================================
+// SISTEMA DE AUTENTICAÇÃO
+// ==========================================
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Criar Conta';
     document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registrar';
-    document.getElementById('auth-msg').innerText = isLoginMode ? 'Novo por aqui?' : 'Já tem uma conta?';
-    document.getElementById('auth-link').innerText = isLoginMode ? 'Assine agora.' : 'Entrar.';
-    document.getElementById('cinenet-text').style.display = isLoginMode ? 'block' : 'none';
-    
+    document.getElementById('auth-link').innerText = isLoginMode ? 'Assine agora.' : 'Entrar agora.';
     document.getElementById('auth-error').style.display = 'none';
-    document.getElementById('auth-user').value = '';
-    document.getElementById('auth-pass').value = '';
 }
 
 function handleAuth(event) {
     event.preventDefault();
     const user = document.getElementById('auth-user').value.trim();
     const pass = document.getElementById('auth-pass').value.trim();
-    const errorMsg = document.getElementById('auth-error');
-    const btn = document.getElementById('auth-btn');
-
-    if (!user || !pass) {
-        errorMsg.innerText = "Por favor, preencha todos os campos.";
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    btn.innerText = "Conectando...";
-    btn.disabled = true;
-    errorMsg.style.display = 'none';
-
-    setTimeout(() => {
-        let usersDB = JSON.parse(localStorage.getItem('cineNetUsersDB')) || {};
-
-        if (isLoginMode) {
-            if (usersDB[user] && usersDB[user].pass === pass) {
-                currentUser = user;
-                localStorage.setItem('cineNetCurrentUser', user);
-                iniciarAplicativo();
-            } else {
-                errorMsg.innerHTML = "<b>Erro:</b> Senha incorreta ou usuário não encontrado.";
-                errorMsg.style.display = 'block';
-            }
+    const errorBox = document.getElementById('auth-error');
+    
+    let usersDB = JSON.parse(localStorage.getItem('cineNetUsersDB')) || {};
+    
+    if (isLoginMode) {
+        if (usersDB[user] && usersDB[user].pass === pass) {
+            currentUser = user;
+            localStorage.setItem('cineNetCurrentUser', user);
+            iniciarAplicativo();
         } else {
-            if (usersDB[user]) {
-                errorMsg.innerHTML = "<b>Aviso:</b> Esta conta já existe. Tente fazer login.";
-                errorMsg.style.display = 'block';
-            } else {
-                usersDB[user] = { pass: pass, name: 'Usuário', avatar: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' };
-                localStorage.setItem('cineNetUsersDB', JSON.stringify(usersDB));
-                currentUser = user;
-                localStorage.setItem('cineNetCurrentUser', user);
-                iniciarAplicativo();
-            }
+            errorBox.innerText = "Senha incorreta ou usuário não encontrado.";
+            errorBox.style.display = 'block';
         }
-        btn.innerText = isLoginMode ? "Entrar" : "Registrar";
-        btn.disabled = false;
-    }, 800);
+    } else {
+        if (usersDB[user]) {
+            errorBox.innerText = "Esta conta já existe. Tente fazer login.";
+            errorBox.style.display = 'block';
+        } else {
+            usersDB[user] = { pass: pass, name: 'Usuário', avatar: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' };
+            localStorage.setItem('cineNetUsersDB', JSON.stringify(usersDB));
+            currentUser = user;
+            localStorage.setItem('cineNetCurrentUser', user);
+            iniciarAplicativo();
+        }
+    }
 }
 
 function fazerLogout() {
     localStorage.removeItem('cineNetCurrentUser');
     currentUser = null;
     document.getElementById('main-app').style.display = 'none';
+    document.getElementById('profileModal').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
+    alternarScrollBody(false);
 }
 
 function iniciarAplicativo() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
-    carregarPerfilUI();
+    
+    let usersDB = JSON.parse(localStorage.getItem('cineNetUsersDB')) || {};
+    if(usersDB[currentUser]) document.getElementById('nav-avatar').src = usersDB[currentUser].avatar;
+    
     mudarAba('inicio');
 }
 
 // ==========================================
-// NAVEGAÇÃO E CATEGORIAS
+// NAVEGAÇÃO
 // ==========================================
 function mudarAba(aba) {
     abaAtual = aba;
+    fecharCatalogoMobile();
+    fecharPerfil();
+    
     document.getElementById('search-input').value = '';
     document.getElementById('search-results-section').style.display = 'none';
-    document.getElementById('homepage-content').style.display = 'block';
     
-    document.querySelectorAll('.nav-links li a').forEach(link => link.classList.remove('active-nav'));
-    const navClicado = document.getElementById('nav-' + aba);
-    if(navClicado) navClicado.classList.add('active-nav');
+    document.querySelectorAll('.menu-items a').forEach(l => l.classList.remove('active'));
+    const sideNav = document.getElementById('side-nav-' + aba);
+    if(sideNav) sideNav.classList.add('active');
     
-    const subHeader = document.getElementById('sub-header');
-    const subTitle = document.getElementById('sub-header-title');
-    const genreSelect = document.getElementById('genre-selector');
-    
-    if (aba === 'filmes' || aba === 'series') {
-        subHeader.style.display = 'flex';
-        subTitle.innerText = aba === 'filmes' ? 'Filmes' : 'Séries';
-        
-        if (aba === 'filmes') {
-            genreSelect.innerHTML = `
-                <option value="">Gêneros</option>
-                <option value="28">Ação</option>
-                <option value="35">Comédia</option>
-                <option value="27">Terror</option>
-                <option value="10749">Romance</option>
-                <option value="878">Ficção Científica</option>
-            `;
-        } else {
-            genreSelect.innerHTML = `
-                <option value="">Gêneros</option>
-                <option value="10759">Ação e Aventura</option>
-                <option value="16">Animação</option>
-                <option value="35">Comédia</option>
-                <option value="18">Drama</option>
-                <option value="9648">Mistério</option>
-            `;
-        }
-    } else {
-        subHeader.style.display = 'none';
-    }
+    document.querySelectorAll('.top-nav-links a').forEach(l => l.classList.remove('active'));
+    const topNav = document.getElementById('top-nav-' + aba);
+    if(topNav) topNav.classList.add('active');
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const wrapper = document.querySelector('.main-wrapper');
+    if(wrapper) wrapper.scrollTo({ top: 0, behavior: 'smooth' });
+    
     carregarDashboard(aba);
 }
 
-function filtrarPorGenero(genreId) {
-    if (!genreId) {
-        carregarDashboard(abaAtual);
-        return;
-    }
-    
-    const wrapper = document.getElementById('rows-wrapper-layout');
-    const heroBanner = document.getElementById('hero-banner');
-    wrapper.innerHTML = '';
-    heroBanner.style.display = 'none';
-    wrapper.style.paddingTop = "140px";
-    
-    let tipo = abaAtual === 'filmes' ? 'movie' : 'tv';
-    let nomeCategoria = document.getElementById('genre-selector').options[document.getElementById('genre-selector').selectedIndex].text;
-    
-    injetarEstruturaRow('row-genre-1', `${nomeCategoria} - Populares`);
-    injetarEstruturaRow('row-genre-2', `${nomeCategoria} - Aclamados`);
-    
-    montarPosters(`https://api.themoviedb.org/3/discover/${tipo}?api_key=${TMDB_KEY}&language=pt-BR&with_genres=${genreId}&sort_by=popularity.desc`, 'row-genre-1', tipo);
-    montarPosters(`https://api.themoviedb.org/3/discover/${tipo}?api_key=${TMDB_KEY}&language=pt-BR&with_genres=${genreId}&sort_by=vote_average.desc&vote_count.gte=200`, 'row-genre-2', tipo);
+function ativarMenuMobile(elemento) {
+    document.querySelectorAll('.mobile-bottom-nav .nav-item').forEach(item => item.classList.remove('active-mobile-nav'));
+    elemento.classList.add('active-mobile-nav');
 }
 
+function abrirCatalogoMobile() { document.getElementById('mobile-catalog').style.display = 'flex'; alternarScrollBody(true); }
+function fecharCatalogoMobile() { document.getElementById('mobile-catalog').style.display = 'none'; alternarScrollBody(false); }
+function abrirPerfilMobile() { fecharCatalogoMobile(); abrirPerfil(); }
+
+// ==========================================
+// CARREGAMENTO DA DASHBOARD (GRID DESIGN)
+// ==========================================
 async function carregarDashboard(aba) {
-    const wrapper = document.getElementById('rows-wrapper-layout');
-    const heroBanner = document.getElementById('hero-banner');
-    wrapper.innerHTML = '';
+    const rowsWrapper = document.getElementById('rows-wrapper-layout');
+    rowsWrapper.innerHTML = '';
     
     if (aba === 'minhalista') {
-        heroBanner.style.display = 'none';
-        wrapper.style.paddingTop = "120px"; 
-        injetarEstruturaRow('row-watchlist', 'Minha Lista');
-        renderizarMinhaLista();
+        document.getElementById('homepage-content').style.display = 'none';
+        document.getElementById('minha-lista-section').style.display = 'block';
+        renderizarPaginaMinhaLista();
         return;
     }
 
-    heroBanner.style.display = 'flex';
-    wrapper.style.paddingTop = "0";
-    let heroUrl = `https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`;
-    if (aba === 'filmes') heroUrl = `https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_KEY}&language=pt-BR`;
-    if (aba === 'series') heroUrl = `https://api.themoviedb.org/3/trending/tv/week?api_key=${TMDB_KEY}&language=pt-BR`;
+    document.getElementById('homepage-content').style.display = 'grid'; 
+    document.getElementById('minha-lista-section').style.display = 'none';
+
+    // --- LÓGICA DE DESTAQUE DINÂMICO (Hero Banner) ---
+    const destaquesEspeciais = [
+        { id: 34524, type: 'tv' },     // Teen Wolf Série
+        { id: 894205, type: 'movie' }  // Teen Wolf Filme
+    ];
 
     try {
-        const resTrending = await fetch(heroUrl);
-        const dataTrending = await resTrending.json();
-        if(dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
-    } catch(e) { console.error(e); }
+        let itemDestaque = null;
+        // 50% de chance de mostrar Teen Wolf, 50% de chance de mostrar um popular aleatório da semana
+        const mostrarEspecial = Math.random() > 0.5;
+
+        if (mostrarEspecial) {
+            const randomItem = destaquesEspeciais[Math.floor(Math.random() * destaquesEspeciais.length)];
+            const res = await fetch(`https://api.themoviedb.org/3/${randomItem.type}/${randomItem.id}?api_key=${TMDB_KEY}&language=pt-BR`);
+            itemDestaque = await res.json();
+            itemDestaque.media_type = randomItem.type; 
+        } else {
+            const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
+            const dataTrending = await resTrending.json();
+            if(dataTrending.results.length > 0) {
+                const randomIndex = Math.floor(Math.random() * Math.min(5, dataTrending.results.length));
+                itemDestaque = dataTrending.results[randomIndex];
+            }
+        }
+        if(itemDestaque) configurarHeroDashboard(itemDestaque);
+
+    } catch(e) { console.error("Erro no Hero", e); }
+
+    atualizarContinueAssistindoWidget();
 
     if (aba === 'inicio') {
-        injetarEstruturaRow('row-movies', 'Populares no CineNet');
+        injetarEstruturaRow('row-especial', 'Seleção Especial');
+        injetarEstruturaRow('row-movies', 'Populares na CineNet');
         injetarEstruturaRow('row-series', 'Séries em Alta');
+        
+        carregarDestaquesFixos('row-especial'); 
         montarPosters(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-movies', 'movie');
         montarPosters(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-series', 'tv');
     } else if (aba === 'filmes') {
         injetarEstruturaRow('row-movies', 'Filmes em Alta');
-        injetarEstruturaRow('row-comedy', 'Comédias');
         montarPosters(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-movies', 'movie');
-        montarPosters(`https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&language=pt-BR&with_genres=35&sort_by=popularity.desc`, 'row-comedy', 'movie');
     } else if (aba === 'series') {
+        injetarEstruturaRow('row-especial', 'Destaque: Teen Wolf');
         injetarEstruturaRow('row-series', 'Séries Mais Assistidas');
-        injetarEstruturaRow('row-drama', 'Dramas Intensos');
+        
+        carregarDestaquesFixos('row-especial');
         montarPosters(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-series', 'tv');
-        montarPosters(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=18&sort_by=popularity.desc`, 'row-drama', 'tv');
     }
 }
 
-// ==========================================
-// RENDERIZAÇÃO DE UI (HERO E LINHAS)
-// ==========================================
-function configurarHero(item) {
-    const bgUrl = item.backdrop_path ? IMG_BASE + item.backdrop_path : '';
-    document.getElementById('hero-banner').style.backgroundImage = `url('${bgUrl}')`;
-    document.getElementById('hero-title').innerText = item.title || item.name;
-    document.getElementById('hero-synopsis').innerText = item.overview || 'Sinopse indisponível.';
+function configurarHeroDashboard(item) {
+    currentItem = item;
+    currentItem.media_type = item.media_type || (item.title ? 'movie' : 'tv');
+
+    const posterUrl = item.poster_path ? IMG_THUMB + item.poster_path : '';
+    document.getElementById('hero-poster').src = posterUrl;
     
-    document.getElementById('hero-info-btn').onclick = () => {
-        abrirModal(item.id, item.title ? 'movie' : 'tv');
-    };
-    document.getElementById('hero-play-btn').onclick = () => {
-        abrirModal(item.id, item.title ? 'movie' : 'tv');
-        setTimeout(abrirPlayerAtual, 400);
-    };
+    const title = item.title || item.name;
+    document.getElementById('hero-title').innerText = title;
+    document.getElementById('player-title-overlay').innerText = title;
+    document.getElementById('hero-synopsis').innerText = item.overview || 'Sinopse não disponível.';
+    
+    let year = (item.release_date || item.first_air_date || 'N/A').substring(0,4);
+    let typeName = currentItem.media_type === 'tv' ? 'Série' : 'Filme';
+    document.getElementById('hero-meta').innerText = `${year} - ${typeName}`;
+
+    const bgUrl = item.backdrop_path ? IMG_BASE + item.backdrop_path : '';
+    document.getElementById('hero-bg').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.95)), url('${bgUrl}')`;
+
+    document.getElementById('hero-play-btn').onclick = abrirPlayerAtual;
+    document.getElementById('hero-info-btn').onclick = () => abrirModal(item.id, currentItem.media_type);
 }
 
+// ==========================================
+// WIDGET CONTINUE ASSISTINDO (DIREITA) E DESTAQUES FIXOS
+// ==========================================
+function atualizarContinueAssistindoWidget() {
+    const container = document.getElementById('continue-list-dynamic');
+    if(!container) return;
+    container.innerHTML = '';
+    
+    const lista = minhaListaDB[currentUser] || {};
+    const ids = Object.keys(lista).reverse(); 
+    
+    if(ids.length === 0) {
+        container.innerHTML = '<p style="color:#666; font-size: 13px;">Adicione títulos à sua lista.</p>';
+        return;
+    }
+    
+    const limitedIds = ids.slice(0, 2); 
+    limitedIds.forEach(id => {
+        const item = lista[id];
+        container.innerHTML += `
+            <div class="continue-card" onclick="abrirModal(${item.id}, '${item.type}')">
+                <div class="continue-thumb-box">
+                    <img src="${IMG_THUMB + item.poster}" alt="Thumb">
+                    <div class="continue-progress" style="width: ${Math.floor(Math.random() * 60 + 20)}%;"></div>
+                </div>
+                <div class="continue-info">
+                    <h4>${item.title || 'Título'}</h4>
+                </div>
+            </div>
+        `;
+    });
+}
+
+async function carregarDestaquesFixos(containerId) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    
+    // Lista com Teen Wolf Série e Filme
+    const itensFixos = [
+        { id: 34524, type: 'tv' },      
+        { id: 894205, type: 'movie' }   
+    ];
+    
+    try {
+        for (let itemFixo of itensFixos) {
+            const res = await fetch(`https://api.themoviedb.org/3/${itemFixo.type}/${itemFixo.id}?api_key=${TMDB_KEY}&language=pt-BR`);
+            const item = await res.json();
+            
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.onclick = () => abrirModal(item.id, itemFixo.type);
+            
+            let minhalistaStr = (minhaListaDB[currentUser] && minhaListaDB[currentUser][item.id]) ? `<div class="watched-bar"></div>` : "";
+            const titulo = item.title || item.name; 
+            
+            card.innerHTML = `<img src="${IMG_THUMB + item.poster_path}" alt="${titulo}" title="${titulo}">${minhalistaStr}`;
+            container.appendChild(card);
+        }
+    } catch(e) { console.error(e); }
+}
+
+// ==========================================
+// CARROSSEIS (ROWS)
+// ==========================================
 function injetarEstruturaRow(id, title) {
     const wrapper = document.getElementById('rows-wrapper-layout');
     wrapper.innerHTML += `
         <div class="movie-row">
             <h2 class="row-title">${title}</h2>
-            <div class="row-wrapper">
-                <div class="row-posters" id="${id}"></div>
-            </div>
+            <div class="row-posters" id="${id}"></div>
         </div>
     `;
 }
@@ -259,28 +310,21 @@ async function montarPosters(url, containerId, defaultType) {
             card.className = 'movie-card';
             card.onclick = () => abrirModal(item.id, type);
             
-            let minhalistaStr = "";
-            if (minhaListaDB[currentUser] && minhaListaDB[currentUser][item.id]) {
-                minhalistaStr = `<div class="watched-bar"></div>`;
-            }
-
-            card.innerHTML = `
-                <img src="${IMG_THUMB + item.poster_path}" alt="Poster">
-                ${minhalistaStr}
-            `;
+            let minhalistaStr = (minhaListaDB[currentUser] && minhaListaDB[currentUser][item.id]) ? `<div class="watched-bar"></div>` : "";
+            card.innerHTML = `<img src="${IMG_THUMB + item.poster_path}" loading="lazy">${minhalistaStr}`;
             container.appendChild(card);
         });
     } catch (e) {}
 }
 
 // ==========================================
-// SISTEMA DE BUSCA
+// BUSCA E MINHA LISTA SECTION
 // ==========================================
-document.getElementById('search-input').addEventListener('input', async (e) => {
-    const query = e.target.value.trim();
+async function realizarBusca(query) {
     if (query.length > 2) {
         document.getElementById('homepage-content').style.display = 'none';
-        document.getElementById('sub-header').style.display = 'none';
+        document.getElementById('minha-lista-section').style.display = 'none';
+        fecharCatalogoMobile();
         document.getElementById('search-results-section').style.display = 'block';
         
         const grid = document.getElementById('search-grid');
@@ -304,112 +348,16 @@ document.getElementById('search-input').addEventListener('input', async (e) => {
     } else if (query.length === 0) {
         mudarAba(abaAtual);
     }
-});
-
-// ==========================================
-// MODAL DE DETALHES
-// ==========================================
-async function abrirModal(id, type) {
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=pt-BR`);
-        currentItem = await res.json();
-        currentItem.media_type = type;
-
-        document.getElementById('modal-title').innerText = currentItem.title || currentItem.name;
-        document.getElementById('modal-desc').innerText = currentItem.overview || 'Sinopse indisponível.';
-        
-        const year = (currentItem.release_date || currentItem.first_air_date || 'N/A').substring(0,4);
-        document.getElementById('modal-year').innerText = year;
-        
-        const genres = currentItem.genres ? currentItem.genres.map(g => g.name).join(', ') : 'Desconhecido';
-        document.getElementById('modal-genre').innerText = genres;
-        
-        const bg = currentItem.backdrop_path ? IMG_BASE + currentItem.backdrop_path : '';
-        document.getElementById('modal-hero-bg').style.backgroundImage = `url('${bg}')`;
-
-        const btnWatch = document.getElementById('modal-watchlist-btn');
-        currentStars = 0;
-        document.getElementById('review-text').value = '';
-        
-        if (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) {
-            btnWatch.innerText = "✔";
-            const data = minhaListaDB[currentUser][id];
-            if(data.stars) {
-                currentStars = data.stars;
-                document.getElementById('review-text').value = data.review || '';
-            }
-        } else {
-            btnWatch.innerText = "＋";
-        }
-        atualizarEstrelasUI();
-
-        document.getElementById('detailsModal').style.display = 'flex';
-    } catch(e) {}
 }
 
-function fecharModal() {
-    document.getElementById('detailsModal').style.display = 'none';
-    if(abaAtual === 'minhalista') carregarDashboard('minhalista');
-}
-
-// ==========================================
-// AVALIAÇÃO E MINHA LISTA
-// ==========================================
-function toggleWatchlist() {
-    if(!currentItem) return;
-    if(!minhaListaDB[currentUser]) minhaListaDB[currentUser] = {};
-    
-    const id = currentItem.id;
-    const btnWatch = document.getElementById('modal-watchlist-btn');
-    
-    if (minhaListaDB[currentUser][id]) {
-        delete minhaListaDB[currentUser][id];
-        btnWatch.innerText = "＋";
-    } else {
-        minhaListaDB[currentUser][id] = {
-            id: id, type: currentItem.media_type, title: currentItem.title || currentItem.name,
-            poster: currentItem.poster_path, stars: 0, review: ''
-        };
-        btnWatch.innerText = "✔";
-    }
-    localStorage.setItem('cineNetLista', JSON.stringify(minhaListaDB));
-}
-
-function definirEstrelas(n) {
-    currentStars = n;
-    atualizarEstrelasUI();
-}
-
-function atualizarEstrelasUI() {
-    const stars = document.getElementById('star-rating').children;
-    for(let i=0; i<5; i++) {
-        stars[i].style.color = i < currentStars ? '#e5a00d' : '#555';
-    }
-}
-
-function salvarCritica() {
-    if(!currentItem) return;
-    if(!minhaListaDB[currentUser]) minhaListaDB[currentUser] = {};
-    
-    const id = currentItem.id;
-    if(!minhaListaDB[currentUser][id]) toggleWatchlist(); 
-    
-    minhaListaDB[currentUser][id].stars = currentStars;
-    minhaListaDB[currentUser][id].review = document.getElementById('review-text').value;
-    localStorage.setItem('cineNetLista', JSON.stringify(minhaListaDB));
-    alert("Avaliação salva!");
-}
-
-function renderizarMinhaLista() {
-    const container = document.getElementById('row-watchlist');
-    if(!container) return;
-    container.innerHTML = '';
-    
+function renderizarPaginaMinhaLista() {
+    const grid = document.getElementById('row-watchlist');
+    grid.innerHTML = '';
     const lista = minhaListaDB[currentUser] || {};
-    const ids = Object.keys(lista);
+    const ids = Object.keys(lista).reverse();
     
     if(ids.length === 0) {
-        container.innerHTML = '<p style="color:#b3b3b3; padding-left:10px;">Sua lista está vazia.</p>';
+        grid.innerHTML = '<p style="color:#b3b3b3;">Sua lista está vazia.</p>';
         return;
     }
     
@@ -419,114 +367,143 @@ function renderizarMinhaLista() {
         card.className = 'movie-card';
         card.onclick = () => abrirModal(item.id, item.type);
         card.innerHTML = `<img src="${IMG_THUMB + item.poster}"><div class="watched-bar"></div>`;
-        container.appendChild(card);
+        grid.appendChild(card);
     });
 }
 
 // ==========================================
-// MOTOR DE REPRODUÇÃO AVANÇADO MULTI-SERVIDORES (NETFLIX ENGINE)
+// MODAL DE DETALHES POPUP
 // ==========================================
+async function abrirModal(id, type) {
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=pt-BR`);
+        currentItem = await res.json();
+        currentItem.media_type = type;
+
+        document.getElementById('modal-title').innerText = currentItem.title || currentItem.name;
+        document.getElementById('modal-desc').innerText = currentItem.overview || 'Sem descrição.';
+        
+        const year = (currentItem.release_date || currentItem.first_air_date || 'N/A').substring(0,4);
+        let extras = (type === 'tv' && currentItem.number_of_seasons) ? ` ‧ ${currentItem.number_of_seasons} Temp` : "";
+        document.getElementById('modal-year').innerText = year + extras;
+        
+        const bg = currentItem.backdrop_path ? IMG_BASE + currentItem.backdrop_path : '';
+        document.getElementById('modal-hero-bg').style.backgroundImage = `url('${bg}')`;
+
+        const btnWatch = document.getElementById('modal-watchlist-btn');
+        btnWatch.innerHTML = (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-plus"></i>';
+
+        document.getElementById('detailsModal').style.display = 'flex';
+        alternarScrollBody(true);
+    } catch(e) {}
+}
+
+function fecharModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+    alternarScrollBody(false);
+    if(abaAtual === 'minhalista') carregarDashboard('minhalista');
+    else if(abaAtual === 'inicio') atualizarContinueAssistindoWidget(); 
+}
+
+function toggleWatchlist() {
+    if(!currentItem) return;
+    if(!minhaListaDB[currentUser]) minhaListaDB[currentUser] = {};
+    
+    const id = currentItem.id;
+    const btnWatch = document.getElementById('modal-watchlist-btn');
+    
+    if (minhaListaDB[currentUser][id]) {
+        delete minhaListaDB[currentUser][id];
+        btnWatch.innerHTML = '<i class="fa-solid fa-plus"></i>';
+    } else {
+        minhaListaDB[currentUser][id] = { 
+            id: id, type: currentItem.media_type, 
+            title: currentItem.title || currentItem.name, 
+            poster: currentItem.poster_path 
+        };
+        btnWatch.innerHTML = '<i class="fa-solid fa-check"></i>';
+    }
+    localStorage.setItem('cineNetLista', JSON.stringify(minhaListaDB));
+}
+
+// ==========================================
+// SISTEMA DE PLAYER (MULTI-SERVIDORES)
+// ==========================================
+function selecionarServidorGlobal(btn, server) {
+    document.querySelectorAll('.server-btn').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    servidorSelecionado = server;
+}
+
 function abrirPlayerAtual() {
     if (!currentItem) return;
 
-    const serverSelect = document.getElementById('player-server-select');
     const epBox = document.getElementById('episodes-selectors-box');
+    if (currentItem.media_type === 'tv') epBox.style.display = 'flex';
+    else epBox.style.display = 'none';
 
-    // Injeta servidores disponíveis dinamicamente
-    serverSelect.innerHTML = `
-        <option value="smashy">Servidor Premium 1</option>
-        <option value="super">Servidor Premium 2</option>
-        <option value="vidsrc">Servidor Alternativo</option>
-    `;
-
-    if (currentItem.media_type === 'tv') {
-        epBox.style.display = 'flex';
-    } else {
-        epBox.style.display = 'none';
-    }
-
-    mudarMidiaPlayer();
+    atualizarIframePlayer();
 
     document.getElementById('detailsModal').style.display = 'none';
     document.getElementById('playerModal').style.display = 'block';
-    document.body.style.overflow = 'hidden'; 
+    alternarScrollBody(true);
 }
 
-function mudarMidiaPlayer() {
+function atualizarIframePlayer() {
     if (!currentItem) return;
     
     document.getElementById('playerLoader').style.display = 'flex';
     const id = currentItem.id;
-    const servidor = document.getElementById('player-server-select').value;
     const season = document.getElementById('player-season-input').value || 1;
     const episode = document.getElementById('player-episode-input').value || 1;
     
     let finalUrl = "";
-
     if (currentItem.media_type === 'movie') {
-        if (servidor === 'smashy') finalUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}`;
-        else if (servidor === 'super') finalUrl = `https://embed.superembed.com/api/movie?tmdb=${id}`;
-        else if (servidor === 'vidsrc') finalUrl = `https://vidsrc.to/embed/movie/${id}`;
+        if (servidorSelecionado === 'smashy') finalUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}`;
+        else if (servidorSelecionado === 'super') finalUrl = `https://embed.superembed.com/api/movie?tmdb=${id}`;
+        else finalUrl = `https://vidsrc.to/embed/movie/${id}`;
     } else {
-        if (servidor === 'smashy') finalUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${season}&episode=${episode}`;
-        else if (servidor === 'super') finalUrl = `https://embed.superembed.com/api/tv?tmdb=${id}&sea=${season}&epi=${episode}`;
-        else if (servidor === 'vidsrc') finalUrl = `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`;
+        if (servidorSelecionado === 'smashy') finalUrl = `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${season}&episode=${episode}`;
+        else if (servidorSelecionado === 'super') finalUrl = `https://embed.superembed.com/api/tv?tmdb=${id}&sea=${season}&epi=${episode}`;
+        else finalUrl = `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`;
     }
-
+    
     document.getElementById('videoPlayer').src = finalUrl;
 }
 
-function esconderLoader() {
-    document.getElementById('playerLoader').style.display = 'none';
-}
-
+function esconderLoader() { document.getElementById('playerLoader').style.display = 'none'; }
 function fecharPlayer() {
     document.getElementById('videoPlayer').src = "";
     document.getElementById('playerModal').style.display = 'none';
-    document.body.style.overflow = 'auto'; 
+    alternarScrollBody(false);
 }
 
 // ==========================================
-// GERENCIAR PERFIL
+// PERFIL
 // ==========================================
 let tempAvatar = "";
-
-function carregarPerfilUI() {
-    let usersDB = JSON.parse(localStorage.getItem('cineNetUsersDB')) || {};
-    let data = usersDB[currentUser];
-    if(data) {
-        document.getElementById('nav-username').innerText = data.name || currentUser;
-        document.getElementById('nav-avatar').src = data.avatar;
-        document.getElementById('drop-avatar').src = data.avatar;
-    }
-}
-
 function abrirPerfil() {
     let usersDB = JSON.parse(localStorage.getItem('cineNetUsersDB')) || {};
     let data = usersDB[currentUser];
-    
     document.getElementById('edit-profile-name').value = data.name || currentUser;
     tempAvatar = data.avatar;
-    
-    document.querySelectorAll('.avatar-option').forEach(img => img.style.border = "none");
     document.getElementById('profileModal').style.display = 'flex';
+    alternarScrollBody(true);
 }
-
-function fecharPerfil() {
-    document.getElementById('profileModal').style.display = 'none';
+function fecharPerfil() { 
+    document.getElementById('profileModal').style.display = 'none'; 
+    alternarScrollBody(false);
 }
-
 function escolherAvatar(el, src) {
     tempAvatar = src;
     document.querySelectorAll('.avatar-option').forEach(img => img.style.border = "none");
-    el.style.border = "2px solid white";
+    el.style.border = "3px solid white";
 }
-
 function salvarPerfil() {
     let usersDB = JSON.parse(localStorage.getItem('cineNetUsersDB')) || {};
     usersDB[currentUser].name = document.getElementById('edit-profile-name').value;
     usersDB[currentUser].avatar = tempAvatar;
     localStorage.setItem('cineNetUsersDB', JSON.stringify(usersDB));
-    carregarPerfilUI();
+    document.getElementById('nav-avatar').src = tempAvatar;
     fecharPerfil();
 }
