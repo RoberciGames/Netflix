@@ -39,7 +39,7 @@ function alternarScrollBody(travar) {
     else document.body.classList.remove('modal-open');
 }
 
-// ESCUTA DE SESSÃO
+// ESCUTA DE SESSÃO CORRIGIDA (NUNCA BLOQUEIA O VISITANTE)
 auth.onAuthStateChanged((user) => {
     if (user) {
         currentUserUID = user.uid;
@@ -55,14 +55,15 @@ auth.onAuthStateChanged((user) => {
                 recuperarCacheFallback(user);
             }
             atualizarInterfacePerfil();
-            carregarDashboard();
+            renderizarMinhaLista();
         }).catch(() => {
             recuperarCacheFallback(user);
             atualizarInterfacePerfil();
-            carregarDashboard(); 
+            renderizarMinhaLista(); 
         });
     } else {
-        if (!currentUserUID) {
+        // Se NÃO for uma sessão de convidado ativo, força a tela de autenticação
+        if (currentUserUID !== "guest") {
             currentUserUID = null;
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('auth-screen').style.display = 'flex';
@@ -70,8 +71,9 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+// FUNÇÃO DE CONVIDADO CORRIGIDA COM FLAG EXPLICITA
 function entrarComoConvidado() {
-    currentUserUID = null;
+    currentUserUID = "guest"; 
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     
@@ -79,7 +81,7 @@ function entrarComoConvidado() {
     perfilUsuario = JSON.parse(localStorage.getItem('cineNetflixPerfil')) || { username: "Convidado_VIP", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
     
     atualizarInterfacePerfil();
-    carregarDashboard();
+    renderizarMinhaLista();
 }
 
 function recuperarCacheFallback(user) {
@@ -115,7 +117,15 @@ function handleAuth(event) {
 
     if (isLoginMode) {
         auth.signInWithEmailAndPassword(email, pass).catch((error) => {
-            errorBox.innerText = "Falha na validação. Verifique seus parâmetros.";
+            if (error.code === 'auth/user-not-found') {
+                errorBox.innerText = "Usuário não encontrado. Registre-se abaixo.";
+            } else if (error.code === 'auth/wrong-password') {
+                errorBox.innerText = "Senha incorreta para este operador.";
+            } else if (error.code === 'auth/invalid-email') {
+                errorBox.innerText = "Formato de e-mail inválido (ex: usuario@email.com).";
+            } else {
+                errorBox.innerText = "Erro: " + error.message;
+            }
             errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "AUTENTICAR SISTEMA";
         });
     } else {
@@ -127,25 +137,21 @@ function handleAuth(event) {
             });
             btn.disabled = false;
         }).catch((error) => {
-            errorBox.innerText = "Erro: " + error.message;
+            errorBox.innerText = "Erro no registro: " + error.message;
             errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "REGISTRAR CREDENCIAIS";
         });
     }
 }
 
 function fazerLogout() { 
-    auth.signOut().then(() => {
-        window.location.reload();
-    }).catch(() => {
-        window.location.reload();
-    });
+    auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });
 }
 
 function salvarDados() {
     localStorage.setItem('cineNetflixLibV2', JSON.stringify(biblioteca)); 
     localStorage.setItem('cineNetflixPerfil', JSON.stringify(perfilUsuario)); 
 
-    if (currentUserUID) {
+    if (currentUserUID && currentUserUID !== "guest") {
         db.collection("usuarios").doc(currentUserUID).update({ 
             biblioteca: biblioteca,
             perfil: perfilUsuario 
@@ -223,65 +229,19 @@ function scrollRow(idElemento, direcao) {
     container.scrollBy({ left: scrollAmount * direcao, behavior: 'smooth' });
 }
 
-function filtrarCatalogo(idSection, event) {
-    if(event) {
-        document.querySelectorAll('.catalog-btn').forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    }
-
-    const sections = ['row-movies', 'row-series', 'row-animes', 'row-cartoons', 'row-watchlist'];
-    
-    sections.forEach(secId => {
-        const el = document.getElementById(`${secId}-section`);
-        if (!el) return;
-        
-        if (idSection === 'todos') {
-            if (secId === 'row-watchlist') {
-                const itens = Object.values(biblioteca.watchlist);
-                el.style.display = itens.length === 0 ? 'none' : 'block';
-            } else {
-                el.style.display = 'block';
-            }
-        } else {
-            if (secId === idSection) el.style.display = 'block';
-            else el.style.display = 'none';
-        }
-    });
-}
-
 async function montarPostersMultiPage(urls, targetId, tipoFixo) {
     const container = document.getElementById(targetId);
     if(!container) return;
     container.innerHTML = ''; 
 
     let totalItemsCarregados = 0;
-    let sucessoAPI = false;
-
-    // Catálogo de Contingência Local 
-    const fallbacksLocais = {
-        'row-movies': [
-            { id: 101, title: 'Interestelar', overview: 'Aventuras além das galáxias e do tempo em busca de salvação.', vote_average: 8.6, release_date: '2014' },
-            { id: 102, title: 'Blade Runner 2049', overview: 'Um novo caçador de replicantes descobre um segredo enterrado.', vote_average: 8.2, release_date: '2017' }
-        ],
-        'row-series': [
-            { id: 201, name: 'Cyberpunk: Edgerunners', overview: 'Um garoto de rua tenta sobreviver numa cidade do futuro.', vote_average: 8.6, first_air_date: '2022' }
-        ],
-        'row-animes': [
-            { id: 301, name: 'Demon Slayer', overview: 'Tanjiro caça demônios para curar sua amada irmã Nezuko.', vote_average: 8.8, first_air_date: '2019' }
-        ],
-        'row-cartoons': [
-            { id: 401, name: 'Liga da Justiça', overview: 'Os maiores heróis da Terra unidos contra as forças cósmicas.', vote_average: 8.5, first_air_date: '2001' }
-        ]
-    };
 
     for (let url of urls) {
         try {
             const res = await fetch(url);
-            if(!res.ok) throw new Error("Limites TMDB");
             const data = await res.json();
-            if(!data.results || data.results.length === 0) continue;
+            if(!data.results) continue;
 
-            sucessoAPI = true;
             data.results.forEach(item => {
                 if(!item.poster_path) return;
                 
@@ -296,30 +256,7 @@ async function montarPostersMultiPage(urls, targetId, tipoFixo) {
                 card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}" alt="${item.title || item.name}" loading="lazy">${estaNaLista}`;
                 container.appendChild(card);
             });
-        } catch (err) { }
-    }
-
-    if (!sucessoAPI && fallbacksLocais[targetId]) {
-        fallbacksLocais[targetId].forEach((item) => {
-            totalItemsCarregados++;
-            item.custom_type = tipoFixo;
-            item.backdrop_path = "";
-            item.poster_path = "";
-
-            const card = document.createElement('div');
-            card.className = 'movie-card';
-            card.onclick = () => abrirModal(item);
-            
-            const estaNaLista = biblioteca.watchlist[item.id] ? `<div class="watched-bar"></div>` : "";
-            card.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" alt="${item.title || item.name}" style="object-fit:cover;">
-                <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center; font-weight:700; border-top:1px solid var(--primary-neon); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    ${item.title || item.name}
-                </div>
-                ${estaNaLista}
-            `;
-            container.appendChild(card);
-        });
+        } catch (err) { console.error(err); }
     }
 
     const counterEl = document.getElementById(`count-${targetId}`);
@@ -339,15 +276,7 @@ async function carregarDashboard() {
         const resTrending = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
         const dataTrending = await resTrending.json();
         if(dataTrending.results && dataTrending.results.length > 0) configurarHero(dataTrending.results[0]);
-        else throw new Error();
-    } catch(e) { 
-        configurarHero({
-            id: 999,
-            title: "CineNet Core Ativo",
-            overview: "Hub central carregado com sucesso. Selecione acima o seu catálogo favorito para transmissão contínua de metadados.",
-            custom_type: "movie"
-        });
-    }
+    } catch(e) { console.error(e); }
 
     montarPostersMultiPage([
         `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR&page=1`,
@@ -360,8 +289,7 @@ async function carregarDashboard() {
     ], 'row-series', 'tv');
 
     montarPostersMultiPage([
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&page=1`,
-        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&page=2`
+        `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_KEY}&language=pt-BR&with_genres=16&with_original_language=ja&page=1`
     ], 'row-animes', 'tv');
 
     montarPostersMultiPage([
@@ -374,15 +302,9 @@ async function carregarDashboard() {
 function configurarHero(item) {
     const banner = document.getElementById('hero-banner');
     if(!banner) return;
-    
-    if (item.backdrop_path) {
-        banner.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
-    } else {
-        banner.style.backgroundImage = `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=80')`;
-    }
-    
+    banner.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
     document.getElementById('hero-title').innerText = item.title || item.name;
-    document.getElementById('hero-synopsis').innerText = item.overview ? item.overview.substring(0, 180) + "..." : "Sinopse operacional em atualização estrutural.";
+    document.getElementById('hero-synopsis').innerText = item.overview ? item.overview.substring(0, 180) + "..." : "Sinopse operacional do sistema.";
     
     item.custom_type = item.media_type || (item.name ? 'tv' : 'movie');
     document.getElementById('hero-play-btn').onclick = () => { itemSelecionado = item; abrirPlayerAtual('geral'); };
@@ -402,11 +324,7 @@ function renderizarMinhaLista() {
         return; 
     }
 
-    const activeBtn = document.querySelector('.catalog-btn.active');
-    if (!activeBtn || activeBtn.getAttribute('onclick').includes('todos') || activeBtn.getAttribute('onclick').includes('row-watchlist')) {
-        section.style.display = 'block';
-    }
-    
+    section.style.display = 'block';
     if(counterEl) counterEl.innerText = `[ ${itens.length} ARQUIVOS ]`;
     container.innerHTML = '';
     
@@ -414,33 +332,16 @@ function renderizarMinhaLista() {
         const card = document.createElement('div');
         card.className = 'movie-card';
         card.onclick = () => abrirModal(item);
-        
-        if (item.poster_path) {
-            card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}"><div class="watched-bar"></div>`;
-        } else {
-            card.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" style="object-fit:cover;">
-                <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center;">${item.title || item.name}</div>
-                <div class="watched-bar"></div>
-            `;
-        }
+        card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}"><div class="watched-bar"></div>`;
         container.appendChild(card);
     });
 }
 
 // ==========================================
-// CONTROLO DE FILTRAGEM E BUSCA
+// BUSCA GLOBAL
 // ==========================================
-function ativarBuscaMobile(e) {
-    e.preventDefault();
-    document.getElementById('mobile-search-overlay').style.display = 'block';
-    document.getElementById('mobile-search-input').focus();
-}
-
-function fecharBuscaMobile() {
-    document.getElementById('mobile-search-overlay').style.display = 'none';
-    limparBusca();
-}
+function ativarBuscaMobile(e) { e.preventDefault(); document.getElementById('mobile-search-overlay').style.display = 'block'; document.getElementById('mobile-search-input').focus(); }
+function fecharBuscaMobile() { document.getElementById('mobile-search-overlay').style.display = 'none'; limparBusca(); }
 
 const inputsBusca = ['.search-input-field', '#mobile-search-input'];
 inputsBusca.forEach(seletor => {
@@ -461,12 +362,12 @@ async function executarBuscaGlobal(termo) {
     if(!termo.trim()) { limparBusca(); return; }
 
     home.style.display = 'none'; searchSection.style.display = 'block';
-    grid.innerHTML = '<p style="color: var(--primary-neon); padding: 20px;">Pesquisando servidores...</p>';
+    grid.innerHTML = '<p style="color: var(--primary-neon); padding: 20px;">Pesquisando servidores centrais...</p>';
 
     try {
         const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`);
         const data = await res.json();
-        const filtrados = data.results.filter(i => i.media_type !== 'person' && (i.poster_path || i.id));
+        const filtrados = data.results.filter(i => i.media_type !== 'person' && i.poster_path);
         
         grid.innerHTML = '';
         if(filtrados.length === 0) { grid.innerHTML = '<p style="color: #666; padding: 20px;">Nenhum registo encontrado.</p>'; return; }
@@ -476,15 +377,7 @@ async function executarBuscaGlobal(termo) {
             const card = document.createElement('div');
             card.className = 'movie-card'; card.style.width = '100%';
             card.onclick = () => abrirModal(item);
-            
-            if (item.poster_path) {
-                card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}">`;
-            } else {
-                card.innerHTML = `
-                    <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?w=300&q=80" style="object-fit:cover;">
-                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:8px; font-size:11px; text-align:center;">${item.title || item.name}</div>
-                `;
-            }
+            card.innerHTML = `<img src="https://image.tmdb.org/t/p/w300${item.poster_path}">`;
             grid.appendChild(card);
         });
     } catch(err) { console.error(err); }
@@ -504,15 +397,9 @@ function abrirModal(item) {
     const id = item.id;
     const tipo = item.custom_type;
 
-    const modalBg = document.getElementById('modal-hero-bg');
-    if (item.backdrop_path || item.poster_path) {
-        modalBg.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
-    } else {
-        modalBg.style.backgroundImage = `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80')`;
-    }
-    
+    document.getElementById('modal-hero-bg').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}')`;
     document.getElementById('modal-title').innerText = item.title || item.name;
-    document.getElementById('modal-desc').innerText = item.overview || "Ficheiro protegido em ambiente local de contingência.";
+    document.getElementById('modal-desc').innerText = item.overview || "Ficheiro protegido sem descrição associada.";
     
     const baseMatch = item.vote_average ? Math.floor(item.vote_average * 10) : 88;
     document.getElementById('modal-match').innerText = `${baseMatch}% de Match`;
@@ -544,7 +431,6 @@ function toggleWatchlist() {
     const id = itemSelecionado.id;
     if(biblioteca.watchlist[id]) delete biblioteca.watchlist[id];
     else biblioteca.watchlist[id] = itemSelecionado;
-    
     salvarDados(); abrirModal(itemSelecionado); 
 }
 
@@ -557,27 +443,45 @@ function definirEstrelas(nota, cliqueUsuario = true) {
     }
 }
 
+// ==========================================
+// SISTEMA DE AUDITORIA E AVALIAÇÃO GLOBAL
+// ==========================================
 function salvarCritica() {
-    biblioteca.reviews[itemSelecionado.id] = { rating: estrelasAtivas, text: document.getElementById('review-text').value };
-    salvarDados(); alert("Alterações registadas com sucesso.");
+    if (!itemSelecionado) return;
+    const nota = estrelasAtivas;
+    const textoComentario = document.getElementById('review-text').value.trim();
+
+    if (nota === 0) { alert("Selecione pelo menos 1 estrela."); return; }
+
+    biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: textoComentario };
+    salvarDados(); 
+
+    db.collection("avaliacoes_globais").add({
+        userId: currentUserUID || "visitante_anonimo",
+        usuario: perfilUsuario.username || "Operador Anónimo",
+        conteudoId: itemSelecionado.id,
+        titulo: itemSelecionado.title || itemSelecionado.name,
+        categoria: itemSelecionado.custom_type,
+        nota: nota,
+        comentario: textoComentario,
+        dataEnvio: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => { alert("Avaliação registrada globalmente no banco!"); })
+    .catch((err) => { console.error(err); });
 }
 
 // ==========================================
-// REPRODUTOR DE VIDEO (NOVAS APIs: MGEB/NHDAPI)
+// REPRODUTOR DE VÍDEO (MGEB.TOP API + VIDSTACK NEON)
 // ==========================================
 function abrirPlayerAtual(modo = 'geral') {
     if(!itemSelecionado) return;
-    
     modoPlayerAtual = modo;
     const tipo = itemSelecionado.custom_type; 
     const modal = document.getElementById('playerModal');
     const epBox = document.getElementById('episodes-selectors-box');
 
-    if (tipo === 'tv' && modo === 'especifico') {
-        if(epBox) epBox.style.display = 'flex';
-    } else {
-        if(epBox) epBox.style.display = 'none';
-    }
+    if (tipo === 'tv' && modo === 'especifico') { if(epBox) epBox.style.display = 'flex'; } 
+    else { if(epBox) epBox.style.display = 'none'; }
 
     fecharModal(); atualizarIframePlayer();
     modal.style.display = 'flex';
@@ -589,11 +493,8 @@ function atualizarIframePlayer() {
     const id = itemSelecionado.id;
     const tipo = itemSelecionado.custom_type;
     const player = document.getElementById('videoPlayer');
+    const corDestaque = "ff003c"; 
 
-    // Cor escolhida para os controles do player (pode alterar o hex se quiser)
-    const corDestaque = "e50914"; 
-
-    // Usando as novas APIs com player vidstack
     if (tipo === 'movie') {
         player.src = `https://mgeb.top/embed/${id}?player=vidstack#color:${corDestaque}`; 
     } else {
@@ -602,7 +503,6 @@ function atualizarIframePlayer() {
         } else {
             const season = document.getElementById('player-season-input').value || 1;
             const episode = document.getElementById('player-episode-input').value || 1;
-            // Puxando episódio específico através da estrutura mgeb
             player.src = `https://mgeb.top/embed/${id}/${season}/${episode}?player=vidstack#color:${corDestaque}`; 
         }
     }
@@ -614,19 +514,15 @@ function fecharPlayer() {
     alternarScrollBody(false);
 }
 
-// Sincronizador de abas ativas do desktop ao rolar
 window.addEventListener('scroll', () => {
     if(window.innerWidth < 769) return;
     const sections = ['homepage-content', 'row-movies-section', 'row-series-section', 'row-animes-section', 'row-cartoons-section', 'row-watchlist-section'];
     let current = '';
-    
-    sections.forEach(s => {
-        const el = document.getElementById(s);
-        if(el) { const rect = el.getBoundingClientRect(); if(rect.top <= 120) current = s; }
-    });
-
-    document.querySelectorAll('.nav-menu a').forEach(a => {
-        a.classList.remove('active');
-        if(a.getAttribute('href') === `#${current}`) a.classList.add('active');
-    });
+    sections.forEach(s => { const el = document.getElementById(s); if(el) { const rect = el.getBoundingClientRect(); if(rect.top <= 120) current = s; } });
+    document.querySelectorAll('.nav-menu a').forEach(a => { a.classList.remove('active'); if(a.getAttribute('href') === `#${current}`) a.classList.add('active'); });
 });
+
+// ==========================================
+// INICIALIZAÇÃO IMEDIATA DO CATÁLOGO (RESOLVE O ERRO)
+// ==========================================
+carregarDashboard();
