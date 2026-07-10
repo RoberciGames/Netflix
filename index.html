@@ -1,235 +1,106 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CINENET - Premium</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>CineNet - Minha Biblioteca</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-bg"></div>
-        <div class="auth-box-wrapper">
-            <div class="auth-box">
-                <div class="logo-center">
-                    <span class="cine">CINE</span><span class="net">NET</span>
-                </div>
-                <h2 id="auth-title">Aceder ao Portal</h2>
-                <form id="auth-form" onsubmit="handleAuth(event)">
-                    <div class="input-group">
-                        <input type="text" id="auth-user" required placeholder=" ">
-                        <label>Email ou telefone</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="password" id="auth-pass" required placeholder=" ">
-                        <label>Palavra-passe</label>
-                    </div>
-                    <button type="submit" class="btn-auth" id="auth-btn">Entrar</button>
-                </form>
-                <p class="auth-switch">
-                    <span class="text-muted">Novo no sistema?</span>
-                    <a href="#" onclick="toggleAuthMode()" id="auth-link">Registe-se agora.</a>
-                </p>
-                <p id="auth-error" class="error-message"></p>
-            </div>
-        </div>
-    </div>
-
-    <div id="main-app" style="display: none;">
-        
-        <aside class="sidebar desktop-only">
-            <div class="logo-container">
-                <a href="#" class="logo" onclick="mudarAba('inicio')">
-                    <span class="cine">CINE</span><span class="net">NET</span>
-                </a>
-            </div>
-
-            <div class="menu-section">
-                <ul class="menu-items">
-                    <li><a href="#" id="side-nav-inicio" onclick="mudarAba('inicio')"><i class="fa-solid fa-house"></i> Início</a></li>
-                    <li><a href="#" id="side-nav-series" onclick="mudarAba('series')"><i class="fa-solid fa-tv"></i> Séries</a></li>
-                    <li><a href="#" id="side-nav-filmes" onclick="mudarAba('filmes')"><i class="fa-solid fa-film"></i> Filmes</a></li>
+    <header id="navbar">
+        <div class="nav-top-main">
+            <div class="nav-left">
+                <a href="#" class="logo" onclick="limparBusca(); window.scrollTo(0,0);">CINENET</a>
+                <ul class="nav-links">
+                    <li><a href="#homepage-content">Início</a></li>
+                    <li><a href="#row-movies-section">Filmes</a></li>
+                    <li><a href="#row-series-section">Séries</a></li>
+                    <li><a href="#row-animes-section">Animes</a></li>
+                    <li><a href="#row-cartoons-section">Desenhos</a></li>
+                    <li><a href="#row-watchlist-section">Minha Lista</a></li>
                 </ul>
             </div>
-
-            <div class="menu-section">
-                <div class="menu-title">Biblioteca</div>
-                <ul class="menu-items">
-                    <li><a href="#" id="side-nav-minhalista" onclick="mudarAba('minhalista')"><i class="fa-solid fa-star"></i> A Minha Lista</a></li>
-                    <li><a href="#" onclick="mudarAba('inicio')"><i class="fa-regular fa-clock"></i> Recentes</a></li>
-                </ul>
-            </div>
-        </aside>
-
-        <div class="main-wrapper">
-            <header class="topbar" id="navbar">
-                <div class="top-nav-links desktop-only">
-                    <a href="#" id="top-nav-inicio" onclick="mudarAba('inicio')">Início</a>
-                    <a href="#" id="top-nav-series" onclick="mudarAba('series')">Séries</a>
-                    <a href="#" id="top-nav-filmes" onclick="mudarAba('filmes')">Filmes</a>
-                    <a href="#" id="top-nav-minhalista" onclick="mudarAba('minhalista')">A Minha Lista</a>
-                </div>
-                
-                <div class="logo mobile-only" style="font-size: 24px; font-weight: 800; letter-spacing: 1px;">
-                    <span style="color: #E50914; text-shadow: 0 0 10px rgba(229,9,20,0.5);">CINE</span><span style="color: white;">NET</span>
-                </div>
-                
-                <div class="top-right">
-                    <div class="search-bar">
-                        <i class="fa-solid fa-search"></i>
-                        <input type="text" id="search-input" placeholder="Títulos, géneros..." oninput="aoDigitarBusca(this.value)">
-                    </div>
-                    <div class="profile-btn desktop-only">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" id="nav-avatar" onclick="abrirPerfil()">
-                    </div>
-                </div>
-            </header>
-
-            <div id="search-results-section" style="display: none; padding: 20px 40px 120px;">
-                <h2 class="section-header">Resultados da Pesquisa</h2>
-                <div class="search-grid" id="search-grid"></div>
-            </div>
-
-            <div id="minha-lista-section" style="display: none; padding: 20px 40px 120px;">
-                <h2 class="section-header">A Minha Lista</h2>
-                <div class="search-grid" id="row-watchlist"></div>
-            </div>
-
-            <main class="dashboard" id="homepage-content">
-                
-                <div class="left-column">
-                    <div class="poster-wrapper">
-                        <img id="hero-poster" src="" alt="Poster" class="main-poster">
-                        <div class="poster-glow"></div>
-                    </div>
-                    
-                    <div class="media-info">
-                        <h1 id="hero-title">A inicializar...</h1>
-                        <div class="media-meta" id="hero-meta">--</div>
-                        
-                        <div class="media-desc-block">
-                            <div class="media-desc-text" id="hero-synopsis">A estabelecer ligação aos servidores...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="right-column">
-                    
-                    <div class="player-container" id="hero-bg">
-                        <div class="player-title-overlay" id="player-title-overlay">...</div>
-                        <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
-                        <div class="player-controls">
-                            <div class="controls-left">
-                                <button class="control-btn glow-btn" id="hero-play-btn" title="Reproduzir"><i class="fa-solid fa-play"></i></button>
-                                <button class="control-btn" id="hero-info-btn" title="Info"><i class="fa-solid fa-circle-info"></i></button>
-                            </div>
-                            <div class="controls-right">
-                                <button class="control-btn"><i class="fa-solid fa-closed-captioning"></i></button>
-                                <button class="control-btn"><i class="fa-solid fa-expand"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="middle-row">
-                        <div class="servers-section">
-                            <div class="section-header">Servidor de Transmissão:</div>
-                            <div class="servers-grid">
-                                <button class="server-btn active" onclick="selecionarServidorGlobal(this, 'smashy')"><i class="fa-solid fa-server"></i> Link 1</button>
-                                <button class="server-btn" onclick="selecionarServidorGlobal(this, 'super')"><i class="fa-solid fa-server"></i> Link 2</button>
-                                <button class="server-btn" onclick="selecionarServidorGlobal(this, 'vidsrc')"><i class="fa-solid fa-cloud"></i> Backup</button>
-                            </div>
-                        </div>
-
-                        <div class="continue-section">
-                            <div class="section-header">Atividade Recente</div>
-                            <div class="continue-watching-list" id="continue-list-dynamic"></div>
-                        </div>
-                    </div>
-
-                    <div id="rows-wrapper-layout" style="margin-top: 20px; padding-bottom: 60px;"></div>
-
-                </div>
-            </main>
-        </div>
-
-        <div class="mobile-bottom-nav mobile-only">
-            <div class="nav-item active-mobile-nav" onclick="mudarAba('inicio'); ativarMenuMobile(this)">
-                <i class="fa-solid fa-house icon"></i>
-                <span class="label">Início</span>
-            </div>
-            <div class="nav-item" onclick="abrirCatalogoMobile(); ativarMenuMobile(this)">
-                <i class="fa-solid fa-compass icon"></i>
-                <span class="label">Explorar</span>
-            </div>
-            <div class="nav-item" onclick="mudarAba('minhalista'); ativarMenuMobile(this)">
-                <i class="fa-solid fa-bookmark icon"></i>
-                <span class="label">Lista</span>
-            </div>
-            <div class="nav-item" onclick="abrirPerfilMobile(); ativarMenuMobile(this)">
-                <i class="fa-solid fa-user-astronaut icon"></i>
-                <span class="label">Perfil</span>
+            <div class="search-box">
+                <span style="margin-right: 8px;">🔍</span>
+                <input type="text" id="search-input" placeholder="Títulos, animes, desenhos...">
             </div>
         </div>
+    </header>
 
-        <div class="mobile-catalog-modal mobile-only" id="mobile-catalog">
-            <div class="mobile-catalog-header">
-                <h2>Explorador <span style="color:#E50914">CINE</span></h2>
-                <button onclick="fecharCatalogoMobile()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="mobile-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="search-input-mobile" placeholder="Pesquisar títulos..." oninput="aoDigitarBusca(this.value)">
-            </div>
-            <div class="mobile-categories">
-                <button class="cat-btn" onclick="mudarAba('series'); fecharCatalogoMobile()"><i class="fa-solid fa-tv"></i> Séries em Alta</button>
-                <button class="cat-btn" onclick="mudarAba('filmes'); fecharCatalogoMobile()"><i class="fa-solid fa-film"></i> Filmes em Alta</button>
-                <button class="cat-btn" onclick="filtrarPorGenero(28); fecharCatalogoMobile()"><i class="fa-solid fa-fire-flame-curved"></i> Ação</button>
-                <button class="cat-btn" onclick="filtrarPorGenero(35); fecharCatalogoMobile()"><i class="fa-solid fa-masks-theater"></i> Comédia</button>
-                <button class="cat-btn" onclick="filtrarPorGenero(27); fecharCatalogoMobile()"><i class="fa-solid fa-ghost"></i> Terror</button>
-            </div>
-        </div>
+    <div id="search-results-section">
+        <h2 class="row-title" id="search-title">Resultados da Pesquisa</h2>
+        <div class="search-grid" id="search-grid"></div>
     </div>
 
-    <div class="modal" id="profileModal">
-        <div class="profile-edit-box modal-anim">
-            <h2>Configurações de Utilizador</h2>
-            <div class="profile-edit-content">
-                <div class="avatar-selection">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="avatar-option" onclick="escolherAvatar(this, this.src)">
-                    <img src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/84c20033850498.56ba69ac290ea.png" class="avatar-option" onclick="escolherAvatar(this, this.src)">
-                    <img src="https://avatarfiles.alphacoders.com/165/165285.png" class="avatar-option" onclick="escolherAvatar(this, this.src)">
-                    <img src="https://avatarfiles.alphacoders.com/318/318884.jpg" class="avatar-option" onclick="escolherAvatar(this, this.src)">
+    <div id="homepage-content">
+        <div class="hero-banner" id="hero-banner">
+            <div class="hero-content">
+                <div class="hero-title" id="hero-title">Carregando...</div>
+                <div class="hero-synopsis" id="hero-synopsis">Buscando as produções mais recomendadas...</div>
+                <div class="hero-buttons">
+                    <button class="btn btn-play" id="hero-play-btn">▶ Assistir</button>
+                    <button class="btn btn-info" id="hero-info-btn">ℹ️ Mais Informações</button>
                 </div>
-                <input type="text" id="edit-profile-name" placeholder="Nome de utilizador">
-                <div class="profile-actions">
-                    <button class="btn-save" onclick="salvarPerfil()"><i class="fa-solid fa-check"></i> Guardar</button>
-                    <button class="btn-logout" onclick="fazerLogout()"><i class="fa-solid fa-power-off"></i> Desligar</button>
+            </div>
+        </div>
+
+        <div class="main-container" id="rows-wrapper-layout">
+            </div>
+    </div>
+
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="fecharModal()">✕</span>
+            <div class="modal-hero" id="modal-hero-bg">
+                <div class="modal-hero-content">
+                    <h2 id="modal-title">Nome da Produção</h2>
+                    <div class="modal-actions">
+                        <button class="btn btn-play" style="padding: 10px 24px; font-size: 15px;" onclick="abrirPlayerAtual()">▶ Assistir</button>
+                        <button class="btn btn-info" style="padding: 10px 24px; font-size: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4);" id="modal-watchlist-btn" onclick="toggleWatchlist()">+ Minha Lista</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info-column">
+                    <div class="meta-container">
+                        <span class="match-score" id="modal-match">94% de correspondência</span>
+                        <span id="modal-year">2026</span>
+                        <span class="info-tag">A14</span>
+                        <span class="info-tag">4K ULTRA HD</span>
+                        <span class="info-tag">HDR</span>
+                        <span class="info-tag">5.1</span>
+                    </div>
+                    <p id="modal-desc" style="color: #e5e5e5; font-size: 15px; line-height: 1.5; margin: 0;"></p>
+                </div>
+                <div class="modal-review-column">
+                    <div class="review-card-area">
+                        <b style="font-size: 13px; display:block; margin-bottom:6px; color: var(--text-grey);">MINHA CLASSIFICAÇÃO</b>
+                        <div class="stars" id="star-rating">
+                            <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)">★</span><span onclick="definirEstrelas(3)">★</span><span onclick="definirEstrelas(4)">★</span><span onclick="definirEstrelas(5)">★</span>
+                        </div>
+                        <textarea class="review-input" id="review-text" placeholder="Adicionar notas sobre os episódios ou filme..."></textarea>
+                        <button class="mini-btn" style="background: white; color: black; width: 100%;" onclick="salvarCritica()">Salvar Nota</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="modal" id="detailsModal"></div>
 
     <div class="player-modal" id="playerModal">
-        <button class="player-back-btn" onclick="fecharPlayer()"><i class="fa-solid fa-arrow-left"></i></button>
-        
-        <div class="player-controls-panel" id="episodes-selectors-box" style="display:none;">
-            <div class="control-group">
-                <label>T:</label>
+        <div class="player-header">
+            <span class="player-close" onclick="fecharPlayer()">⬅ Voltar ao Catálogo</span>
+            
+            <div class="player-controls-panel" id="episodes-selectors-box" style="display:none;">
+                <label>Temp:</label>
                 <input type="number" id="player-season-input" value="1" min="1" onchange="atualizarIframePlayer()">
                 <label>Ep:</label>
                 <input type="number" id="player-episode-input" value="1" min="1" onchange="atualizarIframePlayer()">
             </div>
         </div>
 
-        <div class="player-loader" id="playerLoader">
-            <div class="futuristic-spinner"></div>
-        </div>
         <div class="player-content">
-            <iframe id="videoPlayer" src="" allow="autoplay; encrypted-media; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" onload="esconderLoader()"></iframe>
+            <iframe id="videoPlayer" src="" width="100%" height="600" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" loading="lazy"></iframe>
         </div>
     </div>
 
