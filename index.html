@@ -2,102 +2,151 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CineNet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header id="navbar">
-        <div class="nav-left">
-            <a href="#" class="logo" onclick="limparBusca(); window.scrollTo(0,0);">CINENET</a>
-            <ul class="nav-links">
-                <li><a href="#hero-banner">Início</a></li>
-                <li><a href="#row-movies-section">Filmes</a></li>
-                <li><a href="#row-series-section">Séries</a></li>
-                <li><a href="#row-animes-section">Animes</a></li>
-                <li><a href="#row-cartoons-section">Desenhos</a></li>
-                <li><a href="#row-watchlist-section">A Minha Lista</a></li>
-            </ul>
-        </div>
-        <div class="search-box">
-            <span style="margin-right: 8px;">🔍</span>
-            <input type="text" id="search-input" placeholder="Títulos, animes, desenhos...">
-        </div>
-    </header>
-
-    <div id="search-results-section">
-        <h2 class="row-title" id="search-title">Resultados da Pesquisa</h2>
-        <div class="search-grid" id="search-grid"></div>
-    </div>
-
-    <div id="homepage-content">
-        <div class="hero-banner" id="hero-banner">
-            <div class="hero-content">
-                <div class="hero-title" id="hero-title">Carregando...</div>
-                <div class="hero-synopsis" id="hero-synopsis">Buscando as produções mais recomendadas...</div>
-                <div class="hero-buttons">
-                    <button class="btn btn-play" id="hero-play-btn">▶ Assistir Agora</button>
-                    <button class="btn btn-info" id="hero-info-btn">ℹ️ Mais Informações</button>
+    <div id="auth-screen">
+        <div class="auth-bg"></div>
+        <div class="auth-box-wrapper">
+            <div class="auth-glass-box">
+                <div class="logo logo-center">
+                    <span class="cine">CINE</span><span class="net">NET</span>
                 </div>
-            </div>
-        </div>
-
-        <div class="main-container" id="rows-wrapper-layout"></div>
-    </div>
-
-    <div class="modal" id="detailsModal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="fecharModal()">✕</span>
-            <div class="modal-hero" id="modal-hero-bg">
-                <div class="modal-hero-content">
-                    <h2 id="modal-title">Nome da Produção</h2>
-                    <div class="modal-actions">
-                        <button class="btn btn-play" style="padding: 10px 24px; font-size: 15px;" onclick="abrirPlayerAtual()">▶ Assistir</button>
-                        <button class="btn btn-info" style="padding: 10px 24px; font-size: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4);" id="modal-watchlist-btn" onclick="toggleWatchlist()">+ A Minha Lista</button>
+                <h2 id="auth-title" class="glitch-text">SISTEMA CINENET</h2>
+                <p style="text-align: center; color: #888; margin-bottom: 25px; font-size: 14px;">Autenticação Necessária</p>
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <div class="input-group">
+                        <input type="email" id="auth-user" required placeholder=" ">
+                        <label>Email de Acesso</label>
+                        <div class="input-glow"></div>
                     </div>
-                </div>
-            </div>
-            <div class="modal-body">
-                <div class="modal-info-column">
-                    <div class="meta-container">
-                        <span class="match-score" id="modal-match">94% Relevante</span>
-                        <span id="modal-year">2026</span>
-                        <span class="info-tag">4K ULTRA HD</span>
+                    <div class="input-group">
+                        <input type="password" id="auth-pass" required placeholder=" ">
+                        <label>Código de Segurança</label>
+                        <div class="input-glow"></div>
                     </div>
-                    <p id="modal-desc" style="color: #e5e5e5; font-size: 15px; line-height: 1.5; margin: 0;"></p>
-                </div>
-                <div class="modal-review-column">
-                    <div class="review-card-area">
-                        <b style="font-size: 13px; display:block; margin-bottom:6px; color: var(--text-grey);">AVALIAR OBRA</b>
-                        <div class="stars" id="star-rating">
-                            <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)">★</span><span onclick="definirEstrelas(3)">★</span><span onclick="definirEstrelas(4)">★</span><span onclick="definirEstrelas(5)">★</span>
-                        </div>
-                        <textarea class="review-input" id="review-text" placeholder="Adicionar notas sobre os episódios ou filme..."></textarea>
-                        <button class="mini-btn" style="background: white; color: black; width: 100%; padding: 10px;" onclick="salvarCritica()">Salvar Avaliação</button>
-                    </div>
-                </div>
+                    <button type="submit" class="btn-neon" id="auth-btn">INICIAR SESSÃO</button>
+                </form>
+                <p class="auth-switch">
+                    <span>Sem acesso?</span>
+                    <a href="#" onclick="toggleAuthMode()" id="auth-link">Solicitar credenciais.</a>
+                </p>
+                <p id="auth-error" class="error-message" style="display:none;"></p>
             </div>
         </div>
     </div>
 
-    <div class="player-modal" id="playerModal">
-        <div class="player-header">
-            <span class="player-close" onclick="fecharPlayer()">⬅ Voltar</span>
-            
-            <div class="player-controls-panel" id="episodes-selectors-box" style="display:none;">
-                <label>Temporada:</label>
-                <input type="number" id="player-season-input" value="1" min="1" onchange="atualizarIframePlayer()">
-                <label>Episódio:</label>
-                <input type="number" id="player-episode-input" value="1" min="1" onchange="atualizarIframePlayer()">
-            </div>
-        </div>
+    <div id="main-app" style="display: none;">
         
-        <div class="player-content">
-            <iframe id="videoPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <header id="navbar">
+            <div class="nav-glass-container">
+                <div class="nav-left">
+                    <a href="#" class="logo" onclick="limparBusca(); window.scrollTo(0,0);">
+                        <span class="cine">CINE</span><span class="net">NET</span>
+                    </a>
+                    <ul class="nav-links">
+                        <li><a href="#homepage-content">Início</a></li>
+                        <li><a href="#row-movies-section">Filmes</a></li>
+                        <li><a href="#row-series-section">Séries</a></li>
+                        <li><a href="#row-animes-section">Animes</a></li>
+                        <li><a href="#row-cartoons-section">Desenhos</a></li>
+                        <li><a href="#row-watchlist-section">A Minha Lista</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-right">
+                    <div class="search-box">
+                        <span style="opacity: 0.7;">🔍</span>
+                        <input type="text" id="search-input" placeholder="Pesquisar no sistema...">
+                    </div>
+                    <button onclick="fazerLogout()" class="btn-outline-neon">Sair</button>
+                </div>
+            </div>
+        </header>
+
+        <div id="search-results-section">
+            <h2 class="row-title neon-text" id="search-title">Resultados da Pesquisa</h2>
+            <div class="search-grid" id="search-grid"></div>
+        </div>
+
+        <div id="homepage-content">
+            <div class="hero-banner" id="hero-banner">
+                <div class="hero-vignette"></div>
+                <div class="hero-content">
+                    <div class="hero-tag">DESTAQUE DO SISTEMA</div>
+                    <div class="hero-title" id="hero-title">A inicializar...</div>
+                    <div class="hero-synopsis" id="hero-synopsis">A estabelecer ligação com os servidores globais...</div>
+                    <div class="hero-buttons">
+                        <button class="btn-neon" id="hero-play-btn" style="padding: 15px 35px;">▶ INICIAR TRANSMISSÃO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-container" id="rows-wrapper-layout"></div>
+        </div>
+
+        <div class="modal" id="detailsModal">
+            <div class="modal-glass-content">
+                <span class="modal-close" onclick="fecharModal()">✕</span>
+                <div class="modal-hero" id="modal-hero-bg">
+                    <div class="modal-hero-content">
+                        <h2 id="modal-title" class="neon-text">Título</h2>
+                        <div class="modal-actions">
+                            <button class="btn-neon" onclick="abrirPlayerAtual('geral')">▶ VER OBRA COMPLETA</button>
+                            <button class="btn-outline-neon" id="btn-player-especifico" onclick="abrirPlayerAtual('especifico')">🔢 ESCOLHER EPISÓDIO</button>
+                            <button class="btn-glass" id="modal-watchlist-btn" onclick="toggleWatchlist()">+ A MINHA LISTA</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-info-column">
+                        <div class="meta-container">
+                            <span class="match-score" id="modal-match">98% Relevante</span>
+                            <span id="modal-year">2026</span>
+                            <span class="info-tag">4K HDR</span>
+                        </div>
+                        <p id="modal-desc"></p>
+                    </div>
+                    <div class="modal-review-column">
+                        <div class="review-card-area glass-panel">
+                            <b>CLASSIFICAÇÃO PESSOAL</b>
+                            <div class="stars" id="star-rating">
+                                <span onclick="definirEstrelas(1)">★</span><span onclick="definirEstrelas(2)">★</span><span onclick="definirEstrelas(3)">★</span><span onclick="definirEstrelas(4)">★</span><span onclick="definirEstrelas(5)">★</span>
+                            </div>
+                            <textarea class="review-input glass-input" id="review-text" placeholder="Adicione as suas anotações..."></textarea>
+                            <button class="btn-outline-neon" style="width: 100%;" onclick="salvarCritica()">GRAVAR DADOS</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-modal" id="playerModal">
+            <div class="player-header glass-panel">
+                <span class="player-close" onclick="fecharPlayer()">⬅ FECHAR TRANSMISSÃO</span>
+                
+                <div class="player-controls-panel" id="episodes-selectors-box" style="display:none;">
+                    <label>T:</label>
+                    <input type="number" id="player-season-input" class="glass-input" value="1" min="1" onchange="atualizarIframePlayer()">
+                    <label>Ep:</label>
+                    <input type="number" id="player-episode-input" class="glass-input" value="1" min="1" onchange="atualizarIframePlayer()">
+                </div>
+            </div>
+
+            <div class="player-content">
+                <iframe id="videoPlayer" src="" width="100%" height="600" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" loading="lazy"></iframe>
+            </div>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
     <script src="script.js"></script>
 </body>
 </html>
