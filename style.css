@@ -28,7 +28,7 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-body.modal-open { overflow: hidden; }
+body.modal-open { overflow: hidden !important; }
 
 @media (min-width: 769px) {
     .mobile-only { display: none !important; }
@@ -126,9 +126,30 @@ body.modal-open { overflow: hidden; }
 .btn-primary-action { background: white; color: black; border: none; font-weight: 800; padding: 14px 32px; border-radius: 6px; cursor: pointer; font-family: 'Outfit'; font-size: 14px; transition: 0.2s; }
 .btn-primary-action:hover { transform: scale(1.03); background: rgba(255,255,255,0.85); }
 
+/* NOVO: ESTILOS DO SELETOR DE CATALOGO (MENU SUPERIOR) */
+.catalog-selector-menu {
+    display: flex; gap: 10px; padding: 20px 4% 10px;
+    overflow-x: auto; scrollbar-width: none;
+    position: sticky; top: 65px; z-index: 90;
+    background: linear-gradient(to bottom, #050505 80%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.catalog-selector-menu::-webkit-scrollbar { display: none; }
+.catalog-btn {
+    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border);
+    color: var(--text-secondary); padding: 8px 18px; border-radius: 20px;
+    font-family: 'Outfit'; font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s ease; white-space: nowrap; text-transform: uppercase;
+}
+.catalog-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.catalog-btn.active {
+    background: var(--primary-neon); color: white;
+    border-color: var(--primary-neon); box-shadow: 0 0 12px var(--primary-glow);
+}
+
 /* FILEIRAS DE POSTERS E CONTADORES */
-.content-wrapper { padding: 20px 0 60px; }
-.movie-row { padding: 0 4%; margin-bottom: 40px; position: relative; }
+.content-wrapper { padding: 10px 0 60px; }
+.movie-row { padding: 0 4%; margin-bottom: 40px; position: relative; transition: opacity 0.3s ease; }
 .row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .section-title { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
 

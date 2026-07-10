@@ -37,9 +37,12 @@
                     <button type="submit" class="btn-primary" id="auth-btn">AUTENTICAR SISTEMA</button>
                 </form>
                 
-                <div class="auth-footer">
-                    <span id="auth-switch-text">Novo por aqui?</span>
-                    <button onclick="toggleAuthMode()" id="auth-link">Criar conta de acesso</button>
+                <div class="auth-footer" style="flex-direction: column; gap: 12px; align-items: center; margin-top: 15px;">
+                    <div>
+                        <span id="auth-switch-text">Novo por aqui?</span>
+                        <button onclick="toggleAuthMode()" id="auth-link">Criar conta de acesso</button>
+                    </div>
+                    <button onclick="entrarComoConvidado()" class="btn-secondary" style="width: 100%; padding: 8px 16px; font-size: 12px; border-color: rgba(0, 255, 255, 0.4); color: #00ffff; margin-top: 5px;">⚡ IGNORAR & ENTRAR COMO CONVIDADO</button>
                 </div>
                 <div id="auth-error" class="alert-box" style="display:none;"></div>
             </div>
@@ -119,6 +122,15 @@
                     </div>
                 </div>
             </section>
+
+            <div class="catalog-selector-menu" id="catalog-selector-bar">
+                <button class="catalog-btn active" onclick="filtrarCatalogo('todos', event)">✨ Tudo</button>
+                <button class="catalog-btn" onclick="filtrarCatalogo('row-movies', event)">🎬 Filmes</button>
+                <button class="catalog-btn" onclick="filtrarCatalogo('row-series', event)">📺 Séries</button>
+                <button class="catalog-btn" onclick="filtrarCatalogo('row-animes', event)">🗡️ Animes</button>
+                <button class="catalog-btn" onclick="filtrarCatalogo('row-cartoons', event)">🎨 Desenhos</button>
+                <button class="catalog-btn" onclick="filtrarCatalogo('row-watchlist', event)">⭐ Minha Lista</button>
+            </div>
 
             <main class="content-wrapper" id="rows-wrapper-layout"></main>
         </div>
