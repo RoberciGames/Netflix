@@ -11,10 +11,10 @@ let currentUser = null;
 let currentItem = null; 
 let minhaListaDB = JSON.parse(localStorage.getItem('cineNetLista')) || {};
 let servidorSelecionado = 'smashy'; 
-let timeoutBusca; // Variável para o Debounce
+let timeoutBusca;
 
 // ==========================================
-// INICIALIZAÇÃO E FECHAMENTO SEGURO
+// INICIALIZAÇÃO E FECHO SEGURO
 // ==========================================
 window.onload = () => {
     const savedUser = localStorage.getItem('cineNetCurrentUser');
@@ -51,9 +51,9 @@ function alternarScrollBody(travar) {
 // ==========================================
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Criar Conta';
+    document.getElementById('auth-title').innerText = isLoginMode ? 'Aceder ao Portal' : 'Criar Conta';
     document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registar';
-    document.getElementById('auth-link').innerText = isLoginMode ? 'Subscreva agora.' : 'Entrar agora.';
+    document.getElementById('auth-link').innerText = isLoginMode ? 'Registe-se agora.' : 'Entrar agora.';
     document.getElementById('auth-error').style.display = 'none';
 }
 
@@ -71,7 +71,7 @@ function handleAuth(event) {
             localStorage.setItem('cineNetCurrentUser', user);
             iniciarAplicativo();
         } else {
-            errorBox.innerText = "Palavra-passe incorreta ou utilizador não encontrado.";
+            errorBox.innerText = "Credenciais inválidas. Tente novamente.";
             errorBox.style.display = 'block';
         }
     } else {
@@ -79,7 +79,7 @@ function handleAuth(event) {
             errorBox.innerText = "Esta conta já existe. Tente fazer login.";
             errorBox.style.display = 'block';
         } else {
-            usersDB[user] = { pass: pass, name: 'Utilizador', avatar: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' };
+            usersDB[user] = { pass: pass, name: 'Convidado', avatar: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png' };
             localStorage.setItem('cineNetUsersDB', JSON.stringify(usersDB));
             currentUser = user;
             localStorage.setItem('cineNetCurrentUser', user);
@@ -156,7 +156,7 @@ function fecharCatalogoMobile() {
 function abrirPerfilMobile() { fecharCatalogoMobile(); abrirPerfil(); }
 
 // ==========================================
-// CARREGAMENTO DA DASHBOARD (GRID DESIGN)
+// CARREGAMENTO DA DASHBOARD
 // ==========================================
 async function carregarDashboard(aba) {
     const rowsWrapper = document.getElementById('rows-wrapper-layout');
@@ -201,19 +201,19 @@ async function carregarDashboard(aba) {
     atualizarContinueAssistindoWidget();
 
     if (aba === 'inicio') {
-        injetarEstruturaRow('row-especial', 'Seleção Especial');
-        injetarEstruturaRow('row-movies', 'Populares na CineNet');
+        injetarEstruturaRow('row-especial', 'Recomendação Especial');
+        injetarEstruturaRow('row-movies', 'Destaques Globais');
         injetarEstruturaRow('row-series', 'Séries em Alta');
         
         carregarDestaquesFixos('row-especial'); 
         montarPosters(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-movies', 'movie');
         montarPosters(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-series', 'tv');
     } else if (aba === 'filmes') {
-        injetarEstruturaRow('row-movies', 'Filmes em Alta');
+        injetarEstruturaRow('row-movies', 'Filmes Mais Vistos');
         montarPosters(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-movies', 'movie');
     } else if (aba === 'series') {
-        injetarEstruturaRow('row-especial', 'Destaque: Teen Wolf');
-        injetarEstruturaRow('row-series', 'Séries Mais Assistidas');
+        injetarEstruturaRow('row-especial', 'Universo Teen Wolf');
+        injetarEstruturaRow('row-series', 'Tendências Atuais');
         
         carregarDestaquesFixos('row-especial');
         montarPosters(`https://api.themoviedb.org/3/tv/popular?api_key=${TMDB_KEY}&language=pt-BR`, 'row-series', 'tv');
@@ -230,21 +230,21 @@ function configurarHeroDashboard(item) {
     const title = item.title || item.name;
     document.getElementById('hero-title').innerText = title;
     document.getElementById('player-title-overlay').innerText = title;
-    document.getElementById('hero-synopsis').innerText = item.overview || 'Sinopse não disponível.';
+    document.getElementById('hero-synopsis').innerText = item.overview || 'Informação de enredo não disponível.';
     
     let year = (item.release_date || item.first_air_date || 'N/A').substring(0,4);
     let typeName = currentItem.media_type === 'tv' ? 'Série' : 'Filme';
     document.getElementById('hero-meta').innerText = `${year} - ${typeName}`;
 
     const bgUrl = item.backdrop_path ? IMG_BASE + item.backdrop_path : '';
-    document.getElementById('hero-bg').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.95)), url('${bgUrl}')`;
+    document.getElementById('hero-bg').style.backgroundImage = `linear-gradient(to right, rgba(5,5,5,0.8) 0%, rgba(0,0,0,0.3) 100%), url('${bgUrl}')`;
 
     document.getElementById('hero-play-btn').onclick = abrirPlayerAtual;
     document.getElementById('hero-info-btn').onclick = () => abrirModal(item.id, currentItem.media_type);
 }
 
 // ==========================================
-// WIDGET CONTINUE A ASSISTIR E DESTAQUES FIXOS
+// WIDGET CONTINUE A ASSISTIR E DESTAQUES
 // ==========================================
 function atualizarContinueAssistindoWidget() {
     const container = document.getElementById('continue-list-dynamic');
@@ -255,7 +255,7 @@ function atualizarContinueAssistindoWidget() {
     const ids = Object.keys(lista).reverse(); 
     
     if(ids.length === 0) {
-        container.innerHTML = '<p style="color:#666; font-size: 13px;">Adicione títulos à sua lista.</p>';
+        container.innerHTML = '<p style="color:#666; font-size: 13px;">O seu histórico está vazio.</p>';
         return;
     }
     
@@ -280,10 +280,7 @@ async function carregarDestaquesFixos(containerId) {
     const container = document.getElementById(containerId);
     if(!container) return;
     
-    const itensFixos = [
-        { id: 34524, type: 'tv' },      
-        { id: 894205, type: 'movie' }   
-    ];
+    const itensFixos = [ { id: 34524, type: 'tv' }, { id: 894205, type: 'movie' } ];
     
     try {
         for (let itemFixo of itensFixos) {
@@ -339,9 +336,7 @@ async function montarPosters(url, containerId, defaultType) {
 
 function aoDigitarBusca(valor) {
     clearTimeout(timeoutBusca);
-    timeoutBusca = setTimeout(() => {
-        realizarBusca(valor);
-    }, 500); // Aguarda meio segundo após parar de escrever
+    timeoutBusca = setTimeout(() => { realizarBusca(valor); }, 500); 
 }
 
 async function realizarBusca(query) {
@@ -349,23 +344,20 @@ async function realizarBusca(query) {
         document.getElementById('homepage-content').style.display = 'none';
         document.getElementById('minha-lista-section').style.display = 'none';
         
-        // Em telemóveis: Fecha o overlay de pesquisa para mostrar os resultados
         const catMobile = document.getElementById('mobile-catalog');
-        if(catMobile && catMobile.style.display === 'flex') {
-            fecharCatalogoMobile(); 
-        }
+        if(catMobile && catMobile.classList.contains('show')) fecharCatalogoMobile(); 
 
         document.getElementById('search-results-section').style.display = 'block';
-        
         const grid = document.getElementById('search-grid');
-        grid.innerHTML = '<p style="color:white;">A procurar...</p>';
+        grid.innerHTML = '<p style="color:white;">A analisar bases de dados...</p>';
+        
         try {
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-BR&query=${query}`);
             const data = await res.json();
-            grid.innerHTML = ''; // Limpa o "procurando"
+            grid.innerHTML = ''; 
             
             if(data.results.length === 0) {
-                grid.innerHTML = '<p style="color:#b3b3b3;">Nenhum resultado encontrado.</p>';
+                grid.innerHTML = '<p style="color:#b3b3b3;">Nenhum registo encontrado no sistema.</p>';
             }
 
             data.results.forEach(item => {
@@ -392,7 +384,7 @@ function renderizarPaginaMinhaLista() {
     const ids = Object.keys(lista).reverse();
     
     if(ids.length === 0) {
-        grid.innerHTML = '<p style="color:#b3b3b3;">A sua lista está vazia.</p>';
+        grid.innerHTML = '<p style="color:#b3b3b3;">A sua base de dados pessoal está vazia.</p>';
         return;
     }
     
@@ -407,7 +399,7 @@ function renderizarPaginaMinhaLista() {
 }
 
 // ==========================================
-// MODAL DE DETALHES POPUP COM ANIMAÇÃO SEGURA
+// MODAL BOTTOM SHEET COM ANIMAÇÃO
 // ==========================================
 async function abrirModal(id, type) {
     try {
@@ -416,7 +408,7 @@ async function abrirModal(id, type) {
         currentItem.media_type = type;
 
         document.getElementById('modal-title').innerText = currentItem.title || currentItem.name;
-        document.getElementById('modal-desc').innerText = currentItem.overview || 'Sem descrição.';
+        document.getElementById('modal-desc').innerText = currentItem.overview || 'Informação confidencial. Nenhum registo disponível.';
         
         const year = (currentItem.release_date || currentItem.first_air_date || 'N/A').substring(0,4);
         let extras = (type === 'tv' && currentItem.number_of_seasons) ? ` ‧ ${currentItem.number_of_seasons} Temp` : "";
@@ -427,7 +419,7 @@ async function abrirModal(id, type) {
 
         const btnWatch = document.getElementById('modal-watchlist-btn');
         if(btnWatch) {
-            btnWatch.innerHTML = (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-plus"></i>';
+            btnWatch.innerHTML = (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-bookmark"></i>';
         }
 
         const modal = document.getElementById('detailsModal');
@@ -459,7 +451,7 @@ function toggleWatchlist() {
     
     if (minhaListaDB[currentUser][id]) {
         delete minhaListaDB[currentUser][id];
-        btnWatch.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        btnWatch.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
     } else {
         minhaListaDB[currentUser][id] = { 
             id: id, type: currentItem.media_type, 
@@ -472,7 +464,7 @@ function toggleWatchlist() {
 }
 
 // ==========================================
-// SISTEMA DE PLAYER (MOBILE/PC) FULLSCREEN
+// PLAYER FULLSCREEN 100DVH
 // ==========================================
 function selecionarServidorGlobal(btn, server) {
     document.querySelectorAll('.server-btn').forEach(el => el.classList.remove('active'));
@@ -525,7 +517,7 @@ function fecharPlayer() {
 }
 
 // ==========================================
-// PERFIL SEGURO COM ANIMAÇÃO
+// GESTÃO DE PERFIL
 // ==========================================
 let tempAvatar = "";
 function abrirPerfil() {
