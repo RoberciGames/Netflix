@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CINENET</title>
+    <title>CINENET - Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -211,32 +211,7 @@
         </div>
     </div>
 
-    <div class="modal" id="detailsModal">
-        <div class="modal-content modal-anim">
-            <div class="modal-close-btn" onclick="fecharModal()"><i class="fa-solid fa-xmark"></i></div>
-            <div class="modal-hero" id="modal-hero-bg">
-                <div class="modal-hero-vignette-overlay"></div>
-                <div class="modal-hero-content">
-                    <h2 id="modal-title" class="modal-title-text">A carregar...</h2>
-                    <div class="modal-actions">
-                        <button class="btn btn-play glow-btn" onclick="abrirPlayerAtual()"><i class="fa-solid fa-play"></i> Reproduzir</button>
-                        <button class="btn-circle-outline" id="modal-watchlist-btn" onclick="toggleWatchlist()"><i class="fa-solid fa-bookmark"></i></button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-body">
-                <div class="modal-info-column">
-                    <div class="meta-container">
-                        <span class="match-score">99% Match</span>
-                        <span id="modal-year" class="meta-text">Ano</span>
-                        <span class="info-tag-hd">4K HDR</span>
-                    </div>
-                    <p id="modal-desc" class="modal-synopsis-text"></p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal" id="detailsModal"></div>
 
     <div class="player-modal" id="playerModal">
         <button class="player-back-btn" onclick="fecharPlayer()"><i class="fa-solid fa-arrow-left"></i></button>

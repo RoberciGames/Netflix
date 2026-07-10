@@ -143,14 +143,13 @@ function ativarMenuMobile(elemento) {
 function abrirCatalogoMobile() { 
     const cat = document.getElementById('mobile-catalog');
     cat.style.display = 'flex'; 
-    setTimeout(() => cat.classList.add('show'), 10);
     alternarScrollBody(true); 
 }
 function fecharCatalogoMobile() { 
     const cat = document.getElementById('mobile-catalog');
     if(cat) {
-        cat.classList.remove('show');
-        setTimeout(() => { cat.style.display = 'none'; alternarScrollBody(false); }, 300);
+        cat.style.display = 'none'; 
+        alternarScrollBody(false); 
     }
 }
 function abrirPerfilMobile() { fecharCatalogoMobile(); abrirPerfil(); }
@@ -289,7 +288,13 @@ async function carregarDestaquesFixos(containerId) {
             
             const card = document.createElement('div');
             card.className = 'movie-card';
-            card.onclick = () => abrirModal(item.id, itemFixo.type);
+            
+            // PREVINE QUE O CLIQUE SALTE A PÁGINA (Bug do Mobile Corrigido)
+            card.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                abrirModal(item.id, itemFixo.type);
+            };
             
             let minhalistaStr = (minhaListaDB[currentUser] && minhaListaDB[currentUser][item.id]) ? `<div class="watched-bar"></div>` : "";
             const titulo = item.title || item.name; 
@@ -325,7 +330,13 @@ async function montarPosters(url, containerId, defaultType) {
             const type = item.media_type || defaultType;
             const card = document.createElement('div');
             card.className = 'movie-card';
-            card.onclick = () => abrirModal(item.id, type);
+            
+            // PREVINE QUE O CLIQUE SALTE A PÁGINA (Bug do Mobile Corrigido)
+            card.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                abrirModal(item.id, type);
+            };
             
             let minhalistaStr = (minhaListaDB[currentUser] && minhaListaDB[currentUser][item.id]) ? `<div class="watched-bar"></div>` : "";
             card.innerHTML = `<img src="${IMG_THUMB + item.poster_path}" loading="lazy">${minhalistaStr}`;
@@ -345,7 +356,7 @@ async function realizarBusca(query) {
         document.getElementById('minha-lista-section').style.display = 'none';
         
         const catMobile = document.getElementById('mobile-catalog');
-        if(catMobile && catMobile.classList.contains('show')) fecharCatalogoMobile(); 
+        if(catMobile && catMobile.style.display === 'flex') fecharCatalogoMobile(); 
 
         document.getElementById('search-results-section').style.display = 'block';
         const grid = document.getElementById('search-grid');
@@ -367,7 +378,7 @@ async function realizarBusca(query) {
                 
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = () => abrirModal(item.id, type);
+                card.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirModal(item.id, type); };
                 card.innerHTML = `<img src="${IMG_THUMB + item.poster_path}">`;
                 grid.appendChild(card);
             });
@@ -392,14 +403,14 @@ function renderizarPaginaMinhaLista() {
         const item = lista[id];
         const card = document.createElement('div');
         card.className = 'movie-card';
-        card.onclick = () => abrirModal(item.id, item.type);
+        card.onclick = (e) => { e.preventDefault(); e.stopPropagation(); abrirModal(item.id, item.type); };
         card.innerHTML = `<img src="${IMG_THUMB + item.poster}"><div class="watched-bar"></div>`;
         grid.appendChild(card);
     });
 }
 
 // ==========================================
-// MODAL BOTTOM SHEET COM ANIMAÇÃO
+// MODAL DE DETALHES (BOTTOM SHEET INJETÁVEL)
 // ==========================================
 async function abrirModal(id, type) {
     try {
@@ -407,39 +418,54 @@ async function abrirModal(id, type) {
         currentItem = await res.json();
         currentItem.media_type = type;
 
-        document.getElementById('modal-title').innerText = currentItem.title || currentItem.name;
-        document.getElementById('modal-desc').innerText = currentItem.overview || 'Informação confidencial. Nenhum registo disponível.';
-        
+        const title = currentItem.title || currentItem.name;
+        const desc = currentItem.overview || 'Informação de enredo não disponível.';
         const year = (currentItem.release_date || currentItem.first_air_date || 'N/A').substring(0,4);
-        let extras = (type === 'tv' && currentItem.number_of_seasons) ? ` ‧ ${currentItem.number_of_seasons} Temp` : "";
-        document.getElementById('modal-year').innerText = year + extras;
+        let extras = (type === 'tv' && currentItem.number_of_seasons) ? ` ‧ ${currentItem.number_of_seasons} Temporadas` : "";
+        const bg = currentItem.backdrop_path ? IMG_BASE + currentItem.backdrop_path : (IMG_THUMB + currentItem.poster_path);
         
-        const bg = currentItem.backdrop_path ? IMG_BASE + currentItem.backdrop_path : '';
-        document.getElementById('modal-hero-bg').style.backgroundImage = `url('${bg}')`;
+        const isNaLista = minhaListaDB[currentUser] && minhaListaDB[currentUser][id];
+        const btnWatchText = isNaLista ? "<i class='fa-solid fa-check'></i> Remover da Lista" : "<i class='fa-solid fa-bookmark'></i> Adicionar à Lista";
 
-        const btnWatch = document.getElementById('modal-watchlist-btn');
-        if(btnWatch) {
-            btnWatch.innerHTML = (minhaListaDB[currentUser] && minhaListaDB[currentUser][id]) ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-bookmark"></i>';
-        }
-
-        const modal = document.getElementById('detailsModal');
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('show'), 10);
+        const modalContainer = document.getElementById('detailsModal');
         
+        modalContainer.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-close-btn" onclick="fecharModal()"><i class="fa-solid fa-xmark"></i></div>
+                
+                <div class="modal-hero desktop-only" style="background-image: url('${bg}')">
+                    <div class="modal-hero-vignette-overlay"></div>
+                </div>
+                
+                <div class="modal-info">
+                    <h2 class="modal-title">${title}</h2>
+                    <p class="modal-year">${year}${extras}</p>
+                    <p class="modal-desc desktop-only">${desc}</p>
+                    
+                    <div class="modal-actions">
+                        <button class="btn btn-play glow-btn" onclick="abrirPlayerAtual()">
+                            <i class="fa-solid fa-play"></i> Assistir Imediatamente
+                        </button>
+                        <button class="btn btn-info" id="modal-watchlist-btn" onclick="toggleWatchlist()">
+                            ${btnWatchText}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modalContainer.style.display = 'flex';
         alternarScrollBody(true);
-    } catch(e) {}
+    } catch(e) { console.error("Erro ao abrir modal:", e); }
 }
 
 function fecharModal() {
     const modal = document.getElementById('detailsModal');
     if(!modal) return;
-    modal.classList.remove('show');
-    setTimeout(() => {
-        modal.style.display = 'none';
-        alternarScrollBody(false); 
-        if(abaAtual === 'minhalista') carregarDashboard('minhalista');
-        else if(abaAtual === 'inicio') atualizarContinueAssistindoWidget(); 
-    }, 300);
+    modal.style.display = 'none';
+    alternarScrollBody(false); 
+    if(abaAtual === 'minhalista') carregarDashboard('minhalista');
+    else if(abaAtual === 'inicio') atualizarContinueAssistindoWidget(); 
 }
 
 function toggleWatchlist() {
@@ -451,14 +477,14 @@ function toggleWatchlist() {
     
     if (minhaListaDB[currentUser][id]) {
         delete minhaListaDB[currentUser][id];
-        btnWatch.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+        btnWatch.innerHTML = "<i class='fa-solid fa-bookmark'></i> Adicionar à Lista";
     } else {
         minhaListaDB[currentUser][id] = { 
             id: id, type: currentItem.media_type, 
             title: currentItem.title || currentItem.name, 
             poster: currentItem.poster_path 
         };
-        btnWatch.innerHTML = '<i class="fa-solid fa-check"></i>';
+        btnWatch.innerHTML = "<i class='fa-solid fa-check'></i> Remover da Lista";
     }
     localStorage.setItem('cineNetLista', JSON.stringify(minhaListaDB));
 }
@@ -528,17 +554,13 @@ function abrirPerfil() {
     
     const modal = document.getElementById('profileModal');
     modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
     alternarScrollBody(true);
 }
 function fecharPerfil() { 
     const modal = document.getElementById('profileModal');
     if(!modal) return;
-    modal.classList.remove('show');
-    setTimeout(() => {
-        modal.style.display = 'none';
-        alternarScrollBody(false);
-    }, 300);
+    modal.style.display = 'none';
+    alternarScrollBody(false);
 }
 function escolherAvatar(el, src) {
     tempAvatar = src;
