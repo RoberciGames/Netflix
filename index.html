@@ -173,17 +173,26 @@
                 <h3 style="margin-top:0; font-size:24px; color: var(--primary-neon);">Editar Perfil</h3>
                 <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Personalize a sua identidade no CineNet.</p>
                 <div class="profile-edit-box">
+                    
+                    <div class="netflix-input-group">
+                        <input type="text" id="input-profile-username" required placeholder=" ">
+                        <label for="input-profile-username">Nome do Utilizador</label>
+                    </div>
+
+                    <p style="font-size: 13px; color: #aaa; margin: 15px 0 10px;">Escolha um Avatar:</p>
                     <div class="avatar-selection-grid">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" onclick="selecionarAvatarLocal(this)" class="avatar-option">
                         <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-v71399zk7g1wrl4v.jpg" onclick="selecionarAvatarLocal(this)" class="avatar-option">
                         <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.jpg" onclick="selecionarAvatarLocal(this)" class="avatar-option">
                         <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-288jscbe7v398aba.jpg" onclick="selecionarAvatarLocal(this)" class="avatar-option">
                     </div>
-                    <div class="netflix-input-group" style="margin-top:20px;">
-                        <input type="text" id="input-profile-username" required placeholder=" ">
-                        <label for="input-profile-username">Nome do Operador</label>
+
+                    <div class="netflix-input-group" style="margin-top:15px;">
+                        <input type="url" id="input-profile-avatar-url" placeholder=" " oninput="limparSelecaoAvatar()">
+                        <label for="input-profile-avatar-url">Ou cole a URL da sua foto...</label>
                     </div>
-                    <button onclick="salvarConfiguracoesPerfil()" class="btn-netflix-main" style="margin-top:15px; box-shadow: 0 4px 15px var(--primary-glow);">Guardar Alterações</button>
+
+                    <button onclick="salvarConfiguracoesPerfil()" class="btn-netflix-main" style="margin-top:10px; box-shadow: 0 4px 15px var(--primary-glow);">Guardar Alterações</button>
                 </div>
             </div>
         </div>

@@ -9,6 +9,10 @@ let currentUserUID = null;
 let filtroBuscaAtual = 'all';
 let ultimoTermoBusca = '';
 
+// VARIÁVEIS DO PLAYER (Corrigidas)
+let modoPlayerAtual = 'geral';
+const corDestaque = 'e50914';
+
 let perfilUsuario = {
     username: "Operador",
     avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
@@ -33,7 +37,6 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Previne o pulo de layout ao esconder a barra de scroll
 function alternarScrollBody(bloquear) {
     if (bloquear) {
         const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -114,7 +117,7 @@ function salvarDados() {
 }
 
 // ==========================================
-// PERFIL MODAL
+// SISTEMA DE PERFIL 2.0 (AVATAR CUSTOMIZADO)
 // ==========================================
 function atualizarInterfacePerfil() {
     document.querySelectorAll('.display-username').forEach(el => el.innerText = perfilUsuario.username);
@@ -123,10 +126,14 @@ function atualizarInterfacePerfil() {
 
 function abrirModalPerfil() {
     document.getElementById('input-profile-username').value = perfilUsuario.username;
+    document.getElementById('input-profile-avatar-url').value = ""; // Limpa a URL customizada
     avatarTemp = perfilUsuario.avatar;
+    
+    // Marca o avatar caso seja um dos pré-definidos
     document.querySelectorAll('.avatar-option').forEach(img => {
         img.classList.toggle('active', img.src === perfilUsuario.avatar);
     });
+
     document.getElementById('profileModal').style.display = 'flex';
     alternarScrollBody(true);
 }
@@ -134,15 +141,36 @@ function abrirModalPerfil() {
 function fecharModalPerfil() { document.getElementById('profileModal').style.display = 'none'; alternarScrollBody(false); }
 
 function selecionarAvatarLocal(elemento) {
+    // Quando escolhe um pronto, limpa o campo de URL
+    document.getElementById('input-profile-avatar-url').value = "";
     document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
-    elemento.classList.add('active'); avatarTemp = elemento.src;
+    elemento.classList.add('active'); 
+    avatarTemp = elemento.src;
+}
+
+function limparSelecaoAvatar() {
+    // Quando digita uma URL, desmarca as imagens prontas
+    document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
 }
 
 function salvarConfiguracoesPerfil() {
     const novoNome = document.getElementById('input-profile-username').value.trim();
-    if(!novoNome) return;
-    perfilUsuario.username = novoNome; perfilUsuario.avatar = avatarTemp;
-    atualizarInterfacePerfil(); salvarDados(); fecharModalPerfil();
+    const urlCustomizada = document.getElementById('input-profile-avatar-url').value.trim();
+    
+    if(!novoNome) { alert("O nome não pode estar vazio."); return; }
+    
+    perfilUsuario.username = novoNome; 
+    
+    // Se o user digitou uma URL, usa ela, senão usa o avatar selecionado
+    if(urlCustomizada !== "") {
+        perfilUsuario.avatar = urlCustomizada;
+    } else {
+        perfilUsuario.avatar = avatarTemp;
+    }
+
+    atualizarInterfacePerfil(); 
+    salvarDados(); 
+    fecharModalPerfil();
 }
 
 // ==========================================
@@ -387,7 +415,7 @@ function salvarCritica() {
 }
 
 // ==========================================
-// REPRODUTOR DE VÍDEO
+// REPRODUTOR DE VÍDEO CORRIGIDO
 // ==========================================
 function abrirPlayer(id, tipo) {
     const epBox = document.getElementById('episodes-selectors-box');
