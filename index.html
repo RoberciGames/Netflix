@@ -19,7 +19,6 @@
         <div class="auth-bg-overlay"></div>
         <div class="auth-container-netflix">
             <div class="auth-card-netflix">
-                
                 <div class="app-brand-netflix">
                     <span class="brand-accent">CINE</span><span class="brand-light">NET</span>
                 </div>
@@ -57,30 +56,26 @@
 
     <div id="main-app" style="display: none;">
         
-        <header id="desktop-navbar" class="pc-only">
+        <header id="desktop-navbar">
             <div class="nav-container">
-                
-                <a href="#" class="app-brand" onclick="limparBusca(); window.scrollTo(0,0);">
+                <a href="#" class="app-brand" onclick="window.scrollTo(0,0);">
                     <span class="brand-accent">CINE</span><span class="brand-light">NET</span>
                 </a>
 
-                <ul class="nav-menu">
+                <ul class="nav-menu pc-only">
                     <li><a href="#homepage-content" class="active">Início</a></li>
                     <li><a href="#row-movies-section">Filmes</a></li>
                     <li><a href="#row-series-section">Séries</a></li>
                     <li><a href="#row-animes-section">Animes</a></li>
                     <li><a href="#row-cartoons-section">Desenhos</a></li>
                 </ul>
+
                 <div class="nav-actions">
-                    <div class="search-bar">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" class="search-input-field" placeholder="Pesquisar catálogo...">
-                    </div>
                     <div class="profile-menu-container" onclick="abrirModalPerfil()">
-                        <img id="nav-avatar-img-pc" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar">
-                        <span id="nav-username-txt-pc" class="nav-username">Utilizador</span>
+                        <img id="nav-avatar-img" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar">
+                        <span id="nav-username-txt" class="nav-username pc-only">Utilizador</span>
                     </div>
-                    <button onclick="fazerLogout()" class="btn-disconnect" style="background:none; border:1px solid #fff; color:#fff; padding:5px 10px; border-radius:4px; cursor:pointer;">Sair</button>
+                    <button onclick="fazerLogout()" class="btn-disconnect">Sair</button>
                 </div>
             </div>
         </header>
@@ -90,15 +85,15 @@
                 <div class="hero-overlay-shadow"></div>
                 <div class="hero-inner">
                     <span class="hero-badge">EM DESTAQUE</span>
-                    <h1 class="hero-title-text" id="hero-title">Carregando Fluxo...</h1>
-                    <p class="hero-description" id="hero-synopsis">Sincronizando metadados com a base central...</p>
+                    <h1 class="hero-title-text" id="hero-title">Carregando...</h1>
+                    <p class="hero-description" id="hero-synopsis"></p>
                     <div class="hero-cta-group">
-                        <button class="btn-primary-action" id="hero-play-btn">▶ REPRODUZIR AGORA</button>
+                        <button class="btn-primary-action" id="hero-play-btn">▶ ASSISTIR</button>
                     </div>
                 </div>
             </section>
             
-            <main class="content-wrapper" id="rows-wrapper-layout">
+            <main class="content-wrapper">
                 <div class="main-container">
                     <section class="movie-section" id="row-movies-section">
                         <h2 class="section-title">🎬 Filmes em Destaque</h2>
@@ -123,24 +118,70 @@
             </main>
         </div>
 
+        <div id="detailsModal" class="modal-netflix" style="display:none;">
+            <div class="modal-netflix-content">
+                <span class="close-netflix-modal" onclick="fecharModalDetalhes()">&times;</span>
+                <div id="modal-netflix-banner" class="modal-netflix-banner">
+                    <div class="modal-banner-overlay"></div>
+                    <h2 id="modal-media-title">Título do Filme</h2>
+                </div>
+                <div class="modal-netflix-info">
+                    <div class="info-metadata">
+                        <span id="modal-media-rating" class="meta-rating">⭐ 8.5</span>
+                        <span id="modal-media-year" class="meta-year">2026</span>
+                        <span class="meta-hd">HD</span>
+                    </div>
+                    <p id="modal-media-overview" class="modal-overview-text">Carregando sinopse detalhada...</p>
+                    <button class="btn-play-netflix-modal" id="modal-play-btn">▶ Assistir Agora</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="profileModal" class="modal-netflix" style="display:none;">
+            <div class="modal-netflix-content small-modal">
+                <span class="close-netflix-modal" onclick="fecharModalPerfil()">&times;</span>
+                <h3 style="margin-top:0; font-size:22px;">Editar Perfil</h3>
+                <div class="profile-edit-box">
+                    <div class="avatar-selection-grid">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" onclick="selecionarAvatarLocal(this)" class="avatar-option active">
+                        <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.jpg" onclick="selecionarAvatarLocal(this)" class="avatar-option">
+                        <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-v71bc99wxx97t77b.jpg" onclick="selecionarAvatarLocal(this)" class="avatar-option">
+                        <img src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-282g769is65g345z.jpg" onclick="selecionarAvatarLocal(this)" class="avatar-option">
+                    </div>
+                    <div class="netflix-input-group" style="margin-top:20px;">
+                        <input type="text" id="input-profile-username" required placeholder=" ">
+                        <label for="input-profile-username">Nome do Perfil</label>
+                    </div>
+                    <button onclick="salvarConfiguracoesPerfil()" class="btn-netflix-main" style="margin-top:10px;">Salvar Mudanças</button>
+                </div>
+            </div>
+        </div>
+
         <div class="player-overlay" id="playerModal" style="display:none;">
-            <header class="player-top-bar panel-glass">
-                <button class="btn-back-player" onclick="fecharPlayer()">⬅ FECHAR REPRODUTOR</button>
+            <header class="player-top-bar">
+                <button class="btn-back-player" onclick="fecharPlayer()">⬅ VOLTAR</button>
                 <div class="series-control-hub" id="episodes-selectors-box" style="display:none;">
                     <div class="control-unit">
-                        <label>TEMPORADA</label>
+                        <label>T.</label>
                         <input type="number" id="player-season-input" class="input-number-glass" value="1" min="1" onchange="atualizarIframePlayer()">
                     </div>
                     <div class="control-unit">
-                        <label>EPISÓDIO</label>
+                        <label>EP.</label>
                         <input type="number" id="player-episode-input" class="input-number-glass" value="1" min="1" onchange="atualizarIframePlayer()">
                     </div>
                 </div>
             </header>
             <div class="player-viewport">
-                <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no"></iframe>
+                <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen="true" scrolling="no"></iframe>
             </div>
         </div>
+
+        <nav class="mobile-bottom-nav mobile-only">
+            <a href="#homepage-content" onclick="window.scrollTo(0,0);" class="active-nav">🏠<span>Início</span></a>
+            <a href="#row-movies-section">🎬<span>Filmes</span></a>
+            <a href="#row-series-section">📺<span>Séries</span></a>
+            <a href="#row-animes-section">💥<span>Animes</span></a>
+        </nav>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
