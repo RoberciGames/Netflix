@@ -14,12 +14,22 @@ let modoPlayerAtual = 'geral';
 const corDestaque = 'e50914';
 
 let perfilUsuario = {
-    username: "Utilizador",
+    username: "Operador",
     avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
 };
 let avatarTemp = "";
 let biblioteca = { watchlist: {}, reviews: {} };
 let isLoginMode = true;
+
+// FUNÇÃO AUXILIAR: Disparar rastreamento customizado para o Google Analytics
+function trackVirtualPage(pageTitle, pagePath) {
+    if (typeof gtag === 'function') {
+        gtag('event', 'page_view', {
+            page_title: pageTitle,
+            page_path: pagePath
+        });
+    }
+}
 
 // ==========================================
 // FIREBASE E AUTENTICAÇÃO
@@ -69,20 +79,13 @@ auth.onAuthStateChanged(user => {
     if (user) {
         currentUserUID = user.uid;
         document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('desktop-navbar').style.display = '';
-        document.getElementById('mobile-topbar').style.display = '';
-        document.getElementById('mobile-bottom-bar').style.display = '';
+        document.getElementById('app-content').style.display = 'block';
         carregarDadosUsuario();
         irParaHome();
     } else {
         currentUserUID = null;
         document.getElementById('auth-screen').style.display = 'flex';
-        document.getElementById('desktop-navbar').style.display = 'none';
-        document.getElementById('mobile-topbar').style.display = 'none';
-        document.getElementById('mobile-bottom-bar').style.display = 'none';
-        document.getElementById('main-content').style.display = 'none';
-        document.getElementById('search-results-section').style.display = 'none';
-        document.getElementById('watchlist-section').style.display = 'none';
+        document.getElementById('app-content').style.display = 'none';
     }
 });
 
@@ -108,7 +111,7 @@ function salvarDados() {
 }
 
 // ==========================================
-// NAVEGAÇÃO E SCROLL
+// NAVEGAÇÃO ENTRE ABAS ISOLADAS (SPA)
 // ==========================================
 function setNavActive(idDesktop, idMobile) {
     document.querySelectorAll('.nav-menu a').forEach(el => el.classList.remove('active'));
@@ -123,6 +126,7 @@ function irParaHome() {
     document.getElementById('search-results-section').style.display = 'none';
     document.getElementById('watchlist-section').style.display = 'none';
     carregarHome();
+    trackVirtualPage("Início - CineNet", "/home");
 }
 
 function irParaBusca() {
@@ -131,6 +135,7 @@ function irParaBusca() {
     document.getElementById('watchlist-section').style.display = 'none';
     document.getElementById('search-results-section').style.display = 'block';
     document.getElementById('main-search-input').focus();
+    trackVirtualPage("Pesquisar - CineNet", "/search");
 }
 
 function irParaWatchlist() {
@@ -139,6 +144,7 @@ function irParaWatchlist() {
     document.getElementById('search-results-section').style.display = 'none';
     document.getElementById('watchlist-section').style.display = 'block';
     renderizarWatchlist();
+    trackVirtualPage("Minha Lista - CineNet", "/watchlist");
 }
 
 function alternarScrollBody(travar) {
@@ -153,13 +159,13 @@ function alternarScrollBody(travar) {
 }
 
 // ==========================================
-// TMDB E CARREGAMENTO
+// RENDERS E CONEXÃO EXTERNA TMDB
 // ==========================================
 async function fetchTMDB(endpoint) {
     try {
         const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}&language=pt-PT`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Falha na rede ao contactar TMDB");
+        if (!res.ok) throw new Error("Falha na chamada TMDB");
         return await res.json();
     } catch (error) {
         console.error("Erro TMDB:", error);
@@ -208,7 +214,7 @@ function renderCards(items, containerId, forceType = null) {
 }
 
 // ==========================================
-// ABA DE MINHA LISTA (FAVORITOS)
+// ABA DE GERENCIAMENTO DE FAVORITOS (WATCHLIST)
 // ==========================================
 function renderizarWatchlist() {
     const container = document.getElementById('watchlist-grid');
@@ -236,7 +242,7 @@ function renderizarWatchlist() {
 }
 
 // ==========================================
-// BUSCA AVANÇADA
+// ENGINE DE BUSCA AVANÇADA
 // ==========================================
 function iniciarBusca(termo) {
     clearTimeout(debounceTimer);
@@ -286,11 +292,12 @@ async function executarBuscaTMDB(termo) {
 }
 
 // ==========================================
-// MODAL DE DETALHES
+// MODAL DE DETALHES & FAVORITADOS
 // ==========================================
 async function abrirDetalhes(id, tipo) {
     const data = await fetchTMDB(`/${tipo}/${id}`);
     
+    // Objeto consolidado para resolver bugs de posters ausentes nos favoritos
     itemSelecionado = { 
         id: id, 
         tipo: tipo, 
@@ -312,6 +319,14 @@ async function abrirDetalhes(id, tipo) {
 
     document.getElementById('detailsModal').style.display = 'flex';
     alternarScrollBody(true);
+
+    if (typeof gtag === 'function') {
+        gtag('event', 'view_item_details', {
+            'item_id': id,
+            'item_title': itemSelecionado.title,
+            'item_category': tipo
+        });
+    }
 }
 
 function fecharDetalhes() {
@@ -323,9 +338,11 @@ function fecharDetalhes() {
 function alternarWatchlist() {
     if (!itemSelecionado) return;
     const id = itemSelecionado.id;
+    let analyticsAction = "";
 
     if (biblioteca.watchlist[id]) {
         delete biblioteca.watchlist[id];
+        analyticsAction = "remove_from_watchlist";
     } else {
         biblioteca.watchlist[id] = { 
             id: id,
@@ -333,10 +350,19 @@ function alternarWatchlist() {
             poster_path: itemSelecionado.poster_path,
             adicionadoEm: Date.now() 
         };
+        analyticsAction = "add_to_watchlist";
     }
     
     atualizarBotaoWatchlist();
     salvarDados();
+
+    if (typeof gtag === 'function') {
+        gtag('event', analyticsAction, {
+            'item_id': id,
+            'item_name': itemSelecionado.title,
+            'value': 1
+        });
+    }
 
     if (document.getElementById('watchlist-section').style.display === 'block') {
         renderizarWatchlist();
@@ -376,14 +402,14 @@ function carregarReviewUI() {
 function salvarReview() {
     const nota = estrelasAtivas;
     const textoComentario = document.getElementById('review-text').value.trim();
-    if (nota === 0) { alert("Seleciona pelo menos 1 estrela."); return; }
+    if (nota === 0) { alert("Selecione pelo menos 1 estrela."); return; }
     biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: textoComentario };
     salvarDados(); 
     alert("Avaliação salva com sucesso!");
 }
 
 // ==========================================
-// REPRODUTOR DE VÍDEO
+// REPRODUTOR DE VÍDEO COMPLETO
 // ==========================================
 function abrirPlayer(id, tipo) {
     const epBox = document.getElementById('episodes-selectors-box');
@@ -393,6 +419,14 @@ function abrirPlayer(id, tipo) {
     document.getElementById('playerModal').style.display = 'flex';
     alternarScrollBody(true); 
     atualizarIframePlayer();
+
+    if (typeof gtag === 'function' && itemSelecionado) {
+        gtag('event', 'video_play', {
+            'video_id': id,
+            'video_title': itemSelecionado.title,
+            'video_type': tipo
+        });
+    }
 }
 
 function fecharPlayer() { 
@@ -415,18 +449,16 @@ function atualizarIframePlayer() {
 }
 
 // ==========================================
-// GESTÃO DE PERFIL
+// PERFIL DO UTILIZADOR
 // ==========================================
 function abrirModalPerfil() {
     avatarTemp = perfilUsuario.avatar;
     document.getElementById('edit-username').value = perfilUsuario.username;
     document.getElementById('input-profile-avatar-url').value = ""; 
-    
     document.querySelectorAll('.avatar-option').forEach(img => {
         if (img.src === avatarTemp) img.classList.add('active');
         else img.classList.remove('active');
     });
-    
     document.getElementById('profileModal').style.display = 'flex';
     alternarScrollBody(true);
 }
@@ -452,12 +484,7 @@ function salvarPerfil() {
     const urlCustomizada = document.getElementById('input-profile-avatar-url').value.trim();
     
     if (novoNome) perfilUsuario.username = novoNome;
-    
-    if(urlCustomizada !== "") {
-        perfilUsuario.avatar = urlCustomizada;
-    } else {
-        perfilUsuario.avatar = avatarTemp;
-    }
+    perfilUsuario.avatar = urlCustomizada !== "" ? urlCustomizada : avatarTemp;
 
     salvarDados();
     atualizarUIUsuario();
