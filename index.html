@@ -54,6 +54,7 @@
                 <ul class="nav-menu">
                     <li><a href="#" class="active" id="nav-home" onclick="irParaHome()">Início</a></li>
                     <li><a href="#" id="nav-search" onclick="irParaBusca()">Pesquisar</a></li>
+                    <li><a href="#" id="nav-watchlist" onclick="irParaWatchlist()">Minha Lista</a></li>
                 </ul>
             </div>
             <div class="nav-actions">
@@ -84,6 +85,10 @@
         <a href="#" id="mob-nav-search" onclick="irParaBusca()">
             <span>🔍</span>
             <span>Pesquisar</span>
+        </a>
+        <a href="#" id="mob-nav-watchlist" onclick="irParaWatchlist()">
+            <span>⭐</span>
+            <span>Lista</span>
         </a>
     </nav>
 
@@ -140,6 +145,21 @@
             <div style="font-size: 40px; margin-bottom: 15px;">🍿</div>
             <h3>Nenhum resultado encontrado</h3>
             <p>Tenta termos diferentes ou altera o filtro.</p>
+        </div>
+    </div>
+
+    <div id="watchlist-section" style="display:none;">
+        <div class="search-page-container">
+            <h2 style="margin-bottom: 5px; font-size: 28px;">A Minha Lista</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Os teus filmes e séries guardados para ver mais tarde.</p>
+        </div>
+
+        <div class="grid-layout" id="watchlist-grid"></div>
+        <div id="watchlist-empty-state" style="display:none; text-align:center; padding: 50px 20px; color: #666;">
+            <div style="font-size: 40px; margin-bottom: 15px;">⭐</div>
+            <h3>A tua lista está vazia</h3>
+            <p>Navega pelo catálogo e clica em "+ Minha Lista" para adicionar títulos aqui.</p>
+            <button class="btn-secondary-modal" style="margin-top: 15px; padding: 10px 20px;" onclick="irParaHome()">Explorar Catálogo</button>
         </div>
     </div>
 
@@ -217,7 +237,7 @@
             </div>
         </header>
         <div class="player-viewport">
-            <iframe id="videoPlayer" src="" frameborder=\"0\" allowfullscreen=\"true\" scrolling=\"no\"></iframe>
+            <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen="true" scrolling="no"></iframe>
         </div>
     </div>
 

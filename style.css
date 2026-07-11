@@ -187,3 +187,10 @@ body.modal-open { overflow: hidden !important; }
     .player-top-bar { padding: 12px 16px; justify-content: space-between; }
     .btn-back-player { font-size: 13px; padding: 8px 14px; }
 }
+#watchlist-section {
+    padding: 110px 4% 40px; 
+    min-height: 90vh;
+}
+@media (max-width: 768px) {
+    #watchlist-section { padding-top: 40px !important; }
+}

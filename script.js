@@ -82,6 +82,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('mobile-bottom-bar').style.display = 'none';
         document.getElementById('main-content').style.display = 'none';
         document.getElementById('search-results-section').style.display = 'none';
+        document.getElementById('watchlist-section').style.display = 'none';
     }
 });
 
@@ -120,14 +121,25 @@ function irParaHome() {
     setNavActive('nav-home', 'mob-nav-home');
     document.getElementById('main-content').style.display = 'block';
     document.getElementById('search-results-section').style.display = 'none';
+    document.getElementById('watchlist-section').style.display = 'none';
     carregarHome();
 }
 
 function irParaBusca() {
     setNavActive('nav-search', 'mob-nav-search');
     document.getElementById('main-content').style.display = 'none';
+    document.getElementById('watchlist-section').style.display = 'none';
     document.getElementById('search-results-section').style.display = 'block';
     document.getElementById('main-search-input').focus();
+}
+
+// NOVA FUNÇÃO: IR PARA A LISTA DE FAVORITOS DEDICADA
+function irParaWatchlist() {
+    setNavActive('nav-watchlist', 'mob-nav-watchlist');
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('search-results-section').style.display = 'none';
+    document.getElementById('watchlist-section').style.display = 'block';
+    renderizarWatchlist();
 }
 
 function alternarScrollBody(travar) {
@@ -197,6 +209,37 @@ function renderCards(items, containerId, forceType = null) {
 }
 
 // ==========================================
+// ABA DE MINHA LISTA (FAVORITOS)
+// ==========================================
+function renderizarWatchlist() {
+    const container = document.getElementById('watchlist-grid');
+    const emptyState = document.getElementById('watchlist-empty-state');
+    container.innerHTML = '';
+
+    // Organiza para os mais recentes ficarem primeiro
+    const itens = Object.values(biblioteca.watchlist).sort((a, b) => b.adicionadoEm - a.adicionadoEm);
+    
+    // Filtra caso haja itens antigos na base de dados guardados da maneira antiga sem poster
+    const itensValidos = itens.filter(item => item && item.poster_path);
+
+    if (itensValidos.length === 0) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+        itensValidos.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.innerHTML = `
+                <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="Poster" loading="lazy">
+                <div class="watched-indicator">✔</div>
+            `;
+            card.onclick = () => abrirDetalhes(item.id, item.tipo);
+            container.appendChild(card);
+        });
+    }
+}
+
+// ==========================================
 // BUSCA AVANÇADA
 // ==========================================
 function iniciarBusca(termo) {
@@ -250,11 +293,18 @@ async function executarBuscaTMDB(termo) {
 // MODAL DE DETALHES
 // ==========================================
 async function abrirDetalhes(id, tipo) {
-    itemSelecionado = { id, tipo };
     const data = await fetchTMDB(`/${tipo}/${id}`);
     
+    // Armazena todas as infos importantes no item selecionado (para guardar com a foto)
+    itemSelecionado = { 
+        id: id, 
+        tipo: tipo, 
+        poster_path: data.poster_path, 
+        title: data.title || data.name 
+    };
+    
     document.getElementById('modal-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${data.backdrop_path || data.poster_path})`;
-    document.getElementById('modal-title').innerText = data.title || data.name;
+    document.getElementById('modal-title').innerText = itemSelecionado.title;
     document.getElementById('modal-overview').innerText = data.overview || "Sem descrição disponível.";
     
     const year = (data.release_date || data.first_air_date || "N/A").substring(0, 4);
@@ -275,14 +325,29 @@ function fecharDetalhes() {
     alternarScrollBody(false);
 }
 
+// ATUALIZADA: Agora guarda o Objeto Completo com Foto (Bugs Resolvidos)
 function alternarWatchlist() {
     if (!itemSelecionado) return;
-    if (biblioteca.watchlist[itemSelecionado.id]) delete biblioteca.watchlist[itemSelecionado.id];
-    else biblioteca.watchlist[itemSelecionado.id] = { adicionadoEm: Date.now() };
+    const id = itemSelecionado.id;
+
+    if (biblioteca.watchlist[id]) {
+        delete biblioteca.watchlist[id];
+    } else {
+        biblioteca.watchlist[id] = { 
+            id: id,
+            tipo: itemSelecionado.tipo,
+            poster_path: itemSelecionado.poster_path,
+            adicionadoEm: Date.now() 
+        };
+    }
     
     atualizarBotaoWatchlist();
     salvarDados();
-    carregarHome(); 
+
+    // Se estiver na aba da watchlist, atualiza a grelha em tempo real
+    if (document.getElementById('watchlist-section').style.display === 'block') {
+        renderizarWatchlist();
+    }
 }
 
 function atualizarBotaoWatchlist() {
@@ -321,7 +386,7 @@ function salvarReview() {
     if (nota === 0) { alert("Seleciona pelo menos 1 estrela."); return; }
     biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: textoComentario };
     salvarDados(); 
-    alert("Avaliação guardada com sucesso!");
+    alert("Avaliação salva com sucesso!");
 }
 
 // ==========================================
@@ -357,12 +422,12 @@ function atualizarIframePlayer() {
 }
 
 // ==========================================
-// GESTÃO DE PERFIL E AVATARES (URL PERSONALIZADO)
+// GESTÃO DE PERFIL
 // ==========================================
 function abrirModalPerfil() {
     avatarTemp = perfilUsuario.avatar;
     document.getElementById('edit-username').value = perfilUsuario.username;
-    document.getElementById('input-profile-avatar-url').value = ""; // Limpa a URL
+    document.getElementById('input-profile-avatar-url').value = ""; 
     
     document.querySelectorAll('.avatar-option').forEach(img => {
         if (img.src === avatarTemp) img.classList.add('active');
