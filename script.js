@@ -14,7 +14,7 @@ let modoPlayerAtual = 'geral';
 const corDestaque = 'e50914';
 
 let perfilUsuario = {
-    username: "Operador",
+    username: "Utilizador",
     avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
 };
 let avatarTemp = "";
@@ -107,7 +107,7 @@ function salvarDados() {
 }
 
 // ==========================================
-// NAVEGAÇÃO
+// NAVEGAÇÃO E SCROLL
 // ==========================================
 function setNavActive(idDesktop, idMobile) {
     document.querySelectorAll('.nav-menu a').forEach(el => el.classList.remove('active'));
@@ -131,8 +131,14 @@ function irParaBusca() {
 }
 
 function alternarScrollBody(travar) {
-    if (travar) document.body.classList.add('modal-open');
-    else document.body.classList.remove('modal-open');
+    if (travar) {
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+        document.body.classList.add('modal-open');
+    } else {
+        document.body.style.paddingRight = '0px';
+        document.body.classList.remove('modal-open');
+    }
 }
 
 // ==========================================
@@ -146,7 +152,7 @@ async function fetchTMDB(endpoint) {
         return await res.json();
     } catch (error) {
         console.error("Erro TMDB:", error);
-        return { results: [] }; // Retorna array vazio em caso de erro para não quebrar a UI
+        return { results: [] }; 
     }
 }
 
@@ -162,7 +168,7 @@ async function carregarHome() {
         document.getElementById('hero-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${hero.backdrop_path})`;
         document.getElementById('hero-title').innerText = hero.title || hero.name;
         document.getElementById('hero-desc').innerText = hero.overview || "Sem descrição disponível.";
-        document.getElementById('hero-play-btn').onclick = () => abrirPlayer(hero.id, hero.media_type);
+        document.getElementById('hero-play-btn').onclick = () => abrirPlayer(hero.id, hero.media_type || 'movie');
         document.getElementById('hero-info-btn').onclick = () => abrirDetalhes(hero.id, hero.media_type || 'movie');
     }
 
@@ -173,6 +179,7 @@ async function carregarHome() {
 
 function renderCards(items, containerId, forceType = null) {
     const container = document.getElementById(containerId);
+    if(!container) return;
     container.innerHTML = '';
     items.forEach(item => {
         if (!item.poster_path) return;
@@ -192,15 +199,6 @@ function renderCards(items, containerId, forceType = null) {
 // ==========================================
 // BUSCA AVANÇADA
 // ==========================================
-function handleSearchPC(e) {
-    if (e.key === 'Enter') {
-        const val = e.target.value;
-        irParaBusca();
-        document.getElementById('main-search-input').value = val;
-        iniciarBusca(val);
-    }
-}
-
 function iniciarBusca(termo) {
     clearTimeout(debounceTimer);
     document.getElementById('search-clear').style.display = termo.length > 0 ? 'block' : 'none';
@@ -320,14 +318,14 @@ function carregarReviewUI() {
 function salvarReview() {
     const nota = estrelasAtivas;
     const textoComentario = document.getElementById('review-text').value.trim();
-    if (nota === 0) { alert("Selecione pelo menos 1 estrela."); return; }
+    if (nota === 0) { alert("Seleciona pelo menos 1 estrela."); return; }
     biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: textoComentario };
     salvarDados(); 
-    alert("Avaliação salva com sucesso!");
+    alert("Avaliação guardada com sucesso!");
 }
 
 // ==========================================
-// REPRODUTOR DE VÍDEO CORRIGIDO
+// REPRODUTOR DE VÍDEO
 // ==========================================
 function abrirPlayer(id, tipo) {
     const epBox = document.getElementById('episodes-selectors-box');
@@ -359,15 +357,18 @@ function atualizarIframePlayer() {
 }
 
 // ==========================================
-// GESTÃO DE PERFIL
+// GESTÃO DE PERFIL E AVATARES (URL PERSONALIZADO)
 // ==========================================
 function abrirModalPerfil() {
     avatarTemp = perfilUsuario.avatar;
     document.getElementById('edit-username').value = perfilUsuario.username;
+    document.getElementById('input-profile-avatar-url').value = ""; // Limpa a URL
+    
     document.querySelectorAll('.avatar-option').forEach(img => {
         if (img.src === avatarTemp) img.classList.add('active');
         else img.classList.remove('active');
     });
+    
     document.getElementById('profileModal').style.display = 'flex';
     alternarScrollBody(true);
 }
@@ -378,15 +379,28 @@ function fecharModalPerfil() {
 }
 
 function selecionarAvatar(imgElement) {
+    document.getElementById('input-profile-avatar-url').value = "";
     document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('active'));
     imgElement.classList.add('active');
     avatarTemp = imgElement.src;
 }
 
+function limparSelecaoAvatar() {
+    document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
+}
+
 function salvarPerfil() {
     const novoNome = document.getElementById('edit-username').value.trim();
+    const urlCustomizada = document.getElementById('input-profile-avatar-url').value.trim();
+    
     if (novoNome) perfilUsuario.username = novoNome;
-    perfilUsuario.avatar = avatarTemp;
+    
+    if(urlCustomizada !== "") {
+        perfilUsuario.avatar = urlCustomizada;
+    } else {
+        perfilUsuario.avatar = avatarTemp;
+    }
+
     salvarDados();
     atualizarUIUsuario();
     fecharModalPerfil();
