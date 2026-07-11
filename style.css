@@ -1,22 +1,12 @@
 :root {
-    --primary-neon: #E50914; /* Vermelho Netflix */
+    --primary-neon: #E50914; 
     --primary-glow: rgba(229, 9, 20, 0.45);
     --surface-dark: #050505;
     --surface-panel: rgba(18, 18, 18, 0.75);
     --glass-border: rgba(255, 255, 255, 0.07);
     --text-primary: #ffffff;
     --text-secondary: #aaaaaa;
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
-
-html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 85px;
-    -webkit-text-size-adjust: 100%;
-    box-sizing: border-box;
-}
-
-*, *:before, *:after { box-sizing: inherit; }
 
 body {
     font-family: 'Outfit', sans-serif;
@@ -24,272 +14,176 @@ body {
     color: var(--text-primary);
     margin: 0; padding: 0;
     overflow-x: hidden;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
 body.modal-open { overflow: hidden !important; }
 
-@media (min-width: 769px) {
-    .mobile-only { display: none !important; }
-    body { padding-bottom: 0; }
-}
-@media (max-width: 768px) {
-    .pc-only { display: none !important; }
-    body { padding-bottom: calc(70px + var(--safe-area-bottom)); } 
-}
-
 /* ==========================================
-   TELA DE AUTENTICAÇÃO (ESTILO NETFLIX)
+   TELA DE LOGIN ESTILO NETFLIX PREMIUM
 ========================================== */
-#auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 5000; background: #000; display: flex; align-items: center; justify-content: center; }
-.auth-bg-netflix { position: absolute; width: 100%; height: 100%; background: url('https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-eca797920445/834a3623-2882-4467-bbdf-ecbc0ffef657/BR-pt-20240311-popsignuptwoweeks-perspective_alpha_website_large.jpg') center/cover; opacity: 0.4; }
-.auth-container-netflix { position: relative; z-index: 2; width: 100%; max-width: 450px; background-color: rgba(0,0,0,0.85); padding: 60px 68px 40px; border-radius: 4px; box-sizing: border-box; }
-#auth-title { color: #fff; font-size: 32px; font-weight: 700; margin-bottom: 28px; margin-top: 0; }
-
-.input-netflix { position: relative; margin-bottom: 16px; }
-.input-netflix input { width: 100%; padding: 24px 20px 8px 20px; background: #333; border: none; border-radius: 4px; color: #fff; font-size: 16px; outline: none; box-sizing: border-box; font-family: 'Outfit'; }
-.input-netflix input:focus { background: #444; }
-.input-netflix label { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #8c8c8c; font-size: 15px; transition: 0.2s ease all; pointer-events: none; }
-.input-netflix input:focus ~ label, .input-netflix input:not(:placeholder-shown) ~ label { top: 12px; font-size: 11px; font-weight: 600; }
-
-.btn-netflix { width: 100%; padding: 16px; background: var(--primary-neon); color: #fff; border: none; border-radius: 4px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 24px; font-family: 'Outfit'; transition: 0.2s; }
-.btn-netflix:hover { background: #c90812; }
-
-.auth-footer-netflix { margin-top: 40px; display: flex; flex-direction: column; gap: 15px; }
-.auth-switch-wrapper { display: flex; align-items: center; gap: 5px; font-size: 16px; }
-#auth-link { background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 0; font-family: 'Outfit'; }
-#auth-link:hover { text-decoration: underline; }
-
-.btn-guest { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #ccc; padding: 10px; border-radius: 4px; cursor: pointer; font-family: 'Outfit'; font-size: 14px; transition: 0.2s; }
-.btn-guest:hover { border-color: #fff; color: #fff; }
-
-/* BRANDING E LOGO */
-.app-brand { font-size: 24px; font-weight: 800; text-decoration: none; letter-spacing: 1.5px; }
-.app-brand .brand-accent { color: var(--primary-neon); text-shadow: 0 0 10px var(--primary-glow); }
-.app-brand .brand-light { color: var(--text-primary); }
-
-/* NAVBAR DESKTOP */
-#desktop-navbar {
-    position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
-    background: linear-gradient(to bottom, rgba(5,5,5,0.95) 70%, transparent);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border); padding: 15px 4%;
-}
-.nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1600px; margin: 0 auto; }
-.nav-menu { display: flex; list-style: none; gap: 25px; margin: 0; padding: 0; }
-.nav-menu a { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 600; text-transform: uppercase; transition: 0.2s; }
-.nav-menu a:hover, .nav-menu a.active { color: var(--text-primary); text-shadow: 0 0 8px var(--primary-glow); }
-.nav-actions { display: flex; align-items: center; gap: 20px; }
-
-.search-bar { display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 6px 14px; border-radius: 20px; }
-.search-input-field { background: none; border: none; color: white; outline: none; font-family: 'Outfit'; font-size: 14px; width: 180px; }
-
-/* PERFIL NAV */
-.profile-menu-container { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 20px; border: 1px solid transparent; transition: 0.3s; }
-.profile-menu-container:hover { background: rgba(255,255,255,0.05); border-color: var(--glass-border); }
-.nav-avatar { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; }
-.nav-username { font-size: 13px; font-weight: 700; color: white; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* NAVBAR INFERIOR ANDROID */
-#mobile-navigation {
-    position: fixed; bottom: 0; left: 0; width: 100%; z-index: 999;
-    background: rgba(10, 10, 10, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--glass-border); padding-bottom: var(--safe-area-bottom);
-    box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
-}
-.mobile-nav-wrapper { display: flex; justify-content: space-around; height: 65px; align-items: center; }
-.mobile-tab { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-secondary); opacity: 0.6; transition: 0.2s; }
-.mobile-tab.active { color: var(--primary-neon); opacity: 1; text-shadow: 0 0 8px var(--primary-glow); }
-.tab-icon { font-size: 20px; margin-bottom: 3px; }
-.tab-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* BUSCA MOBILE */
-#mobile-search-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-    background: #0a0a0a; z-index: 1001; padding: 10px 15px; border-bottom: 1px solid var(--glass-border);
-}
-.mobile-search-header { display: flex; gap: 15px; width: 100%; height: 100%; }
-#mobile-search-input { flex: 1; background: #151515; border: 1px solid var(--glass-border); border-radius: 8px; color: white; padding: 0 15px; font-family: 'Outfit'; outline: none; }
-.btn-close-search { background: none; border: none; color: var(--primary-neon); font-weight: 700; font-family: 'Outfit'; }
-
-/* BOTOES GERAIS */
-.btn-primary { background: var(--primary-neon); color: white; border: none; padding: 12px 24px; font-weight: 700; border-radius: 6px; cursor: pointer; font-family: 'Outfit'; width: 100%; transition: 0.2s; box-shadow: 0 4px 15px var(--primary-glow); text-transform: uppercase; letter-spacing: 0.5px; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
-.btn-secondary { background: transparent; color: white; border: 1px solid var(--glass-border); padding: 12px 24px; font-weight: 700; border-radius: 6px; cursor: pointer; font-family: 'Outfit'; transition: 0.2s; text-transform: uppercase; }
-.btn-secondary:hover { background: rgba(255,255,255,0.05); border-color: white; }
-.btn-tertiary { background: rgba(255,255,255,0.04); color: var(--text-secondary); border: 1px solid var(--glass-border); padding: 12px 24px; font-weight: 600; border-radius: 6px; cursor: pointer; font-family: 'Outfit'; }
-.btn-disconnect { background: transparent; border: 1px solid var(--primary-neon); color: var(--primary-neon); padding: 6px 16px; border-radius: 20px; font-family: 'Outfit'; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.btn-disconnect:hover { background: var(--primary-neon); color: white; }
-
-/* HERO SHOWCASE */
-.hero-showcase { position: relative; height: 75vh; max-height: 700px; background-size: cover; background-position: center 20%; display: flex; align-items: center; padding: 0 6%; margin-top: 60px; }
-@media (min-width: 769px) { .hero-showcase { margin-top: 0; height: 85vh; } }
-.hero-overlay-shadow { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(5,5,5,0.9) 30%, transparent 80%), linear-gradient(to top, var(--surface-dark) 0%, transparent 30%); }
-.hero-inner { position: relative; z-index: 2; max-width: 600px; }
-.hero-badge { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: var(--text-secondary); display: block; margin-bottom: 10px; text-shadow: 0 0 5px rgba(255,255,255,0.2);}
-.hero-title-text { font-size: 42px; font-weight: 800; margin: 0 0 15px 0; line-height: 1.1; text-transform: uppercase; }
-@media (min-width: 769px) { .hero-title-text { font-size: 58px; } }
-.hero-description { color: var(--text-secondary); font-size: 15px; line-height: 1.5; margin-bottom: 25px; }
-.btn-primary-action { background: white; color: black; border: none; font-weight: 800; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'Outfit'; font-size: 16px; transition: 0.2s; }
-.btn-primary-action:hover { transform: scale(1.03); background: rgba(255,255,255,0.85); }
-
-/* SELETOR DE CATALOGO (MENU SUPERIOR) */
-.catalog-selector-menu {
-    display: flex; gap: 10px; padding: 20px 4% 10px;
-    overflow-x: auto; scrollbar-width: none;
-    position: sticky; top: 65px; z-index: 90;
-    background: linear-gradient(to bottom, #050505 80%, transparent);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-}
-.catalog-selector-menu::-webkit-scrollbar { display: none; }
-.catalog-btn {
-    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border);
-    color: var(--text-secondary); padding: 8px 18px; border-radius: 20px;
-    font-family: 'Outfit'; font-size: 13px; font-weight: 700; cursor: pointer;
-    transition: all 0.2s ease; white-space: nowrap; text-transform: uppercase;
-}
-.catalog-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
-.catalog-btn.active {
-    background: var(--text-primary); color: var(--surface-dark);
-    border-color: var(--text-primary); 
-}
-
-/* FILEIRAS DE POSTERS E CONTADORES */
-.content-wrapper { padding: 10px 0 60px; }
-.movie-row { padding: 0 4%; margin-bottom: 40px; position: relative; transition: opacity 0.3s ease; }
-.row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.section-title { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
-
-.row-counter { 
-    font-size: 10px; font-weight: 800; color: #fff; 
-    border: 1px solid var(--glass-border); padding: 3px 8px; border-radius: 4px;
-    background: rgba(255, 255, 255, 0.05); 
-    letter-spacing: 1px;
-}
-
-.row-wrapper { position: relative; display: flex; align-items: center; }
-.row-posters { display: flex; overflow-x: auto; padding: 10px 0; gap: 14px; width: 100%; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.row-posters::-webkit-scrollbar { display: none; }
-
-.movie-card { flex-shrink: 0; width: 140px; height: 210px; border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; transition: transform 0.3s, box-shadow 0.3s; background: #111; }
-@media (min-width: 769px) { .movie-card { width: 165px; height: 248px; } }
-.movie-card:hover { transform: scale(1.04); box-shadow: 0 8px 20px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); }
-.movie-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.watched-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--primary-neon); }
-
-.scroll-btn { position: absolute; width: 36px; height: 36px; background: rgba(5,5,5,0.8); border: 1px solid var(--glass-border); color: white; border-radius: 50%; font-size: 16px; cursor: pointer; z-index: 10; opacity: 0; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-.movie-row:hover .scroll-btn { opacity: 1; }
-.scroll-btn:hover { background: #fff; color: #000; }
-.scroll-btn.left { left: -15px; } .scroll-btn.right { right: -15px; }
-@media (max-width: 768px) { .scroll-btn { display: none !important; } }
-
-/* MODAL DE DETALHES */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.modal-window { background: #0f0f0f; width: 100%; max-width: 850px; position: relative; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid var(--glass-border); }
-
-@media (min-width: 769px) { .modal-window { border-radius: 12px; max-height: 90vh; } }
-@media (max-width: 768px) { .modal-overlay { align-items: flex-end; } .modal-window { border-radius: 20px 20px 0 0; max-height: 85vh; padding-bottom: var(--safe-area-bottom); } }
-
-.modal-dismiss { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); color: white; border-radius: 50%; cursor: pointer; z-index: 10; font-size: 14px; transition: 0.2s; }
-.modal-dismiss:hover { background: #fff; color: #000; }
-
-.modal-banner-bg { position: relative; height: 260px; background-size: cover; background-position: center top; }
-@media (min-width: 769px) { .modal-banner-bg { height: 340px; } }
-.modal-banner-gradient { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #0f0f0f 0%, transparent 90%); display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 6%; }
-.modal-banner-gradient h2 { font-size: 28px; margin: 0 0 15px 0; font-weight: 800; text-transform: uppercase; }
-@media (min-width: 769px) { .modal-banner-gradient h2 { font-size: 38px; } }
-.modal-controls { display: flex; gap: 12px; flex-wrap: wrap; }
-@media (max-width: 768px) { .modal-controls button { width: 100%; } }
-
-.modal-details-body { padding: 30px 6%; display: flex; gap: 30px; overflow-y: auto; }
-@media (max-width: 768px) { .modal-details-body { flex-direction: column; padding: 20px 6%; } }
-.modal-summary { flex: 1.7; }
-.modal-user-actions { flex: 1.3; }
-
-.metadata-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; }
-.relevance-score { color: #46d369; font-weight: 700; }
-.badge-tech { border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); padding: 1px 6px; font-size: 11px; font-weight: 700; border-radius: 3px; }
-.summary-text { color: var(--text-secondary); font-size: 15px; line-height: 1.6; margin: 0; }
-
-.panel-glass { background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 15px; border-radius: 10px; }
-.panel-glass h3 { margin: 0 0 10px 0; font-size: 12px; letter-spacing: 1px; color: var(--text-secondary); }
-.star-rating-row { display: flex; gap: 5px; font-size: 24px; color: #333; cursor: pointer; margin-bottom: 10px; }
-.star-rating-row span.active { color: #f5c518; }
-.input-textarea-glass { width: 100%; height: 75px; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 6px; color: white; padding: 10px; font-family: 'Outfit'; resize: none; outline: none; font-size: 14px; }
-.input-textarea-glass:focus { border-color: #fff; }
-
-/* MODAL DE PERFIL */
-.profile-window { max-width: 450px !important; }
-.profile-header-bg { height: 120px; background: linear-gradient(to right, rgba(0,0,0,0.5), transparent), url('https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-eca797920445/834a3623-2882-4467-bbdf-ecbc0ffef657/BR-pt-20240311-popsignuptwoweeks-perspective_alpha_website_large.jpg') center/cover; opacity: 0.8; }
-.profile-body { padding: 30px; position: relative; margin-top: -30px; background: linear-gradient(to top, #0f0f0f 85%, transparent); }
-.avatar-selection-grid { display: flex; gap: 15px; justify-content: space-between; overflow-x: auto; padding-bottom: 5px; }
-.selectable-avatar { width: 70px; height: 70px; border-radius: 4px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; object-fit: cover; opacity: 0.6; }
-.selectable-avatar.active { border-color: #fff; opacity: 1; transform: scale(1.05); }
-
-/* GRID RESULTADOS */
-#search-results-section { display: none; padding: 90px 4% 20px; min-height: 85vh; }
-@media (max-width: 768px) { #search-results-section { padding-top: 30px; } }
-.grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-@media (min-width: 769px) { .grid-layout { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; } }
-.grid-layout .movie-card { width: 100%; height: auto; aspect-ratio: 2/3; }
-
-/* PLAYER NATIVO API (mgeb.top) */
-.player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #000; z-index: 4000; display: none; flex-direction: column; }
-.player-top-bar { position: absolute; top: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); border: none; border-radius: 0; }
-@media (max-width: 768px) { .player-top-bar { flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px; } }
-.btn-back-player { background: none; border: 1px solid #fff; color: white; font-family: 'Outfit'; font-weight: 700; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; text-transform: uppercase; }
-.btn-back-player:hover { background: #fff; color: #000; }
-.series-control-hub { display: flex; gap: 15px; }
-.control-unit { display: flex; align-items: center; gap: 6px; }
-.control-unit label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
-.input-number-glass { background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); color: white; width: 55px; text-align: center; padding: 5px; border-radius: 4px; font-family: 'Outfit'; font-weight: 700; outline: none; }
-.player-viewport { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-.player-viewport iframe { width: 100%; height: 100%; border: none; }
-@media (max-width: 768px) { .player-viewport iframe { height: auto; aspect-ratio: 16/9; } }
-.alert-box { background: rgba(229,9,20,0.1); border: 1px solid var(--primary-neon); color: white; padding: 10px; border-radius: 4px; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; }
-/* ==========================================
-   INTEGRAÇÃO DA LOGO OFICIAL CINENET
-========================================== */
-
-/* Ajuste da Logo na tela de Login */
-.app-brand-logo-container {
-    text-align: center;
-    margin-bottom: 25px;
-    width: 100%;
-}
-
-.auth-logo-img {
-    height: 75px; 
-    width: auto;
-    object-fit: contain;
-    filter: drop-shadow(0px 4px 10px rgba(229, 9, 20, 0.3));
-}
-
-/* Ajuste da Logo na Barra de Navegação Desktop */
-.app-brand-logo-nav {
+#auth-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 9999;
     display: flex;
     align-items: center;
+    justify-content: center;
+    background: #000;
+}
+
+.auth-bg-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.95) 100%),
+                radial-gradient(circle, rgba(20,20,20,0.2) 0%, #050505 100%);
+    background-image: url('https://assets.nflxext.com/ffe/siteui/vlv3/ca6a7616-0acb-4bc7-9356-97ff199fa6fe/f55a734a-9b77-440a-b333-ac4f0c1df473/BR-pt-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    opacity: 0.5;
+}
+
+.auth-container-netflix {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+}
+
+.auth-card-netflix {
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 8px;
+    padding: 60px 68px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 500px) {
+    .auth-card-netflix { padding: 40px 20px; background-color: #000; border: none; }
+}
+
+.app-brand-netflix, .app-brand {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 25px;
     text-decoration: none;
+    display: block;
 }
 
-.nav-logo-img {
-    height: 42px; 
-    width: auto;
-    object-fit: contain;
-    transition: transform 0.2s ease;
+.brand-accent { color: var(--primary-neon); }
+.brand-light { color: #fff; }
+
+.auth-card-netflix h2 {
+    color: #fff; font-size: 32px; font-weight: 700; margin: 0 0 28px 0;
 }
 
-.nav-logo-img:hover {
-    transform: scale(1.03);
+.netflix-input-group { position: relative; margin-bottom: 16px; width: 100%; }
+
+.netflix-input-group input {
+    width: 100%; height: 56px;
+    background: #333333; border: none; border-radius: 4px;
+    padding: 20px 20px 0px 20px; color: #fff; font-size: 16px;
+    box-sizing: border-box; outline: none; transition: background 0.2s;
 }
 
-/* Ajuste responsivo para celulares */
-@media (max-width: 768px) {
-    .auth-logo-img {
-        height: 60px;
-    }
-    .nav-logo-img {
-        height: 35px;
-    }
+.netflix-input-group input:focus { background: #454545; }
+
+.netflix-input-group label {
+    position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+    color: #8c8c8c; font-size: 16px; transition: all 0.15s ease; pointer-events: none;
 }
+
+.netflix-input-group input:focus ~ label,
+.netflix-input-group input:not(:placeholder-shown) ~ label {
+    top: 15px; font-size: 11px; color: #8c8c8c;
+}
+
+.btn-netflix-main {
+    width: 100%; height: 48px; background: #E50914; color: #fff;
+    border: none; border-radius: 4px; font-size: 16px; font-weight: 700;
+    margin-top: 24px; cursor: pointer; transition: background 0.2s;
+}
+
+.btn-netflix-main:hover { background: #C11119; }
+
+.auth-extra-netflix {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 15px; font-size: 13px; color: #b3b3b3;
+}
+
+.auth-footer-netflix { margin-top: 40px; color: #737373; font-size: 15px; }
+
+.auth-footer-netflix button {
+    background: none; border: none; color: #fff; font-size: 15px;
+    cursor: pointer; padding: 0; margin-left: 5px;
+}
+
+.alert-box-netflix {
+    background: #e87c03; color: #fff; border-radius: 4px; padding: 12px 15px;
+    margin-top: 20px; font-size: 14px; text-align: center;
+}
+
+/* ==========================================
+   ESTILOS DO CATÁLOGO E PLAYER
+========================================== */
+#desktop-navbar {
+    position: fixed; top: 0; width: 100%; height: 70px;
+    background: rgba(0,0,0,0.9); z-index: 100;
+    display: flex; align-items: center; padding: 0 4%;
+}
+
+.nav-container { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+
+.nav-menu { display: flex; list-style: none; gap: 20px; }
+.nav-menu a { color: #e5e5e5; text-decoration: none; font-size: 14px; }
+.nav-menu a:hover { color: #fff; }
+
+.nav-actions { display: flex; align-items: center; gap: 20px; }
+
+.hero-showcase {
+    height: 70vh; background-size: cover; background-position: center;
+    display: flex; align-items: center; padding: 0 4%; position: relative;
+    margin-top: 70px;
+}
+
+.hero-inner { position: relative; z-index: 2; max-width: 600px; }
+.hero-title-text { font-size: 3rem; margin: 10px 0; font-weight: 800; }
+.hero-description { font-size: 1.1rem; margin-bottom: 20px; color: #ccc; }
+
+.btn-primary-action {
+    background: var(--primary-neon); color: white; border: none;
+    padding: 12px 30px; font-size: 16px; font-weight: 700; border-radius: 4px;
+    cursor: pointer;
+}
+
+.main-container { padding: 0 4% 50px 4%; margin-top: -50px; position: relative; z-index: 5; }
+
+.movie-section { margin-bottom: 40px; }
+.section-title { font-size: 20px; font-weight: 600; margin-bottom: 15px; }
+
+.movie-row {
+    display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;
+    scrollbar-width: none;
+}
+.movie-row::-webkit-scrollbar { display: none; }
+
+.movie-card {
+    min-width: 160px; max-width: 160px; cursor: pointer;
+    transition: transform 0.3s ease; border-radius: 4px; overflow: hidden;
+}
+.movie-card:hover { transform: scale(1.08); z-index: 10; }
+.movie-card img { width: 100%; height: auto; display: block; border-radius: 4px; }
+
+/* Player */
+.player-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; z-index: 99999; display: flex; flex-direction: column;
+}
+.player-top-bar {
+    display: flex; justify-content: space-between; padding: 15px;
+    background: rgba(0,0,0,0.8);
+}
+.player-viewport { flex: 1; width: 100%; }
+.player-viewport iframe { width: 100%; height: 100%; }

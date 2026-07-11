@@ -16,38 +16,41 @@
 <body>
 
     <div id="auth-screen">
-        <div class="auth-bg"></div>
-        <div class="auth-container">
-            <div class="auth-card">
+        <div class="auth-bg-overlay"></div>
+        <div class="auth-container-netflix">
+            <div class="auth-card-netflix">
                 
-                <div class="app-brand">
+                <div class="app-brand-netflix">
                     <span class="brand-accent">CINE</span><span class="brand-light">NET</span>
                 </div>
-
-                <h2 id="auth-title">NÚCLEO DE TRANSMISSÃO</h2>
-                <p class="auth-subtitle">Insira as suas credenciais de acesso</p>
+                
+                <h2 id="auth-title">Entrar</h2>
                 
                 <form id="auth-form" onsubmit="handleAuth(event)">
-                    <div class="input-field">
+                    <div class="netflix-input-group">
                         <input type="email" id="auth-user" required placeholder=" ">
-                        <label>Email de Utilizador</label>
-                        <div class="bar"></div>
+                        <label for="auth-user">Email de Utilizador</label>
                     </div>
-                    <div class="input-field">
+                    <div class="netflix-input-group">
                         <input type="password" id="auth-pass" required placeholder=" ">
-                        <label>Chave de Segurança</label>
-                        <div class="bar"></div>
+                        <label for="auth-pass">Chave de Segurança</label>
                     </div>
-                    <button type="submit" class="btn-primary" id="auth-btn">AUTENTICAR SISTEMA</button>
-                    
-                    <button type="button" class="btn-secondary" style="width: 100%; margin-top: 12px; border-color: var(--primary-neon); color: white;" onclick="entrarComoConvidado()">🌐 ENTRAR COMO CONVIDADO (SEM LOGIN)</button>
+                    <button type="submit" class="btn-netflix-main" id="auth-btn">Entrar</button>
                 </form>
                 
-                <div class="auth-footer">
-                    <span id="auth-switch-text">Novo por aqui?</span>
-                    <button onclick="toggleAuthMode()" id="auth-link">Criar conta de acesso</button>
+                <div class="auth-extra-netflix">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember" checked>
+                        <label for="remember">Lembre-se de mim</label>
+                    </div>
+                    <a href="#" class="help-link">Precisa de ajuda?</a>
                 </div>
-                <div id="auth-error" class="alert-box" style="display:none;"></div>
+
+                <div class="auth-footer-netflix">
+                    <span id="auth-switch-text">Novo por aqui?</span>
+                    <button onclick="toggleAuthMode()" id="auth-link">Assine agora.</button>
+                </div>
+                <div id="auth-error" class="alert-box-netflix" style="display:none;"></div>
             </div>
         </div>
     </div>
@@ -67,7 +70,6 @@
                     <li><a href="#row-series-section">Séries</a></li>
                     <li><a href="#row-animes-section">Animes</a></li>
                     <li><a href="#row-cartoons-section">Desenhos</a></li>
-                    <li><a href="#row-watchlist-section">Minha Lista</a></li>
                 </ul>
                 <div class="nav-actions">
                     <div class="search-bar">
@@ -78,42 +80,10 @@
                         <img id="nav-avatar-img-pc" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar">
                         <span id="nav-username-txt-pc" class="nav-username">Utilizador</span>
                     </div>
-                    <button onclick="fazerLogout()" class="btn-disconnect">Sair</button>
+                    <button onclick="fazerLogout()" class="btn-disconnect" style="background:none; border:1px solid #fff; color:#fff; padding:5px 10px; border-radius:4px; cursor:pointer;">Sair</button>
                 </div>
             </div>
         </header>
-
-        <nav id="mobile-navigation" class="mobile-only">
-            <div class="mobile-nav-wrapper">
-                <a href="#homepage-content" class="mobile-tab active" onclick="limparBusca()">
-                    <span class="tab-icon">🏠</span><span class="tab-label">Início</span>
-                </a>
-                <a href="#row-movies-section" class="mobile-tab">
-                    <span class="tab-icon">🎬</span><span class="tab-label">Filmes</span>
-                </a>
-                <a href="#row-series-section" class="mobile-tab">
-                    <span class="tab-icon">📺</span><span class="tab-label">Séries</span>
-                </a>
-                <a href="#" class="mobile-tab" onclick="ativarBuscaMobile(event)">
-                    <span class="tab-icon">🔍</span><span class="tab-label">Buscar</span>
-                </a>
-                <a href="#" class="mobile-tab" onclick="abrirModalPerfil()">
-                    <span class="tab-icon">👤</span><span class="tab-label">Perfil</span>
-                </a>
-            </div>
-        </nav>
-
-        <div id="mobile-search-overlay" class="mobile-only">
-            <div class="mobile-search-header">
-                <input type="text" id="mobile-search-input" placeholder="Digite filmes, séries, animes...">
-                <button onclick="fecharBuscaMobile()" class="btn-close-search">Fechar</button>
-            </div>
-        </div>
-
-        <main id="search-results-section">
-            <h2 class="section-title text-glow" id="search-title">Resultados Encontrados</h2>
-            <div class="grid-layout" id="search-grid"></div>
-        </main>
 
         <div id="homepage-content">
             <section class="hero-showcase" id="hero-banner">
@@ -121,61 +91,39 @@
                 <div class="hero-inner">
                     <span class="hero-badge">EM DESTAQUE</span>
                     <h1 class="hero-title-text" id="hero-title">Carregando Fluxo...</h1>
-                    <p class="hero-description" id="hero-synopsis">Sincronizando metadados com a base central do TMDB...</p>
+                    <p class="hero-description" id="hero-synopsis">Sincronizando metadados com a base central...</p>
                     <div class="hero-cta-group">
                         <button class="btn-primary-action" id="hero-play-btn">▶ REPRODUZIR AGORA</button>
                     </div>
                 </div>
             </section>
             
-            <main class="content-wrapper" id="rows-wrapper-layout"></main>
-        </div>
+            <main class="content-wrapper" id="rows-wrapper-layout">
+                <div class="main-container">
+                    <section class="movie-section" id="row-movies-section">
+                        <h2 class="section-title">🎬 Filmes em Destaque</h2>
+                        <div id="fileira-filmes" class="movie-row"></div>
+                    </section>
 
-        <div class="modal-overlay" id="profileModal">
-            <div class="modal-window profile-window">
-                <button class="modal-dismiss" onclick="fecharModalPerfil()">✕</button>
-                <h3 class="modal-header-title">Configuração de Perfil</h3>
-                <div class="profile-edit-body">
-                    <div class="avatar-selection-grid">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="selectable-avatar active" onclick="selecionarAvatarNoModal(this, this.src)">
-                        <img src="https://i.pinimg.com/474x/5b/50/66/5b50666352ba8dfb2959ddaa216e9d69.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, this.src)">
-                        <img src="https://i.pinimg.com/736x/2c/fe/ed/2cfeede4db3ce78ba192d6e3cdeeb46f.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, this.src)">
-                        <img src="https://i.pinimg.com/736x/2b/90/0d/2b900d5612554cd0b5edf7d8e848c3ea.jpg" class="selectable-avatar" onclick="selecionarAvatarNoModal(this, this.src)">
-                    </div>
-                    <div class="input-field" style="margin-top: 20px;">
-                        <input type="text" id="edit-profile-username" required placeholder=" ">
-                        <label>Nome do Operador</label>
-                        <div class="bar"></div>
-                    </div>
-                    <button class="btn-primary" onclick="guardarAlteracoesPerfil()" style="margin-top: 10px;">SALVAR ALTERAÇÕES</button>
+                    <section class="movie-section" id="row-series-section">
+                        <h2 class="section-title">📺 Séries Imperdíveis</h2>
+                        <div id="fileira-series" class="movie-row"></div>
+                    </section>
+
+                    <section class="movie-section" id="row-animes-section">
+                        <h2 class="section-title">💥 Animes & Animações Japonesas</h2>
+                        <div id="fileira-animes" class="movie-row"></div>
+                    </section>
+
+                    <section class="movie-section" id="row-cartoons-section">
+                        <h2 class="section-title">🧸 Desenhos Animados</h2>
+                        <div id="fileira-desenhos" class="movie-row"></div>
+                    </section>
                 </div>
-            </div>
+            </main>
         </div>
 
-        <div class="modal-overlay" id="detailsModal">
-            <div class="modal-window details-window">
-                <button class="modal-dismiss" onclick="fecharModal()">✕</button>
-                <div class="details-hero" id="modal-backdrop"></div>
-                <div class="details-content">
-                    <h2 class="details-title" id="modal-title">Título</h2>
-                    
-                    <div class="meta-tags">
-                        <span class="badge-match" id="modal-match">98% Relevante</span>
-                        <span class="badge-year" id="modal-year">2024</span>
-                        <span class="badge-type" id="modal-type-badge">Série</span>
-                    </div>
-
-                    <p class="details-overview" id="modal-overview">Sinopse da obra.</p>
-
-                    <div class="action-buttons-row">
-                        <button class="btn-primary" style="flex: 2; border-radius: 4px;" onclick="iniciarReproducao()">▶ ASSISTIR</button>
-                        <button class="btn-tertiary" id="btn-watchlist-modal" style="flex: 1; border-radius: 4px;" onclick="toggleWatchlistModal()">⭐ LISTA</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="player-overlay" id="playerModal">
+        <div class="player-overlay" id="playerModal" style="display:none;">
             <header class="player-top-bar panel-glass">
                 <button class="btn-back-player" onclick="fecharPlayer()">⬅ FECHAR REPRODUTOR</button>
                 <div class="series-control-hub" id="episodes-selectors-box" style="display:none;">
@@ -193,7 +141,6 @@
                 <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no"></iframe>
             </div>
         </div>
-
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
