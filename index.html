@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -10,6 +10,14 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-73VPBQSWKM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-73VPBQSWKM', { 'send_page_view': false });
+    </script>
 </head>
 <body>
 
@@ -24,7 +32,7 @@
                 <form id="auth-form">
                     <div class="netflix-input-group" style="margin-bottom: 15px;">
                         <input type="email" id="auth-email" placeholder=" " required>
-                        <label>Email de Usuário</label>
+                        <label>Email de Utilizador</label>
                     </div>
                     <div class="netflix-input-group" style="margin-bottom: 25px;">
                         <input type="password" id="auth-password" placeholder=" " required minlength="6">
@@ -46,6 +54,7 @@
     </div>
 
     <div id="app-content" style="display: none;">
+        
         <nav id="desktop-navbar" class="panel-glass pc-only">
             <div class="nav-container">
                 <div style="display:flex; align-items:center; gap: 40px;">
@@ -80,16 +89,13 @@
 
         <nav id="mobile-bottom-bar" class="panel-glass mobile-bottom-nav mobile-only">
             <a href="#" class="active-nav" id="mob-nav-home">
-                <span>🏠</span>
-                <span>Início</span>
+                <span>🏠</span><span>Início</span>
             </a>
             <a href="#" id="mob-nav-search">
-                <span>🔍</span>
-                <span>Pesquisar</span>
+                <span>🔍</span><span>Pesquisar</span>
             </a>
             <a href="#" id="mob-nav-watchlist">
-                <span>⭐</span>
-                <span>Lista</span>
+                <span>⭐</span><span>Lista</span>
             </a>
         </nav>
 
@@ -203,7 +209,7 @@
                 
                 <div class="netflix-input-group" style="margin-bottom: 20px;">
                     <input type="text" id="edit-username" placeholder=" ">
-                    <label>Nome de Usuário</label>
+                    <label>Nome de Utilizador</label>
                 </div>
 
                 <h4 style="margin-bottom: 10px; font-size: 13px; color: #aaa;">Escolha um Avatar Predefinido:</h4>

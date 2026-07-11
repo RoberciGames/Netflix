@@ -1,5 +1,5 @@
 // ==========================================
-// CONFIGURAÇÃO MODERNA DO FIREBASE (v12)
+// FIREBASE MODERNO (v12) & GA4
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
@@ -23,7 +23,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 // ==========================================
-// ESTADO GLOBAL DA APLICAÇÃO
+// ESTADO GLOBAL
 // ==========================================
 const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778'; 
 let itemSelecionado = null;
@@ -35,24 +35,18 @@ let ultimoTermoBusca = '';
 let modoPlayerAtual = 'geral';
 const corDestaque = 'e50914';
 
-let perfilUsuario = {
-    username: "Operador",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
-};
+let perfilUsuario = { username: "Utilizador", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
 let avatarTemp = "";
 let biblioteca = { watchlist: {}, reviews: {} };
 let isLoginMode = true;
 
-// Auxiliar para SPA tracking
+// Acompanhamento GA4
 function trackVirtualPage(pageTitle, pagePath) {
-    logEvent(analytics, 'page_view', {
-        page_title: pageTitle,
-        page_path: pagePath
-    });
+    logEvent(analytics, 'page_view', { page_title: pageTitle, page_path: pagePath });
 }
 
 // ==========================================
-// AUTENTICAÇÃO E SINCRONIZAÇÃO
+// AUTENTICAÇÃO
 // ==========================================
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
@@ -98,6 +92,9 @@ onAuthStateChanged(auth, user => {
 
 function logout() { signOut(auth); }
 
+// ==========================================
+// BASE DE DADOS E SINCRONIZAÇÃO
+// ==========================================
 function carregarDadosUsuario() {
     get(ref(db, 'users/' + currentUserUID)).then(snapshot => {
         const data = snapshot.val();
@@ -108,21 +105,18 @@ function carregarDadosUsuario() {
             if (!biblioteca.reviews) biblioteca.reviews = {};
         }
         atualizarUIUsuario();
-    }).catch(error => console.error("Erro ao carregar do Firebase:", error));
+    }).catch(error => console.error("Erro ao carregar:", error));
 }
 
 function salvarDados() {
-    if (currentUserUID) {
-        set(ref(db, 'users/' + currentUserUID), { perfil: perfilUsuario, biblioteca: biblioteca });
-    }
+    if (currentUserUID) set(ref(db, 'users/' + currentUserUID), { perfil: perfilUsuario, biblioteca: biblioteca });
 }
 
 // ==========================================
-// ROTEAMENTO SPA (ABAS)
+// ROTEAMENTO (ABAS)
 // ==========================================
 function setNavActive(idDesktop, idMobile) {
-    document.querySelectorAll('.nav-menu a').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.mobile-bottom-nav a').forEach(el => el.classList.remove('active-nav'));
+    document.querySelectorAll('.nav-menu a, .mobile-bottom-nav a').forEach(el => el.classList.remove('active', 'active-nav'));
     if(idDesktop) document.getElementById(idDesktop).classList.add('active');
     if(idMobile) document.getElementById(idMobile).classList.add('active-nav');
 }
@@ -142,7 +136,7 @@ function irParaBusca() {
     document.getElementById('watchlist-section').style.display = 'none';
     document.getElementById('search-results-section').style.display = 'block';
     document.getElementById('main-search-input').focus();
-    trackVirtualPage("Pesquisar - CineNet", "/search");
+    trackVirtualPage("Pesquisa - CineNet", "/search");
 }
 
 function irParaWatchlist() {
@@ -155,36 +149,25 @@ function irParaWatchlist() {
 }
 
 function alternarScrollBody(travar) {
-    if (travar) {
-        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-        document.body.style.paddingRight = `${scrollbarWidth}px`;
-        document.body.classList.add('modal-open');
-    } else {
-        document.body.style.paddingRight = '0px';
-        document.body.classList.remove('modal-open');
-    }
+    document.body.classList.toggle('modal-open', travar);
+    document.body.style.paddingRight = travar ? `${window.innerWidth - document.documentElement.clientWidth}px` : '0px';
 }
 
 // ==========================================
-// RENDERS E CONEXÃO EXTERNA TMDB
+// TMDB & RENDERIZAÇÃO
 // ==========================================
 async function fetchTMDB(endpoint) {
     try {
         const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}&language=pt-PT`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Falha na chamada TMDB");
+        if (!res.ok) throw new Error("Falha TMDB");
         return await res.json();
-    } catch (error) {
-        console.error("Erro TMDB:", error);
-        return { results: [] }; 
-    }
+    } catch (error) { return { results: [] }; }
 }
 
 async function carregarHome() {
     const [trend, movies, series] = await Promise.all([
-        fetchTMDB('/trending/all/day'),
-        fetchTMDB('/movie/popular'),
-        fetchTMDB('/tv/popular')
+        fetchTMDB('/trending/all/day'), fetchTMDB('/movie/popular'), fetchTMDB('/tv/popular')
     ]);
 
     if (trend.results.length > 0) {
@@ -217,9 +200,6 @@ function renderCards(items, containerId, forceType = null) {
     });
 }
 
-// ==========================================
-// GERENCIAMENTO DA MINHA LISTA
-// ==========================================
 function renderizarWatchlist() {
     const container = document.getElementById('watchlist-grid');
     const emptyState = document.getElementById('watchlist-empty-state');
@@ -228,17 +208,13 @@ function renderizarWatchlist() {
     const itens = Object.values(biblioteca.watchlist).sort((a, b) => b.adicionadoEm - a.adicionadoEm);
     const itensValidos = itens.filter(item => item && item.poster_path);
 
-    if (itensValidos.length === 0) {
-        emptyState.style.display = 'block';
-    } else {
+    if (itensValidos.length === 0) { emptyState.style.display = 'block'; } 
+    else {
         emptyState.style.display = 'none';
         itensValidos.forEach(item => {
             const card = document.createElement('div');
             card.className = 'movie-card';
-            card.innerHTML = `
-                <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="Poster" loading="lazy">
-                <div class="watched-indicator">✔</div>
-            `;
+            card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}" loading="lazy"><div class="watched-indicator">✔</div>`;
             card.onclick = () => abrirDetalhes(item.id, item.tipo);
             container.appendChild(card);
         });
@@ -246,18 +222,14 @@ function renderizarWatchlist() {
 }
 
 // ==========================================
-// BUSCA E FILTROS
+// BUSCA E PESQUISA
 // ==========================================
 function iniciarBusca(termo) {
     clearTimeout(debounceTimer);
     document.getElementById('search-clear').style.display = termo.length > 0 ? 'block' : 'none';
     ultimoTermoBusca = termo;
-    
     debounceTimer = setTimeout(() => {
-        if (termo.length < 2) {
-            document.getElementById('search-grid').innerHTML = '';
-            return;
-        }
+        if (termo.length < 2) return document.getElementById('search-grid').innerHTML = '';
         executarBuscaTMDB(termo);
     }, 600);
 }
@@ -276,37 +248,23 @@ async function executarBuscaTMDB(termo) {
     container.innerHTML = '';
 
     let filtrados = data.results.filter(item => item.poster_path);
-    if (filtroBuscaAtual !== 'all') {
-        filtrados = filtrados.filter(item => item.media_type === filtroBuscaAtual);
-    }
+    if (filtroBuscaAtual !== 'all') filtrados = filtrados.filter(item => item.media_type === filtroBuscaAtual);
 
-    if (filtrados.length === 0) {
-        emptyState.style.display = 'block';
-    } else {
-        emptyState.style.display = 'none';
-        renderCards(filtrados, 'search-grid');
-    }
+    if (filtrados.length === 0) emptyState.style.display = 'block';
+    else { emptyState.style.display = 'none'; renderCards(filtrados, 'search-grid'); }
 }
 
 // ==========================================
-// MODAL DE DETALHES
+// MODAL DE DETALHES & AVALIAÇÕES
 // ==========================================
 async function abrirDetalhes(id, tipo) {
     const data = await fetchTMDB(`/${tipo}/${id}`);
-    
-    itemSelecionado = { 
-        id: id, 
-        tipo: tipo, 
-        poster_path: data.poster_path, 
-        title: data.title || data.name 
-    };
+    itemSelecionado = { id: id, tipo: tipo, poster_path: data.poster_path, title: data.title || data.name };
     
     document.getElementById('modal-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${data.backdrop_path || data.poster_path})`;
     document.getElementById('modal-title').innerText = itemSelecionado.title;
     document.getElementById('modal-overview').innerText = data.overview || "Sem descrição disponível.";
-    
-    const year = (data.release_date || data.first_air_date || "N/A").substring(0, 4);
-    document.getElementById('modal-year').innerText = year;
+    document.getElementById('modal-year').innerText = (data.release_date || data.first_air_date || "N/A").substring(0, 4);
     document.getElementById('modal-rating').innerText = (data.vote_average ? data.vote_average.toFixed(1) : "N/A") + " Relevância";
 
     document.getElementById('modal-play-btn').onclick = () => abrirPlayer(id, tipo);
@@ -316,11 +274,7 @@ async function abrirDetalhes(id, tipo) {
     document.getElementById('detailsModal').style.display = 'flex';
     alternarScrollBody(true);
 
-    logEvent(analytics, 'view_item', {
-        'item_id': id,
-        'item_name': itemSelecionado.title,
-        'item_category': tipo
-    });
+    logEvent(analytics, 'view_item', { 'item_id': id, 'item_name': itemSelecionado.title });
 }
 
 function fecharDetalhes() {
@@ -338,36 +292,23 @@ function alternarWatchlist() {
         delete biblioteca.watchlist[id];
         analyticsAction = "remove_from_watchlist";
     } else {
-        biblioteca.watchlist[id] = { 
-            id: id,
-            tipo: itemSelecionado.tipo,
-            poster_path: itemSelecionado.poster_path,
-            adicionadoEm: Date.now() 
-        };
+        biblioteca.watchlist[id] = { id: id, tipo: itemSelecionado.tipo, poster_path: itemSelecionado.poster_path, adicionadoEm: Date.now() };
         analyticsAction = "add_to_watchlist";
     }
     
     atualizarBotaoWatchlist();
     salvarDados();
+    logEvent(analytics, analyticsAction, { 'item_id': id, 'item_name': itemSelecionado.title });
 
-    logEvent(analytics, analyticsAction, {
-        'item_id': id,
-        'item_name': itemSelecionado.title
-    });
-
-    if (document.getElementById('watchlist-section').style.display === 'block') {
-        renderizarWatchlist();
-    }
+    if (document.getElementById('watchlist-section').style.display === 'block') renderizarWatchlist();
 }
 
 function atualizarBotaoWatchlist() {
     const btn = document.getElementById('btn-watchlist');
     if (biblioteca.watchlist[itemSelecionado.id]) {
-        btn.innerText = "✔ Na Minha Lista";
-        btn.style.background = "rgba(255,255,255,0.2)";
+        btn.innerText = "✔ Na Minha Lista"; btn.style.background = "rgba(255,255,255,0.2)";
     } else {
-        btn.innerText = "+ Minha Lista";
-        btn.style.background = "rgba(255,255,255,0.1)";
+        btn.innerText = "+ Minha Lista"; btn.style.background = "rgba(255,255,255,0.1)";
     }
 }
 
@@ -375,13 +316,11 @@ function setRating(num) {
     estrelasAtivas = num;
     const spans = document.getElementById('star-container').children;
     for (let i = 0; i < spans.length; i++) {
-        if (i < num) spans[i].classList.add('active');
-        else spans[i].classList.remove('active');
+        if (i < num) spans[i].classList.add('active'); else spans[i].classList.remove('active');
     }
 }
 
 function carregarReviewUI() {
-    estrelasAtivas = 0;
     document.getElementById('review-text').value = '';
     setRating(0);
     if (biblioteca.reviews[itemSelecionado.id]) {
@@ -392,15 +331,14 @@ function carregarReviewUI() {
 
 function salvarReview() {
     const nota = estrelasAtivas;
-    const textoComentario = document.getElementById('review-text').value.trim();
+    const texto = document.getElementById('review-text').value.trim();
     if (nota === 0) { alert("Selecione pelo menos 1 estrela."); return; }
-    biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: textoComentario };
-    salvarDados(); 
-    alert("Avaliação salva com sucesso!");
+    biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: texto };
+    salvarDados(); alert("Avaliação salva!");
 }
 
 // ==========================================
-// VIDEO PLAYER
+// REPRODUTOR DE VÍDEO
 // ==========================================
 function abrirPlayer(id, tipo) {
     const epBox = document.getElementById('episodes-selectors-box');
@@ -408,16 +346,9 @@ function abrirPlayer(id, tipo) {
     else { epBox.style.display = 'none'; modoPlayerAtual = 'geral'; }
 
     document.getElementById('playerModal').style.display = 'flex';
-    alternarScrollBody(true); 
-    atualizarIframePlayer();
+    alternarScrollBody(true); atualizarIframePlayer();
 
-    if (itemSelecionado) {
-        logEvent(analytics, 'video_play', {
-            'video_id': id,
-            'video_title': itemSelecionado.title,
-            'video_type': tipo
-        });
-    }
+    if (itemSelecionado) logEvent(analytics, 'video_play', { 'video_id': id, 'video_title': itemSelecionado.title });
 }
 
 function fecharPlayer() { 
@@ -440,24 +371,20 @@ function atualizarIframePlayer() {
 }
 
 // ==========================================
-// GERENCIAMENTO DE PERFIL
+// GESTÃO DE PERFIL
 // ==========================================
 function abrirModalPerfil() {
     avatarTemp = perfilUsuario.avatar;
     document.getElementById('edit-username').value = perfilUsuario.username;
     document.getElementById('input-profile-avatar-url').value = ""; 
     document.querySelectorAll('.avatar-option').forEach(img => {
-        if (img.src === avatarTemp) img.classList.add('active');
-        else img.classList.remove('active');
+        if (img.src === avatarTemp) img.classList.add('active'); else img.classList.remove('active');
     });
     document.getElementById('profileModal').style.display = 'flex';
     alternarScrollBody(true);
 }
 
-function fecharModalPerfil() {
-    document.getElementById('profileModal').style.display = 'none';
-    alternarScrollBody(false);
-}
+function fecharModalPerfil() { document.getElementById('profileModal').style.display = 'none'; alternarScrollBody(false); }
 
 function selecionarAvatar(imgElement) {
     document.getElementById('input-profile-avatar-url').value = "";
@@ -466,20 +393,14 @@ function selecionarAvatar(imgElement) {
     avatarTemp = imgElement.src;
 }
 
-function limparSelecaoAvatar() {
-    document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
-}
+function limparSelecaoAvatar() { document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active')); }
 
 function salvarPerfil() {
     const novoNome = document.getElementById('edit-username').value.trim();
     const urlCustomizada = document.getElementById('input-profile-avatar-url').value.trim();
-    
     if (novoNome) perfilUsuario.username = novoNome;
     perfilUsuario.avatar = urlCustomizada !== "" ? urlCustomizada : avatarTemp;
-
-    salvarDados();
-    atualizarUIUsuario();
-    fecharModalPerfil();
+    salvarDados(); atualizarUIUsuario(); fecharModalPerfil();
 }
 
 function atualizarUIUsuario() {
@@ -489,29 +410,29 @@ function atualizarUIUsuario() {
 }
 
 // ==========================================
-// MAREIAÇÃO EVENT LISTENERS DOM (OBRIGATÓRIO PARA TYPE="MODULE")
+// EVENT LISTENERS (MAPEAR CLIQUES DO HTML PARA O MÓDULO JS)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Autenticação
     document.getElementById('auth-form').addEventListener('submit', handleAuth);
     document.getElementById('auth-switch-btn').addEventListener('click', toggleAuthMode);
     document.getElementById('logout-btn-pc').addEventListener('click', logout);
     document.getElementById('logout-btn-mobile').addEventListener('click', logout);
     
+    // Navegação
     document.getElementById('nav-home').addEventListener('click', irParaHome);
     document.getElementById('mob-nav-home').addEventListener('click', irParaHome);
     document.getElementById('brand-pc').addEventListener('click', irParaHome);
     document.getElementById('brand-mobile').addEventListener('click', irParaHome);
-    
     document.getElementById('nav-search').addEventListener('click', irParaBusca);
     document.getElementById('mob-nav-search').addEventListener('click', irParaBusca);
-    
     document.getElementById('nav-watchlist').addEventListener('click', irParaWatchlist);
     document.getElementById('mob-nav-watchlist').addEventListener('click', irParaWatchlist);
     document.getElementById('explore-catalog-btn').addEventListener('click', irParaHome);
 
+    // Pesquisa
     document.getElementById('main-search-input').addEventListener('input', (e) => iniciarBusca(e.target.value));
     document.getElementById('search-clear').addEventListener('click', limparBusca);
-
     document.getElementById('filter-pills-container').addEventListener('click', (e) => {
         if(e.target.classList.contains('filter-pill')) {
             document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
@@ -521,26 +442,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('close-details-btn').addEventListener('click', fecharDetails);
+    // Detalhes & Avaliação
+    document.getElementById('close-details-btn').addEventListener('click', fecharDetalhes);
     document.getElementById('btn-watchlist').addEventListener('click', alternarWatchlist);
     document.getElementById('save-review-btn').addEventListener('click', salvarReview);
-    
     document.getElementById('star-container').addEventListener('click', (e) => {
-        if(e.target.hasAttribute('data-star')) {
-            setRating(parseInt(e.target.getAttribute('data-star')));
-        }
+        if(e.target.hasAttribute('data-star')) setRating(parseInt(e.target.getAttribute('data-star')));
     });
 
+    // Perfil
     document.getElementById('profile-trigger-pc').addEventListener('click', abrirModalPerfil);
     document.getElementById('user-avatar-mobile').addEventListener('click', abrirModalPerfil);
     document.getElementById('close-profile-btn').addEventListener('click', fecharModalPerfil);
     document.getElementById('save-profile-btn').addEventListener('click', salvarPerfil);
-    
     document.getElementById('avatar-grid').addEventListener('click', (e) => {
         if(e.target.classList.contains('avatar-option')) selecionarAvatar(e.target);
     });
     document.getElementById('input-profile-avatar-url').addEventListener('input', limparSelecaoAvatar);
 
+    // Player
     document.getElementById('close-player-btn').addEventListener('click', fecharPlayer);
     document.getElementById('player-season-input').addEventListener('change', atualizarIframePlayer);
     document.getElementById('player-episode-input').addEventListener('change', atualizarIframePlayer);

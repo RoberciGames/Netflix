@@ -81,10 +81,10 @@ body.modal-open { overflow: hidden !important; }
 .mobile-bottom-nav a.active-nav { color: #fff; transform: translateY(-2px); }
 
 /* ==========================================
-   SECÇÃO DE BUSCA, FILTROS E WATCHLIST
+   SECÇÃO DE BUSCA E FILTROS INTEGRAIS
 ========================================== */
-#search-results-section, #watchlist-section { padding: 110px 4% 40px; min-height: 90vh; }
-@media (max-width: 768px) { #search-results-section, #watchlist-section { padding-top: 40px !important; } }
+#search-results-section { padding: 110px 4% 40px; min-height: 90vh; }
+@media (max-width: 768px) { #search-results-section { padding-top: 40px !important; } }
 .search-page-container { max-width: 750px; margin: 0 auto 35px auto; text-align: center; }
 .search-input-wrapper { position: relative; margin: 25px 0; display: flex; align-items: center; }
 .search-icon-inside { position: absolute; left: 20px; font-size: 18px; color: #888; }
@@ -98,16 +98,23 @@ body.modal-open { overflow: hidden !important; }
 .filter-pill.active { background: var(--primary-neon); color: white; border-color: var(--primary-neon); box-shadow: 0 0 12px var(--primary-glow); }
 .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
 .grid-layout .movie-card { min-width: 100%; max-width: 100%; }
+
+/* ==========================================
+   ACOMPANHAMENTO DA ABA DE FAVORITOS
+========================================== */
 #watchlist-section {
     padding: 110px 4% 40px; 
     min-height: 90vh;
 }
-
 @media (max-width: 768px) {
     #watchlist-section { 
         padding: 40px 4% 100px !important; 
     }
 }
+
+/* ==========================================
+   BANNER E CARROSSÉIS
+========================================== */
 .hero-showcase { height: 75vh; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 0 4% 50px 4%; position: relative; margin-top: 0; }
 .hero-overlay-shadow { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, var(--surface-dark) 0%, transparent 60%), linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 80%); }
 .hero-inner { position: relative; z-index: 2; max-width: 600px; }
