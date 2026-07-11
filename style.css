@@ -18,7 +18,7 @@ body {
     overflow-x: hidden;
 }
 
-/* SCROLLBAR CUSTOMIZADA E ELEGANTE */
+/* SCROLLBAR PREMIUM */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--surface-dark); }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -26,177 +26,146 @@ body {
 
 body.modal-open { overflow: hidden !important; }
 
-/* REGRAS RESPONSIVAS */
+/* REGRAS DE VISIBILIDADE RESPONSIVA */
 @media (min-width: 769px) { .pc-only { display: flex !important; } .mobile-only { display: none !important; } }
 @media (max-width: 768px) { .pc-only { display: none !important; } .mobile-only { display: flex !important; } body { padding-top: 60px; padding-bottom: 60px; } }
 
 .panel-glass { background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--glass-border); }
-.text-glow { text-shadow: 0 0 10px rgba(255,255,255,0.2); }
 
 /* ==========================================
-   ECRÃ DE LOGIN PREMIUM
+   TELA DE LOGIN NETFLIX STYLE
 ========================================== */
 #auth-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #000; }
-.auth-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, #050505 100%), url('https://assets.nflxext.com/ffe/siteui/vlv3/ca6a7616-0acb-4bc7-9356-97ff199fa6fe/f55a734a-9b77-440a-b333-ac4f0c1df473/BR-pt-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg'); background-size: cover; background-position: center; opacity: 0.5; z-index: 1; }
+.auth-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, #050505 100%), url('https://assets.nflxext.com/ffe/siteui/vlv3/ca6a7616-0acb-4bc7-9356-97ff199fa6fe/f55a734a-9b77-440a-b333-ac4f0c1df473/BR-pt-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg'); background-size: cover; background-position: center; opacity: 0.4; z-index: 1; }
 .auth-container-netflix { position: relative; z-index: 2; width: 100%; max-width: 420px; padding: 20px; }
-.auth-card-netflix { background: rgba(0, 0, 0, 0.8); border-radius: 12px; padding: 50px 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); }
-.app-brand-netflix, .app-brand { text-align: center; font-size: 34px; font-weight: 800; text-decoration: none; display: block; margin-bottom: 25px; }
+.auth-card-netflix { background: rgba(0, 0, 0, 0.85); border-radius: 8px; padding: 50px 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); }
+.app-brand-netflix, .app-brand { text-align: center; font-size: 32px; font-weight: 800; text-decoration: none; display: block; margin-bottom: 25px; letter-spacing: -1px; }
 .brand-accent { color: var(--primary-neon); } .brand-light { color: #fff; }
-.auth-card-netflix h2 { font-size: 26px; margin: 20px 0; }
+.auth-card-netflix h2 { font-size: 26px; margin: 0 0 20px; font-weight: 700; }
 .netflix-input-group { position: relative; width: 100%; }
-.netflix-input-group input { width: 100%; height: 56px; background: rgba(255,255,255,0.08); border: 1px solid transparent; border-radius: 6px; padding: 20px 15px 0; color: #fff; font-size: 16px; outline: none; transition: 0.3s; }
-.netflix-input-group input:focus { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
-.netflix-input-group label { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #8c8c8c; font-size: 15px; transition: all 0.2s; pointer-events: none; }
+.netflix-input-group input { width: 100%; height: 56px; background: #333; border: none; border-radius: 4px; padding: 20px 20px 0; color: #fff; font-size: 16px; outline: none; transition: 0.2s; }
+.netflix-input-group label { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #8c8c8c; font-size: 15px; transition: all 0.15s ease; pointer-events: none; }
 .netflix-input-group input:focus ~ label, .netflix-input-group input:not(:placeholder-shown) ~ label { top: 15px; font-size: 11px; color: #b3b3b3; }
-.btn-netflix-main { width: 100%; height: 50px; background: var(--primary-neon); color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px var(--primary-glow); }
-.btn-netflix-main:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
+.btn-netflix-main { width: 100%; height: 50px; background: var(--primary-neon); color: #fff; border: none; border-radius: 4px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-netflix-main:hover { background: #c11119; }
+
+.btn-google-netflix { width: 100%; height: 50px; background: #fff; color: #333; border: none; border-radius: 4px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s; }
+.btn-google-netflix:hover { background: #e0e0e0; }
+
 .auth-extra-netflix { display: flex; justify-content: space-between; margin-top: 15px; font-size: 13px; color: #b3b3b3; }
-.auth-footer-netflix { margin-top: 30px; color: #737373; font-size: 14px; }
-.auth-footer-netflix button { background: none; border: none; color: #fff; cursor: pointer; margin-left: 5px; font-weight: 600; font-family: 'Outfit'; }
-.alert-box-netflix { background: #e87c03; color: #fff; border-radius: 6px; padding: 12px; margin-top: 15px; text-align: center; }
+.auth-footer-netflix { margin-top: 40px; color: #737373; font-size: 14px; }
+.auth-footer-netflix button { background: none; border: none; color: #fff; cursor: pointer; margin-left: 5px; font-weight: 500; font-family: 'Outfit'; font-size: 14px; }
+.alert-box-netflix { background: #e87c03; color: #fff; border-radius: 4px; padding: 12px; margin-top: 15px; text-align: center; font-size: 14px; }
 
 /* ==========================================
-   NAVEGAÇÃO (PC E MOBILE)
+   NAVEGAÇÃO COMPLETA
 ========================================== */
-#desktop-navbar { position: fixed; top: 0; left:0; width: 100%; height: 70px; z-index: 100; align-items: center; padding: 0 4%; }
+#desktop-navbar { position: fixed; top: 0; left:0; width: 100%; height: 70px; z-index: 100; align-items: center; padding: 0 4%; display: none; }
 .nav-container { display: flex; width: 100%; justify-content: space-between; align-items: center; }
-.nav-menu { display: flex; list-style: none; gap: 24px; padding: 0;}
+.nav-menu { display: flex; list-style: none; gap: 20px; padding: 0;}
 .nav-menu a { color: #e5e5e5; text-decoration: none; font-size: 14px; transition: color 0.2s; }
-.nav-menu a:hover, .nav-menu a.active { color: #fff; font-weight: 600; }
-.nav-actions { display: flex; align-items: center; gap: 18px; }
-.profile-menu-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.nav-avatar { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+.nav-menu a:hover, .nav-menu a.active { color: #fff; }
+.nav-actions { display: flex; align-items: center; gap: 20px; }
+.profile-menu-container { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.nav-avatar { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; }
 .nav-username { font-size: 14px; font-weight: 500; }
-.btn-disconnect { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #ccc; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.2s; }
-.btn-disconnect:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.btn-disconnect { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; }
 
-#mobile-topbar { position: fixed; top: 0; left:0; width: 100%; height: 60px; z-index: 100; justify-content: space-between; align-items: center; padding: 0 15px; }
-.mobile-top-actions { display: flex; align-items: center; gap: 15px; }
-.mobile-avatar { width: 32px; height: 32px; border-radius: 6px; cursor: pointer; object-fit: cover; }
-.btn-disconnect-mobile { background: transparent; border: 1px solid var(--glass-border); color: #fff; padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+#mobile-topbar { position: fixed; top: 0; left:0; width: 100%; height: 60px; z-index: 100; justify-content: space-between; align-items: center; padding: 0 15px; display: none; }
+.mobile-top-actions { display: flex; align-items: center; gap: 12px; }
+.mobile-avatar { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; cursor: pointer; }
+.btn-disconnect-mobile { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 8px; font-size: 12px; border-radius: 4px; }
 
-.mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; z-index: 100; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom, 0px); border-top: 1px solid var(--glass-border); }
-.mobile-bottom-nav a { color: #888; text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 20px; transition: 0.2s; }
-.mobile-bottom-nav a span { font-size: 10px; margin-top: 4px; font-weight: 500; }
-.mobile-bottom-nav a.active-nav { color: #fff; transform: translateY(-2px); }
-
-/* ==========================================
-   SECÇÃO DE BUSCA E FILTROS INTEGRAIS
-========================================== */
-#search-results-section { padding: 110px 4% 40px; min-height: 90vh; }
-@media (max-width: 768px) { #search-results-section { padding-top: 40px !important; } }
-.search-page-container { max-width: 750px; margin: 0 auto 35px auto; text-align: center; }
-.search-input-wrapper { position: relative; margin: 25px 0; display: flex; align-items: center; }
-.search-icon-inside { position: absolute; left: 20px; font-size: 18px; color: #888; }
-#main-search-input { width: 100%; padding: 18px 55px 18px 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 30px; color: white; font-size: 16px; font-family: 'Outfit', sans-serif; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-#main-search-input:focus { border-color: var(--primary-neon); box-shadow: 0 0 18px var(--primary-glow); background: #161616; }
-.search-clear-btn { position: absolute; right: 22px; color: var(--text-secondary); cursor: pointer; font-size: 18px; transition: 0.2s; user-select: none; }
-.search-clear-btn:hover { color: white; }
-.search-filter-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
-.filter-pill { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 8px 22px; border-radius: 20px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease; }
-.filter-pill:hover { background: rgba(255, 255, 255, 0.1); color: white; border-color: rgba(255,255,255,0.3); }
-.filter-pill.active { background: var(--primary-neon); color: white; border-color: var(--primary-neon); box-shadow: 0 0 12px var(--primary-glow); }
-.grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-.grid-layout .movie-card { min-width: 100%; max-width: 100%; }
+.mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; z-index: 100; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom, 0px); display: none; }
+.mobile-bottom-nav a { color: #888; text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 18px; }
+.mobile-bottom-nav a span { font-size: 10px; margin-top: 4px; }
+.mobile-bottom-nav a.active-nav { color: #fff; }
 
 /* ==========================================
-   ACOMPANHAMENTO DA ABA DE FAVORITOS
+   MÓDULO DE BUSCA E GRIDS
 ========================================== */
-#watchlist-section {
-    padding: 110px 4% 40px; 
-    min-height: 90vh;
-}
-@media (max-width: 768px) {
-    #watchlist-section { 
-        padding: 40px 4% 100px !important; 
-    }
-}
+#search-results-section, #watchlist-section { padding: 90px 4% 40px; min-height: 100vh; }
+@media (max-width: 768px) { #search-results-section, #watchlist-section { padding: 20px 4% 80px !important; } }
+.search-page-container { max-width: 600px; margin: 0 auto 30px; text-align: center; }
+.search-input-wrapper { position: relative; margin: 20px 0; display: flex; align-items: center; }
+.search-icon-inside { position: absolute; left: 18px; color: #888; font-size: 16px; }
+#main-search-input { width: 100%; padding: 14px 45px 14px 45px; background: #2f2f2f; border: none; border-radius: 4px; color: white; font-size: 15px; outline: none; }
+.search-clear-btn { position: absolute; right: 18px; color: #aaa; cursor: pointer; }
+.search-filter-pills { display: flex; gap: 8px; justify-content: center; margin-bottom: 5px; }
+.filter-pill { background: #222; border: 1px solid #333; color: #aaa; padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+.filter-pill.active { background: #fff; color: #000; border-color: #fff; font-weight: 600; }
+.grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+@media (min-width: 769px) { .grid-layout { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; } }
 
 /* ==========================================
-   BANNER E CARROSSÉIS
+   HERO BANNER E CARROSSEIS
 ========================================== */
-.hero-showcase { height: 75vh; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 0 4% 50px 4%; position: relative; margin-top: 0; }
-.hero-overlay-shadow { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, var(--surface-dark) 0%, transparent 60%), linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 80%); }
-.hero-inner { position: relative; z-index: 2; max-width: 600px; }
-.hero-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 1px; margin-bottom: 15px; display: inline-block; backdrop-filter: blur(5px); }
-.hero-title-text { font-size: 3rem; margin: 10px 0 15px; font-weight: 800; line-height: 1.1; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
-.hero-description { font-size: 1.05rem; color: #ddd; margin-bottom: 25px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); }
-.btn-primary-action { background: #fff; color: #000; border: none; padding: 12px 28px; font-size: 15px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
-.btn-primary-action:hover { background: #e5e5e5; transform: scale(1.05); }
-@media (max-width: 768px) { .hero-showcase { height: 50vh; padding-bottom: 30px; } .hero-title-text { font-size: 2rem; } .hero-description { display: none; } }
+.hero-showcase { height: 70vh; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 0 4% 40px; position: relative; }
+.hero-overlay-shadow { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, var(--surface-dark) 0%, transparent 70%), linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 100%); }
+.hero-inner { position: relative; z-index: 2; max-width: 650px; }
+.hero-badge { background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 2px; font-size: 11px; font-weight: 700; margin-bottom: 12px; display: inline-block; }
+.hero-title-text { font-size: 2.8rem; margin: 5px 0 12px; font-weight: 800; line-height: 1.1; }
+.hero-description { font-size: 1rem; color: #cbcbcb; margin-bottom: 20px; line-height: 1.4; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.btn-primary-action { background: #fff; color: #000; border: none; padding: 10px 24px; font-size: 15px; font-weight: 700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.btn-primary-action:hover { background: rgba(255,255,255,0.8); }
+@media (max-width: 768px) { .hero-showcase { height: 45vh; } .hero-title-text { font-size: 1.8rem; } .hero-description { display: none; } }
 
-.main-container { padding: 10px 4% 80px; position: relative; z-index: 5; margin-top: -30px; }
-.movie-section { margin-bottom: 35px; }
-.section-title { font-size: 20px; font-weight: 600; margin-bottom: 12px; color: #fff; }
-.movie-row { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0 20px; scrollbar-width: none; }
+.main-container { padding: 0 4% 60px; position: relative; z-index: 5; margin-top: -20px; }
+.movie-section { margin-bottom: 30px; }
+.section-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+.movie-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
 .movie-row::-webkit-scrollbar { display: none; }
 
-.movie-card { min-width: 120px; max-width: 120px; cursor: pointer; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s; border-radius: 6px; position: relative; }
-.movie-card img { width: 100%; border-radius: 6px; display: block; }
-.watched-indicator { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: #00ff88; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 1px solid rgba(0,255,136,0.5); }
-@media (min-width: 769px) { .movie-card { min-width: 160px; max-width: 160px; } .movie-card:hover { transform: scale(1.08) translateY(-5px); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.8); } }
+.movie-card { min-width: 110px; max-width: 110px; cursor: pointer; transition: transform 0.2s ease-in-out; border-radius: 4px; position: relative; }
+.movie-card img { width: 100%; border-radius: 4px; display: block; object-fit: cover; }
+.watched-indicator { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.8); color: #00ff88; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #00ff88; }
+@media (min-width: 769px) { .movie-card { min-width: 150px; max-width: 150px; } .movie-card:hover { transform: scale(1.05); z-index: 10; } }
 
 /* ==========================================
-   MODAIS ELEGANTES ESTILO NETFLIX
+   ESTRUTURA DOS MODAIS (DETALHES / PERFIL)
 ========================================== */
-.modal-netflix { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 15px; }
-.modal-netflix-content { background: #141414; width: 100%; max-width: 700px; border-radius: 12px; overflow: hidden; position: relative; animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 25px 50px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;}
-.modal-netflix-content::-webkit-scrollbar { width: 0; }
-.modal-netflix-content.small-modal { max-width: 450px; padding: 40px; }
-@keyframes slideUpFade { from { transform: translateY(30px) scale(0.98); opacity:0; } to { transform: translateY(0) scale(1); opacity:1; } }
+.modal-netflix { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 10px; transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.modal-netflix-content { background: #181818; width: 100%; max-width: 650px; border-radius: 6px; overflow: hidden; position: relative; max-height: 95vh; overflow-y: auto; }
+.modal-netflix-content.small-modal { max-width: 400px; padding: 30px; }
 
-.close-netflix-modal { position: absolute; top: 15px; right: 15px; font-size: 24px; color: #fff; cursor: pointer; z-index: 10; background: rgba(15,15,15,0.7); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
-.close-netflix-modal:hover { background: #fff; color: #000; }
+.close-netflix-modal { position: absolute; top: 12px; right: 12px; font-size: 20px; color: #fff; cursor: pointer; z-index: 10; background: #181818; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
 
-.modal-netflix-banner { height: 320px; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; padding: 30px; }
-.modal-banner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #141414 0%, transparent 60%); }
-.modal-banner-content { position: relative; z-index: 2; width: 100%; }
-#modal-title { font-size: 32px; font-weight: 800; margin: 0 0 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+.modal-netflix-banner { height: 280px; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; padding: 25px; }
+.modal-banner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #181818 0%, transparent 100%); }
+.modal-banner-content { position: relative; z-index: 2; }
 
-.info-metadata { display: flex; gap: 15px; align-items: center; font-size: 15px; font-weight: 500; }
+.info-metadata { display: flex; gap: 12px; align-items: center; font-size: 14px; margin-top: 5px; }
 .meta-rating { color: #46d369; font-weight: 700; }
-.meta-year { color: #bcbcbc; }
-.meta-hd { border: 1px solid rgba(255,255,255,0.4); font-size: 10px; padding: 2px 6px; border-radius: 4px; color: #ddd; }
+.meta-year { color: #a3a3a3; }
+.meta-hd { border: 1px solid #555; font-size: 9px; padding: 1px 4px; border-radius: 2px; color: #aaa; }
 
-.modal-netflix-info { padding: 0 30px 30px; }
-.modal-overview-text { color: #d2d2d2; font-size: 16px; line-height: 1.6; margin: 15px 0 25px; }
+.modal-netflix-info { padding: 20px 25px 25px; }
+.modal-overview-text { color: #dfdfdf; font-size: 15px; line-height: 1.5; margin: 10px 0 20px; }
 
-.modal-action-buttons { display: flex; gap: 15px; margin-bottom: 30px; }
-.btn-play-netflix-modal { flex: 2; background: #fff; color: #000; border: none; height: 45px; border-radius: 6px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; }
-.btn-play-netflix-modal:hover { background: #e5e5e5; }
-.btn-secondary-modal { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; height: 45px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; }
-.btn-secondary-modal:hover { background: rgba(255,255,255,0.2); }
+.modal-action-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
+.btn-play-netflix-modal { flex: 2; background: #fff; color: #000; border: none; height: 42px; border-radius: 4px; font-weight: 700; font-size: 15px; cursor: pointer; }
+.btn-secondary-modal { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: #fff; height: 42px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
 
-/* CAIXA DE AVALIAÇÃO */
-.rating-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 8px; }
-.star-rating-row { display: flex; gap: 5px; font-size: 24px; color: #444; margin-bottom: 12px; cursor: pointer; }
-.star-rating-row span.active { color: #f5c518; text-shadow: 0 0 10px rgba(245, 197, 24, 0.5); }
-.input-textarea { width: 100%; height: 70px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 6px; font-family: 'Outfit'; resize: none; outline: none; margin-bottom: 12px; }
-.input-textarea:focus { border-color: var(--text-secondary); }
-.btn-tertiary-modal { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-family: 'Outfit'; font-weight: 600; font-size: 13px; transition: 0.2s; width: 100%; }
-.btn-tertiary-modal:hover { background: #444; }
+/* CRÍTICAS E ESTRELAS */
+.rating-box { background: #232323; padding: 15px; border-radius: 6px; margin-top: 15px; }
+.star-rating-row { display: flex; gap: 4px; font-size: 22px; color: #444; margin-bottom: 10px; cursor: pointer; }
+.star-rating-row span.active { color: #f5c518; }
+.input-textarea { width: 100%; height: 60px; background: #141414; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 4px; font-family: 'Outfit'; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; }
+.btn-tertiary-modal { background: #333; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-family: 'Outfit'; font-weight: 600; width: 100%; font-size: 13px; }
 
-/* MODAL DE PERFIL (Avatar) */
-.avatar-selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.avatar-option { width: 100%; border-radius: 6px; cursor: pointer; border: 3px solid transparent; transition: 0.3s; opacity: 0.6; }
-.avatar-option:hover { opacity: 0.8; }
-.avatar-option.active { border-color: var(--primary-neon); opacity: 1; transform: scale(1.05); animation: avatarPulse 2s infinite; }
-@keyframes avatarPulse { 0% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(229, 9, 20, 0); } 100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); } }
+/* SELEÇÃO DE AVATAR */
+.avatar-selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.avatar-option { width: 100%; border-radius: 4px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+.avatar-option.active { border-color: var(--primary-neon); transform: scale(1.02); }
 
 /* ==========================================
-   REPRODUTOR DE VÍDEO COMPLETO
+   REPRODUTOR CINEMÁTICO (PLAYER)
 ========================================== */
-.player-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; display: flex; flex-direction: column; }
-.player-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); gap: 15px; flex-wrap: wrap; }
-.btn-back-player { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; cursor: pointer; font-weight: 800; font-size: 14px; font-family: 'Outfit'; display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 30px; transition: 0.2s; }
-.btn-back-player:hover { color: #fff; background: var(--primary-neon); border-color: var(--primary-neon); }
-.series-control-hub { display: flex; gap: 15px; }
-.control-unit { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #ccc; }
-.input-number-glass { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; width: 60px; text-align: center; padding: 8px; border-radius: 6px; font-family: 'Outfit'; outline: none; }
+.player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; flex-direction: column; }
+.player-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #000; }
+.btn-back-player { background: transparent; border: none; color: white; cursor: pointer; font-weight: 700; font-size: 14px; font-family: 'Outfit'; display: flex; align-items: center; gap: 6px; }
+.series-control-hub { display: flex; gap: 12px; }
+.control-unit { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #aaa; font-weight: 600; }
+.input-number-glass { background: #222; border: 1px solid #444; color: white; width: 50px; text-align: center; padding: 6px; border-radius: 4px; font-family: 'Outfit'; outline: none; }
 .player-viewport { flex: 1; width: 100%; background: #000; }
 .player-viewport iframe { width: 100%; height: 100%; border: none; }
-
-@media (max-width: 768px) {
-    .player-top-bar { padding: 12px 16px; justify-content: space-between; }
-    .btn-back-player { font-size: 13px; padding: 8px 14px; }
-}

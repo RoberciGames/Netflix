@@ -1,11 +1,29 @@
 // ==========================================
-// FIREBASE MODERNO (v12) & GA4
+// INFRAESTRUTURA CORE & CHAVES
 // ==========================================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778'; 
+let itemSelecionado = null;
+let estrelasAtivas = 0;
+let debounceTimer; 
+let currentUserUID = null;
+let filtroBuscaAtual = 'all';
+let ultimoTermoBusca = '';
 
+// VARIÁVEIS DO PLAYER
+let modoPlayerAtual = 'geral';
+const corDestaque = 'e50914';
+
+let perfilUsuario = {
+    username: "CineNet User",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
+};
+let avatarTemp = "";
+let biblioteca = { watchlist: {}, reviews: {} };
+let isLoginMode = true;
+
+// ==========================================
+// CONFIGURAÇÃO DO FIREBASE E GA4
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyAfPWvnGdvPKZ_lrVwOuag14WHLY9AgML8",
     authDomain: "cinenet-ifpb.firebaseapp.com",
@@ -17,66 +35,66 @@ const firebaseConfig = {
     measurementId: "G-73VPBQSWKM"
 };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const auth = getAuth(app);
-const db = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
 
-// ==========================================
-// ESTADO GLOBAL
-// ==========================================
-const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778'; 
-let itemSelecionado = null;
-let estrelasAtivas = 0;
-let debounceTimer; 
-let currentUserUID = null;
-let filtroBuscaAtual = 'all';
-let ultimoTermoBusca = '';
-let modoPlayerAtual = 'geral';
-const corDestaque = 'e50914';
-
-let perfilUsuario = { username: "Utilizador", avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" };
-let avatarTemp = "";
-let biblioteca = { watchlist: {}, reviews: {} };
-let isLoginMode = true;
-
-// Acompanhamento GA4
+// Rastreamento Manual para Google Analytics
 function trackVirtualPage(pageTitle, pagePath) {
-    logEvent(analytics, 'page_view', { page_title: pageTitle, page_path: pagePath });
+    if (typeof gtag === 'function') {
+        gtag('event', 'page_view', {
+            page_title: pageTitle,
+            page_path: pagePath
+        });
+    }
 }
 
 // ==========================================
-// AUTENTICAÇÃO
+// GERENCIAMENTO DE AUTENTICAÇÃO (Email + Google)
 // ==========================================
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Registar';
-    document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'Entrar' : 'Registar';
-    document.getElementById('auth-switch-text').innerText = isLoginMode ? 'Novo por aqui?' : 'Já tem uma conta?';
-    document.getElementById('auth-switch-btn').innerText = isLoginMode ? 'Registe-se agora.' : 'Entrar agora.';
+    document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Cadastrar';
+    document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'Entrar' : 'Cadastrar';
+    document.getElementById('auth-switch-text').innerText = isLoginMode ? 'Novo por aqui?' : 'Já possui uma conta?';
+    document.getElementById('auth-switch-btn').innerText = isLoginMode ? 'Assine agora.' : 'Entrar agora.';
     document.getElementById('auth-error').style.display = 'none';
 }
 
 function handleAuth(e) {
     e.preventDefault();
     const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-password').value;
+    const password = document.getElementById('auth-password').value;
     const errorBox = document.getElementById('auth-error');
 
     if (isLoginMode) {
-        signInWithEmailAndPassword(auth, email, pass).catch(err => {
-            errorBox.innerText = "Erro ao entrar: Verifique as credenciais.";
-            errorBox.style.display = 'block';
-        });
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .catch(error => {
+                errorBox.innerText = "Erro ao entrar: Verifique as credenciais digitadas.";
+                errorBox.style.display = 'block';
+            });
     } else {
-        createUserWithEmailAndPassword(auth, email, pass).catch(err => {
-            errorBox.innerText = "Erro ao registar: " + err.message;
-            errorBox.style.display = 'block';
-        });
+        firebase.auth().createUserWithEmailAndPassword(email, password)
+            .catch(error => {
+                errorBox.innerText = "Erro ao cadastrar: " + error.message;
+                errorBox.style.display = 'block';
+            });
     }
 }
 
-onAuthStateChanged(auth, user => {
+// Autenticação com o Google (Previne erro de site malicioso)
+function loginComGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const errorBox = document.getElementById('auth-error');
+
+    firebase.auth().signInWithPopup(provider)
+        .catch((error) => {
+            console.error("Erro no login do Google:", error);
+            errorBox.innerText = "Erro ao entrar com Google: " + error.message;
+            errorBox.style.display = 'block';
+        });
+}
+
+firebase.auth().onAuthStateChanged(user => {
     if (user) {
         currentUserUID = user.uid;
         document.getElementById('auth-screen').style.display = 'none';
@@ -90,33 +108,50 @@ onAuthStateChanged(auth, user => {
     }
 });
 
-function logout() { signOut(auth); }
+function logout() {
+    firebase.auth().signOut();
+}
 
 // ==========================================
-// BASE DE DADOS E SINCRONIZAÇÃO
+// BANCO DE DADOS (REALTIME DATABASE)
 // ==========================================
 function carregarDadosUsuario() {
-    get(ref(db, 'users/' + currentUserUID)).then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-            if (data.perfil) perfilUsuario = data.perfil;
-            if (data.biblioteca) biblioteca = data.biblioteca;
-            if (!biblioteca.watchlist) biblioteca.watchlist = {};
-            if (!biblioteca.reviews) biblioteca.reviews = {};
-        }
-        atualizarUIUsuario();
-    }).catch(error => console.error("Erro ao carregar:", error));
+    const user = firebase.auth().currentUser;
+    firebase.database().ref('users/' + currentUserUID).once('value')
+        .then(snapshot => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.perfil) perfilUsuario = data.perfil;
+                if (data.biblioteca) biblioteca = data.biblioteca;
+                if (!biblioteca.watchlist) biblioteca.watchlist = {};
+                if (!biblioteca.reviews) biblioteca.reviews = {};
+            } else if (user) {
+                // Puxa a foto do Google se for o primeiro login!
+                perfilUsuario.username = user.displayName || "Usuário CineNet";
+                perfilUsuario.avatar = user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png";
+                salvarDados();
+            }
+            atualizarUIUsuario();
+        })
+        .catch(error => console.error("Erro ao sincronizar dados:", error));
 }
 
 function salvarDados() {
-    if (currentUserUID) set(ref(db, 'users/' + currentUserUID), { perfil: perfilUsuario, biblioteca: biblioteca });
+    if (currentUserUID) {
+        firebase.database().ref('users/' + currentUserUID).set({
+            perfil: perfilUsuario,
+            biblioteca: biblioteca
+        });
+    }
 }
 
 // ==========================================
-// ROTEAMENTO (ABAS)
+// CONTROLADOR DE FLUXO (ABAS)
 // ==========================================
 function setNavActive(idDesktop, idMobile) {
-    document.querySelectorAll('.nav-menu a, .mobile-bottom-nav a').forEach(el => el.classList.remove('active', 'active-nav'));
+    document.querySelectorAll('.nav-menu a, .mobile-bottom-nav a').forEach(el => {
+        el.classList.remove('active', 'active-nav');
+    });
     if(idDesktop) document.getElementById(idDesktop).classList.add('active');
     if(idMobile) document.getElementById(idMobile).classList.add('active-nav');
 }
@@ -127,7 +162,7 @@ function irParaHome() {
     document.getElementById('search-results-section').style.display = 'none';
     document.getElementById('watchlist-section').style.display = 'none';
     carregarHome();
-    trackVirtualPage("Início - CineNet", "/home");
+    trackVirtualPage("Início", "/home");
 }
 
 function irParaBusca() {
@@ -136,7 +171,7 @@ function irParaBusca() {
     document.getElementById('watchlist-section').style.display = 'none';
     document.getElementById('search-results-section').style.display = 'block';
     document.getElementById('main-search-input').focus();
-    trackVirtualPage("Pesquisa - CineNet", "/search");
+    trackVirtualPage("Busca", "/search");
 }
 
 function irParaWatchlist() {
@@ -145,57 +180,69 @@ function irParaWatchlist() {
     document.getElementById('search-results-section').style.display = 'none';
     document.getElementById('watchlist-section').style.display = 'block';
     renderizarWatchlist();
-    trackVirtualPage("Minha Lista - CineNet", "/watchlist");
+    trackVirtualPage("Minha Lista", "/watchlist");
 }
 
 function alternarScrollBody(travar) {
     document.body.classList.toggle('modal-open', travar);
-    document.body.style.paddingRight = travar ? `${window.innerWidth - document.documentElement.clientWidth}px` : '0px';
+    if(travar) {
+        const larguraScroll = window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.paddingRight = `${larguraScroll}px`;
+    } else {
+        document.body.style.paddingRight = '0px';
+    }
 }
 
 // ==========================================
-// TMDB & RENDERIZAÇÃO
+// CONSUMO TMDB & RENDERIZAÇÃO
 // ==========================================
 async function fetchTMDB(endpoint) {
     try {
-        const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}&language=pt-PT`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Falha TMDB");
-        return await res.json();
-    } catch (error) { return { results: [] }; }
+        const url = `https://api.themoviedb.org/3${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}&language=pt-BR`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Erro na resposta TMDB");
+        return await response.json();
+    } catch (error) {
+        return { results: [] };
+    }
 }
 
 async function carregarHome() {
-    const [trend, movies, series] = await Promise.all([
-        fetchTMDB('/trending/all/day'), fetchTMDB('/movie/popular'), fetchTMDB('/tv/popular')
+    const [dataTrending, dataMovies, dataSeries] = await Promise.all([
+        fetchTMDB('/trending/all/day'),
+        fetchTMDB('/movie/popular'),
+        fetchTMDB('/tv/popular')
     ]);
 
-    if (trend.results.length > 0) {
-        const hero = trend.results[0];
-        document.getElementById('hero-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${hero.backdrop_path})`;
-        document.getElementById('hero-title').innerText = hero.title || hero.name;
-        document.getElementById('hero-desc').innerText = hero.overview || "Sem descrição disponível.";
-        document.getElementById('hero-play-btn').onclick = () => abrirPlayer(hero.id, hero.media_type || 'movie');
-        document.getElementById('hero-info-btn').onclick = () => abrirDetalhes(hero.id, hero.media_type || 'movie');
+    if (dataTrending.results.length > 0) {
+        const heroItem = dataTrending.results[0];
+        document.getElementById('hero-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${heroItem.backdrop_path})`;
+        document.getElementById('hero-title').innerText = heroItem.title || heroItem.name;
+        document.getElementById('hero-desc').innerText = heroItem.overview || "Nenhuma descrição disponível para este conteúdo.";
+        
+        document.getElementById('hero-play-btn').onclick = () => abrirPlayer(heroItem.id, heroItem.media_type || 'movie');
+        document.getElementById('hero-info-btn').onclick = () => abrirDetalhes(heroItem.id, heroItem.media_type || 'movie');
     }
 
-    renderCards(trend.results, 'row-trending');
-    renderCards(movies.results, 'row-movies', 'movie');
-    renderCards(series.results, 'row-series', 'tv');
+    renderCards(dataTrending.results, 'row-trending');
+    renderCards(dataMovies.results, 'row-movies', 'movie');
+    renderCards(dataSeries.results, 'row-series', 'tv');
 }
 
 function renderCards(items, containerId, forceType = null) {
     const container = document.getElementById(containerId);
     if(!container) return;
     container.innerHTML = '';
+
     items.forEach(item => {
         if (!item.poster_path) return;
-        const tipo = forceType || item.media_type || 'movie';
-        const isWatched = biblioteca.watchlist[item.id] ? '<div class="watched-indicator">✔</div>' : '';
+        const tipoFinal = forceType || item.media_type || 'movie';
         const card = document.createElement('div');
         card.className = 'movie-card';
-        card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="Poster" loading="lazy">${isWatched}`;
-        card.onclick = () => abrirDetalhes(item.id, tipo);
+        
+        const indicator = biblioteca.watchlist[item.id] ? '<div class="watched-indicator">✔</div>' : '';
+        card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="Poster" loading="lazy">${indicator}`;
+        card.onclick = () => abrirDetalhes(item.id, tipoFinal);
         container.appendChild(card);
     });
 }
@@ -205,13 +252,14 @@ function renderizarWatchlist() {
     const emptyState = document.getElementById('watchlist-empty-state');
     container.innerHTML = '';
 
-    const itens = Object.values(biblioteca.watchlist).sort((a, b) => b.adicionadoEm - a.adicionadoEm);
-    const itensValidos = itens.filter(item => item && item.poster_path);
+    const listItems = Object.values(biblioteca.watchlist).sort((a, b) => b.adicionadoEm - a.adicionadoEm);
+    const validItems = listItems.filter(i => i && i.poster_path);
 
-    if (itensValidos.length === 0) { emptyState.style.display = 'block'; } 
-    else {
+    if (validItems.length === 0) {
+        emptyState.style.display = 'block';
+    } else {
         emptyState.style.display = 'none';
-        itensValidos.forEach(item => {
+        validItems.forEach(item => {
             const card = document.createElement('div');
             card.className = 'movie-card';
             card.innerHTML = `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}" loading="lazy"><div class="watched-indicator">✔</div>`;
@@ -222,14 +270,18 @@ function renderizarWatchlist() {
 }
 
 // ==========================================
-// BUSCA E PESQUISA
+// ENGINE DE PESQUISA AVANÇADA
 // ==========================================
 function iniciarBusca(termo) {
     clearTimeout(debounceTimer);
     document.getElementById('search-clear').style.display = termo.length > 0 ? 'block' : 'none';
     ultimoTermoBusca = termo;
+
     debounceTimer = setTimeout(() => {
-        if (termo.length < 2) return document.getElementById('search-grid').innerHTML = '';
+        if (termo.length < 2) {
+            document.getElementById('search-grid').innerHTML = '';
+            return;
+        }
         executarBuscaTMDB(termo);
     }, 600);
 }
@@ -248,24 +300,36 @@ async function executarBuscaTMDB(termo) {
     container.innerHTML = '';
 
     let filtrados = data.results.filter(item => item.poster_path);
-    if (filtroBuscaAtual !== 'all') filtrados = filtrados.filter(item => item.media_type === filtroBuscaAtual);
 
-    if (filtrados.length === 0) emptyState.style.display = 'block';
-    else { emptyState.style.display = 'none'; renderCards(filtrados, 'search-grid'); }
+    if (filtroBuscaAtual !== 'all') {
+        filtrados = filtrados.filter(item => item.media_type === filtroBuscaAtual);
+    }
+
+    if (filtrados.length === 0) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+        renderCards(filtrados, 'search-grid');
+    }
 }
 
 // ==========================================
-// MODAL DE DETALHES & AVALIAÇÕES
+// MODAL DE DETALHES & SISTEMA DE REVIEW
 // ==========================================
 async function abrirDetalhes(id, tipo) {
     const data = await fetchTMDB(`/${tipo}/${id}`);
-    itemSelecionado = { id: id, tipo: tipo, poster_path: data.poster_path, title: data.title || data.name };
-    
+    itemSelecionado = {
+        id: id,
+        tipo: tipo,
+        poster_path: data.poster_path,
+        title: data.title || data.name
+    };
+
     document.getElementById('modal-banner').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${data.backdrop_path || data.poster_path})`;
     document.getElementById('modal-title').innerText = itemSelecionado.title;
-    document.getElementById('modal-overview').innerText = data.overview || "Sem descrição disponível.";
+    document.getElementById('modal-overview').innerText = data.overview || "Nenhuma sinopse disponível até o momento.";
     document.getElementById('modal-year').innerText = (data.release_date || data.first_air_date || "N/A").substring(0, 4);
-    document.getElementById('modal-rating').innerText = (data.vote_average ? data.vote_average.toFixed(1) : "N/A") + " Relevância";
+    document.getElementById('modal-rating').innerText = (data.vote_average ? data.vote_average.toFixed(1) : "N/A") + " de Pontuação";
 
     document.getElementById('modal-play-btn').onclick = () => abrirPlayer(id, tipo);
     atualizarBotaoWatchlist();
@@ -274,7 +338,9 @@ async function abrirDetalhes(id, tipo) {
     document.getElementById('detailsModal').style.display = 'flex';
     alternarScrollBody(true);
 
-    logEvent(analytics, 'view_item', { 'item_id': id, 'item_name': itemSelecionado.title });
+    if (typeof gtag === 'function') {
+        gtag('event', 'view_item', { 'item_id': id, 'item_name': itemSelecionado.title });
+    }
 }
 
 function fecharDetalhes() {
@@ -286,29 +352,33 @@ function fecharDetalhes() {
 function alternarWatchlist() {
     if (!itemSelecionado) return;
     const id = itemSelecionado.id;
-    let analyticsAction = "";
 
     if (biblioteca.watchlist[id]) {
         delete biblioteca.watchlist[id];
-        analyticsAction = "remove_from_watchlist";
     } else {
-        biblioteca.watchlist[id] = { id: id, tipo: itemSelecionado.tipo, poster_path: itemSelecionado.poster_path, adicionadoEm: Date.now() };
-        analyticsAction = "add_to_watchlist";
+        biblioteca.watchlist[id] = {
+            id: id,
+            tipo: itemSelecionado.tipo,
+            poster_path: itemSelecionado.poster_path,
+            adicionadoEm: Date.now()
+        };
     }
-    
     atualizarBotaoWatchlist();
     salvarDados();
-    logEvent(analytics, analyticsAction, { 'item_id': id, 'item_name': itemSelecionado.title });
 
-    if (document.getElementById('watchlist-section').style.display === 'block') renderizarWatchlist();
+    if(document.getElementById('watchlist-section').style.display === 'block') {
+        renderizarWatchlist();
+    }
 }
 
 function atualizarBotaoWatchlist() {
     const btn = document.getElementById('btn-watchlist');
     if (biblioteca.watchlist[itemSelecionado.id]) {
-        btn.innerText = "✔ Na Minha Lista"; btn.style.background = "rgba(255,255,255,0.2)";
+        btn.innerText = "✔ Na Minha Lista";
+        btn.style.background = "rgba(255,255,255,0.2)";
     } else {
-        btn.innerText = "+ Minha Lista"; btn.style.background = "rgba(255,255,255,0.1)";
+        btn.innerText = "+ Minha Lista";
+        btn.style.background = "rgba(255,255,255,0.1)";
     }
 }
 
@@ -316,7 +386,11 @@ function setRating(num) {
     estrelasAtivas = num;
     const spans = document.getElementById('star-container').children;
     for (let i = 0; i < spans.length; i++) {
-        if (i < num) spans[i].classList.add('active'); else spans[i].classList.remove('active');
+        if (i < num) {
+            spans[i].classList.add('active');
+        } else {
+            spans[i].classList.remove('active');
+        }
     }
 }
 
@@ -331,10 +405,11 @@ function carregarReviewUI() {
 
 function salvarReview() {
     const nota = estrelasAtivas;
-    const texto = document.getElementById('review-text').value.trim();
+    const textoComentario = document.getElementById('review-text').value.trim();
     if (nota === 0) { alert("Selecione pelo menos 1 estrela."); return; }
-    biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: texto };
-    salvarDados(); alert("Avaliação salva!");
+    biblioteca.reviews[itemSelecionado.id] = { rating: nota, text: textoComentario };
+    salvarDados(); 
+    alert("Avaliação salva com sucesso!");
 }
 
 // ==========================================
@@ -346,9 +421,8 @@ function abrirPlayer(id, tipo) {
     else { epBox.style.display = 'none'; modoPlayerAtual = 'geral'; }
 
     document.getElementById('playerModal').style.display = 'flex';
-    alternarScrollBody(true); atualizarIframePlayer();
-
-    if (itemSelecionado) logEvent(analytics, 'video_play', { 'video_id': id, 'video_title': itemSelecionado.title });
+    alternarScrollBody(true); 
+    atualizarIframePlayer();
 }
 
 function fecharPlayer() { 
@@ -371,20 +445,24 @@ function atualizarIframePlayer() {
 }
 
 // ==========================================
-// GESTÃO DE PERFIL
+// CONFIGURAÇÃO E CUSTOMIZAÇÃO DO PERFIL
 // ==========================================
 function abrirModalPerfil() {
     avatarTemp = perfilUsuario.avatar;
     document.getElementById('edit-username').value = perfilUsuario.username;
     document.getElementById('input-profile-avatar-url').value = ""; 
     document.querySelectorAll('.avatar-option').forEach(img => {
-        if (img.src === avatarTemp) img.classList.add('active'); else img.classList.remove('active');
+        if (img.src === avatarTemp) img.classList.add('active');
+        else img.classList.remove('active');
     });
     document.getElementById('profileModal').style.display = 'flex';
     alternarScrollBody(true);
 }
 
-function fecharModalPerfil() { document.getElementById('profileModal').style.display = 'none'; alternarScrollBody(false); }
+function fecharModalPerfil() {
+    document.getElementById('profileModal').style.display = 'none';
+    alternarScrollBody(false);
+}
 
 function selecionarAvatar(imgElement) {
     document.getElementById('input-profile-avatar-url').value = "";
@@ -393,14 +471,18 @@ function selecionarAvatar(imgElement) {
     avatarTemp = imgElement.src;
 }
 
-function limparSelecaoAvatar() { document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active')); }
+function limparSelecaoAvatar() {
+    document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
+}
 
 function salvarPerfil() {
     const novoNome = document.getElementById('edit-username').value.trim();
-    const urlCustomizada = document.getElementById('input-profile-avatar-url').value.trim();
+    const urlCustom = document.getElementById('input-profile-avatar-url').value.trim();
     if (novoNome) perfilUsuario.username = novoNome;
-    perfilUsuario.avatar = urlCustomizada !== "" ? urlCustomizada : avatarTemp;
-    salvarDados(); atualizarUIUsuario(); fecharModalPerfil();
+    perfilUsuario.avatar = urlCustom !== "" ? urlCustom : avatarTemp;
+    salvarDados();
+    atualizarUIUsuario();
+    fecharModalPerfil();
 }
 
 function atualizarUIUsuario() {
@@ -410,16 +492,18 @@ function atualizarUIUsuario() {
 }
 
 // ==========================================
-// EVENT LISTENERS (MAPEAR CLIQUES DO HTML PARA O MÓDULO JS)
+// ASSINATURA DE EVENTOS (MAPEAMENTO UNIFICADO)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Autenticação
+    // Autenticação Email/Senha + Google
     document.getElementById('auth-form').addEventListener('submit', handleAuth);
     document.getElementById('auth-switch-btn').addEventListener('click', toggleAuthMode);
+    document.getElementById('btn-google-auth').addEventListener('click', loginComGoogle);
+    
     document.getElementById('logout-btn-pc').addEventListener('click', logout);
     document.getElementById('logout-btn-mobile').addEventListener('click', logout);
     
-    // Navegação
+    // Navegação entre Seções
     document.getElementById('nav-home').addEventListener('click', irParaHome);
     document.getElementById('mob-nav-home').addEventListener('click', irParaHome);
     document.getElementById('brand-pc').addEventListener('click', irParaHome);
@@ -430,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('mob-nav-watchlist').addEventListener('click', irParaWatchlist);
     document.getElementById('explore-catalog-btn').addEventListener('click', irParaHome);
 
-    // Pesquisa
+    // Sistema de Busca
     document.getElementById('main-search-input').addEventListener('input', (e) => iniciarBusca(e.target.value));
     document.getElementById('search-clear').addEventListener('click', limparBusca);
     document.getElementById('filter-pills-container').addEventListener('click', (e) => {
@@ -442,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Detalhes & Avaliação
+    // Detalhes, Watchlist e Review
     document.getElementById('close-details-btn').addEventListener('click', fecharDetalhes);
     document.getElementById('btn-watchlist').addEventListener('click', alternarWatchlist);
     document.getElementById('save-review-btn').addEventListener('click', salvarReview);
@@ -450,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(e.target.hasAttribute('data-star')) setRating(parseInt(e.target.getAttribute('data-star')));
     });
 
-    // Perfil
+    // Gerenciamento do Perfil
     document.getElementById('profile-trigger-pc').addEventListener('click', abrirModalPerfil);
     document.getElementById('user-avatar-mobile').addEventListener('click', abrirModalPerfil);
     document.getElementById('close-profile-btn').addEventListener('click', fecharModalPerfil);
@@ -460,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('input-profile-avatar-url').addEventListener('input', limparSelecaoAvatar);
 
-    // Player
+    // Reprodutor de Vídeo (Player)
     document.getElementById('close-player-btn').addEventListener('click', fecharPlayer);
     document.getElementById('player-season-input').addEventListener('change', atualizarIframePlayer);
     document.getElementById('player-episode-input').addEventListener('change', atualizarIframePlayer);

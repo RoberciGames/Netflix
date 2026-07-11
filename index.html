@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -29,17 +29,26 @@
                     <span class="brand-accent">CINE</span><span class="brand-light">NET</span>
                 </div>
                 <h2 id="auth-title">Entrar</h2>
+                
                 <form id="auth-form">
                     <div class="netflix-input-group" style="margin-bottom: 15px;">
                         <input type="email" id="auth-email" placeholder=" " required>
-                        <label>Email de Utilizador</label>
+                        <label>Email do Usuário</label>
                     </div>
                     <div class="netflix-input-group" style="margin-bottom: 25px;">
                         <input type="password" id="auth-password" placeholder=" " required minlength="6">
-                        <label>Palavra-passe</label>
+                        <label>Senha</label>
                     </div>
                     <button type="submit" class="btn-netflix-main" id="auth-submit-btn">Entrar</button>
+                    
+                    <div style="text-align: center; margin: 15px 0; color: #888; font-size: 13px;">OU</div>
+                    
+                    <button type="button" class="btn-google-netflix" id="btn-google-auth">
+                        <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google Logo">
+                        Entrar com o Google
+                    </button>
                 </form>
+
                 <div class="auth-extra-netflix">
                     <span>Lembrar-me</span>
                     <span>Precisa de ajuda?</span>
@@ -47,7 +56,7 @@
                 <div id="auth-error" class="alert-box-netflix" style="display:none;"></div>
                 <div class="auth-footer-netflix">
                     <span id="auth-switch-text">Novo por aqui?</span>
-                    <button type="button" id="auth-switch-btn">Registe-se agora.</button>
+                    <button type="button" id="auth-switch-btn">Assine agora.</button>
                 </div>
             </div>
         </div>
@@ -92,7 +101,7 @@
                 <span>🏠</span><span>Início</span>
             </a>
             <a href="#" id="mob-nav-search">
-                <span>🔍</span><span>Pesquisar</span>
+                <span>🔍</span><span>Buscar</span>
             </a>
             <a href="#" id="mob-nav-watchlist">
                 <span>⭐</span><span>Lista</span>
@@ -103,8 +112,8 @@
             <div class="hero-showcase" id="hero-banner">
                 <div class="hero-overlay-shadow"></div>
                 <div class="hero-inner">
-                    <span class="hero-badge" id="hero-badge">EM DESTAQUE</span>
-                    <h1 class="hero-title-text" id="hero-title">A carregar...</h1>
+                    <span class="hero-badge">EM DESTAQUE HOJE</span>
+                    <h1 class="hero-title-text" id="hero-title">Carregando...</h1>
                     <p class="hero-description" id="hero-desc"></p>
                     <div style="display:flex; gap:15px;">
                         <button class="btn-primary-action" id="hero-play-btn">▶ Assistir</button>
@@ -115,15 +124,15 @@
 
             <div class="main-container">
                 <div class="movie-section">
-                    <h3 class="section-title">Populares na CineNet</h3>
+                    <h3 class="section-title">Bombando na CineNet</h3>
                     <div class="movie-row" id="row-trending"></div>
                 </div>
                 <div class="movie-section">
-                    <h3 class="section-title">Filmes em Destaque</h3>
+                    <h3 class="section-title">Filmes Aclamados</h3>
                     <div class="movie-row" id="row-movies"></div>
                 </div>
                 <div class="movie-section">
-                    <h3 class="section-title">Séries Recomendadas</h3>
+                    <h3 class="section-title">Séries Imperdíveis</h3>
                     <div class="movie-row" id="row-series"></div>
                 </div>
             </div>
@@ -131,17 +140,17 @@
 
         <div id="search-results-section" style="display:none;">
             <div class="search-page-container">
-                <h2 style="margin-bottom: 5px; font-size: 28px;">O que vais assistir hoje?</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 20px;">Explora milhares de filmes, séries e animes.</p>
+                <h2 style="margin-bottom: 5px; font-size: 28px;">O que vamos assistir hoje?</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Explore milhares de títulos disponíveis instantaneamente.</p>
                 
                 <div class="search-input-wrapper">
                     <span class="search-icon-inside">🔍</span>
-                    <input type="text" id="main-search-input" placeholder="Procura por título, personagem ou género...">
+                    <input type="text" id="main-search-input" placeholder="Busque por títulos, diretores ou gêneros...">
                     <span class="search-clear-btn" id="search-clear" style="display:none;">✖</span>
                 </div>
 
                 <div class="search-filter-pills" id="filter-pills-container">
-                    <div class="filter-pill active" data-filter="all">Tudo</div>
+                    <div class="filter-pill active" data-filter="all">Todos</div>
                     <div class="filter-pill" data-filter="movie">Filmes</div>
                     <div class="filter-pill" data-filter="tv">Séries</div>
                 </div>
@@ -151,21 +160,21 @@
             <div id="search-empty-state" style="display:none; text-align:center; padding: 50px 20px; color: #666;">
                 <div style="font-size: 40px; margin-bottom: 15px;">🍿</div>
                 <h3>Nenhum resultado encontrado</h3>
-                <p>Tenta termos diferentes ou altera o filtro.</p>
+                <p>Tente refinar sua busca ou mude os filtros acima.</p>
             </div>
         </div>
 
         <div id="watchlist-section" style="display:none;">
             <div class="search-page-container">
-                <h2 style="margin-bottom: 5px; font-size: 28px;">A Minha Lista</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 20px;">Os teus filmes e séries guardados para ver mais tarde.</p>
+                <h2 style="margin-bottom: 5px; font-size: 28px;">Minha Lista</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Seus filmes e séries salvos para ver depois.</p>
             </div>
 
             <div class="grid-layout" id="watchlist-grid"></div>
             <div id="watchlist-empty-state" style="display:none; text-align:center; padding: 50px 20px; color: #666;">
                 <div style="font-size: 40px; margin-bottom: 15px;">⭐</div>
-                <h3>A tua lista está vazia</h3>
-                <p>Navega pelo catálogo e clica em "+ Minha Lista" para adicionar títulos aqui.</p>
+                <h3>Sua lista está vazia</h3>
+                <p>Navegue pelo catálogo e adicione títulos clicando em "+ Minha Lista".</p>
                 <button class="btn-secondary-modal" style="margin-top: 15px; padding: 10px 20px;" id="explore-catalog-btn">Explorar Catálogo</button>
             </div>
         </div>
@@ -191,12 +200,12 @@
                     </div>
                     <p class="modal-overview-text" id="modal-overview"></p>
                     <div class="rating-box">
-                        <h4 style="margin: 0 0 10px; font-size: 14px; color: #ccc;">Avaliar:</h4>
+                        <h4 style="margin: 0 0 10px; font-size: 14px; color: #ccc;">Sua Avaliação:</h4>
                         <div class="star-rating-row" id="star-container">
                             <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span>
                         </div>
-                        <textarea class="input-textarea" id="review-text" placeholder="Deixa a tua opinião (opcional)..."></textarea>
-                        <button class="btn-tertiary-modal" id="save-review-btn">Guardar Avaliação</button>
+                        <textarea class="input-textarea" id="review-text" placeholder="Deixe um comentário sobre a obra (opcional)..."></textarea>
+                        <button class="btn-tertiary-modal" id="save-review-btn">Salvar Avaliação</button>
                     </div>
                 </div>
             </div>
@@ -209,10 +218,10 @@
                 
                 <div class="netflix-input-group" style="margin-bottom: 20px;">
                     <input type="text" id="edit-username" placeholder=" ">
-                    <label>Nome de Utilizador</label>
+                    <label>Nome de Exibição</label>
                 </div>
 
-                <h4 style="margin-bottom: 10px; font-size: 13px; color: #aaa;">Escolha um Avatar Predefinido:</h4>
+                <h4 style="margin-bottom: 10px; font-size: 13px; color: #aaa;">Escolha um Avatar Oficial:</h4>
                 <div class="avatar-selection-grid" id="avatar-grid">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="avatar-option">
                     <img src="https://pbs.twimg.com/media/DmBraqkXcAA1Yco.jpg" class="avatar-option">
@@ -222,10 +231,10 @@
 
                 <div class="netflix-input-group" style="margin-top:20px;">
                     <input type="url" id="input-profile-avatar-url" placeholder=" ">
-                    <label>Ou cola o URL da tua imagem...</label>
+                    <label>Ou insira a URL de uma imagem externa...</label>
                 </div>
 
-                <button class="btn-netflix-main" style="margin-top: 25px; box-shadow: 0 4px 15px var(--primary-glow);" id="save-profile-btn">Guardar Alterações</button>
+                <button class="btn-netflix-main" style="margin-top: 25px; box-shadow: 0 4px 15px var(--primary-glow);" id="save-profile-btn">Confirmar Alterações</button>
             </div>
         </div>
 
@@ -247,8 +256,12 @@
                 <iframe id="videoPlayer" src="" frameborder="0" allowfullscreen="true" scrolling="no"></iframe>
             </div>
         </div>
+
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
