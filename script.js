@@ -8,6 +8,7 @@ let modoPlayerAtual = 'geral';
 let isLoginMode = true; 
 let corDestaque = "e50914"; 
 let avatarSelecionadoTemporario = "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png";
+let timerBusca = null; // Variável para a Pesquisa Fluida (Debounce)
 
 const firebaseConfig = {
     apiKey: "AIzaSyAfPWvnGdvPKZ_lrVwOuag14WHLY9AgML8",
@@ -28,7 +29,7 @@ function alternarScrollBody(bloquear) {
 }
 
 // ==========================================
-// AUTENTICAÇÃO
+// AUTENTICAÇÃO E PERFIL
 // ==========================================
 function handleAuth(event) {
     event.preventDefault();
@@ -37,34 +38,29 @@ function handleAuth(event) {
     const errorBox = document.getElementById('auth-error');
     const btn = document.getElementById('auth-btn');
 
-    btn.innerText = isLoginMode ? "A entrar..." : "A registar..."; 
-    btn.disabled = true;
-    errorBox.style.display = 'none';
+    btn.innerText = isLoginMode ? "A entrar..." : "A registar..."; btn.disabled = true; errorBox.style.display = 'none';
 
     if (isLoginMode) {
         auth.signInWithEmailAndPassword(email, pass).catch((error) => {
             errorBox.innerText = "Credenciais incorretas ou inválidas.";
-            errorBox.style.display = 'block'; 
-            btn.disabled = false; btn.innerText = "Entrar";
+            errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "Entrar";
         });
     } else {
         auth.createUserWithEmailAndPassword(email, pass).then((userCredential) => {
             db.collection("usuarios").doc(userCredential.user.uid).set({
-                email: email, 
-                perfil: { username: email.split('@')[0], avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" }
+                email: email, perfil: { username: email.split('@')[0], avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" }
             });
         }).catch((error) => {
             errorBox.innerText = "Erro no registo: " + error.message;
-            errorBox.style.display = 'block'; 
-            btn.disabled = false; btn.innerText = "Registrar";
+            errorBox.style.display = 'block'; btn.disabled = false; btn.innerText = "Registar";
         });
     }
 }
 
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Registrar';
-    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registrar';
+    document.getElementById('auth-title').innerText = isLoginMode ? 'Entrar' : 'Registar';
+    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar' : 'Registar';
     document.getElementById('auth-switch-text').innerText = isLoginMode ? 'Novo por aqui?' : 'Já possui conta?';
     document.getElementById('auth-link').innerText = isLoginMode ? 'Assine agora.' : 'Entrar por aqui.';
     document.getElementById('auth-error').style.display = 'none';
@@ -75,27 +71,20 @@ function fazerLogout() { auth.signOut(); }
 auth.onAuthStateChanged((user) => {
     if (user) {
         currentUserUID = user.uid;
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        carregarDadosPerfilFirebase();
-        inicializarApp();
+        document.getElementById('auth-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block';
+        carregarDadosPerfilFirebase(); inicializarApp();
     } else {
         currentUserUID = null;
-        document.getElementById('auth-screen').style.display = 'flex';
-        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex'; document.getElementById('main-app').style.display = 'none';
     }
 });
 
-// ==========================================
-// CONTROLE DO PERFIL (PC E MOBILE UNIFICADOS)
-// ==========================================
 function carregarDadosPerfilFirebase() {
     if (!currentUserUID) return;
     db.collection("usuarios").doc(currentUserUID).get().then((doc) => {
         if (doc.exists && doc.data().perfil) {
             const dados = doc.data().perfil;
             avatarSelecionadoTemporario = dados.avatar;
-            // Atualiza TODOS os avatares e nomes na tela (PC e Mobile)
             document.querySelectorAll('.display-username').forEach(el => el.innerText = dados.username || "Utilizador");
             document.querySelectorAll('.display-avatar').forEach(el => el.src = dados.avatar || "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png");
         }
@@ -106,43 +95,92 @@ function abrirModalPerfil() {
     document.getElementById('profileModal').style.display = 'flex';
     const nomeAtualElemento = document.querySelector('.display-username');
     document.getElementById('input-profile-username').value = nomeAtualElemento ? nomeAtualElemento.innerText : "Utilizador";
-    
-    // Marca o avatar selecionado com a borda
-    document.querySelectorAll('.avatar-option').forEach(img => {
-        if(img.src === avatarSelecionadoTemporario) img.classList.add('active');
-        else img.classList.remove('active');
-    });
+    document.querySelectorAll('.avatar-option').forEach(img => { img.classList.toggle('active', img.src === avatarSelecionadoTemporario); });
 }
 
 function fecharModalPerfil() { document.getElementById('profileModal').style.display = 'none'; }
 
 function selecionarAvatarLocal(elementoImg) {
     document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
-    elementoImg.classList.add('active');
-    avatarSelecionadoTemporario = elementoImg.src;
+    elementoImg.classList.add('active'); avatarSelecionadoTemporario = elementoImg.src;
 }
 
 function salvarConfiguracoesPerfil() {
     const novoNome = document.getElementById('input-profile-username').value.trim();
     if(!novoNome) return;
-
-    db.collection("usuarios").doc(currentUserUID).update({
-        "perfil.username": novoNome,
-        "perfil.avatar": avatarSelecionadoTemporario
-    }).then(() => {
-        // Atualiza a tela instantaneamente (PC e Mobile)
+    db.collection("usuarios").doc(currentUserUID).update({ "perfil.username": novoNome, "perfil.avatar": avatarSelecionadoTemporario }).then(() => {
         document.querySelectorAll('.display-username').forEach(el => el.innerText = novoNome);
         document.querySelectorAll('.display-avatar').forEach(el => el.src = avatarSelecionadoTemporario);
         fecharModalPerfil();
-    }).catch(err => alert("Erro ao salvar perfil: " + err.message));
+    }).catch(err => alert("Erro ao guardar o perfil: " + err.message));
 }
 
 // ==========================================
-// PRE-TELA DE DETALHES (ESTILO NETFLIX)
+// SISTEMA DE PESQUISA (PC & TELEMÓVEL)
+// ==========================================
+function abrirBuscaMobile() {
+    document.getElementById('mobile-topbar').style.display = 'none';
+    document.getElementById('mobile-search-bar').style.display = 'flex';
+    document.getElementById('search-input-mobile').focus();
+}
+
+function fecharBuscaMobile() {
+    document.getElementById('mobile-topbar').style.display = 'flex';
+    document.getElementById('mobile-search-bar').style.display = 'none';
+    document.getElementById('search-input-mobile').value = '';
+    fecharResultadosBusca();
+}
+
+function fecharResultadosBusca() {
+    document.getElementById('search-input-pc').value = '';
+    if(document.getElementById('search-input-mobile')) document.getElementById('search-input-mobile').value = '';
+    document.getElementById('search-results-container').style.display = 'none';
+    document.getElementById('homepage-content').style.display = 'block';
+}
+
+function iniciarBusca(query) {
+    clearTimeout(timerBusca);
+    if(query.trim() === '') { fecharResultadosBusca(); return; }
+    
+    // Aguarda que o utilizador pare de digitar (600ms) para consultar a API
+    timerBusca = setTimeout(() => { buscarNoTMDB(query); }, 600);
+}
+
+async function buscarNoTMDB(query) {
+    document.getElementById('homepage-content').style.display = 'none';
+    document.getElementById('search-results-container').style.display = 'block';
+    
+    const container = document.getElementById('search-grid');
+    container.innerHTML = '<p style="color:#aaa; text-align:center; width: 100%;">A procurar resultados...</p>';
+
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=pt-PT&query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        
+        // Filtra para mostrar apenas Filmes/Séries com imagem disponível
+        const validResults = data.results.filter(m => (m.media_type === 'movie' || m.media_type === 'tv') && m.poster_path);
+        
+        if(validResults.length === 0) {
+            container.innerHTML = '<p style="color:#aaa; text-align:center; width: 100%;">Nenhum título encontrado.</p>';
+            return;
+        }
+
+        container.innerHTML = validResults.map(media => `
+            <div class="movie-card" onclick="exibirPretelaDetalhes('${media.id}', '${media.media_type}')">
+                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="Poster">
+            </div>
+        `).join('');
+    } catch (error) {
+        container.innerHTML = '<p style="color:#e50914;">Erro ao processar a pesquisa.</p>';
+    }
+}
+
+// ==========================================
+// PRÉ-ECRÃ DE DETALHES (ESTILO NETFLIX)
 // ==========================================
 async function exibirPretelaDetalhes(id, tipo) {
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/${tipo}/${id}?api_key=${TMDB_KEY}&language=pt-BR`);
+        const res = await fetch(`https://api.themoviedb.org/3/${tipo}/${id}?api_key=${TMDB_KEY}&language=pt-PT`);
         const midia = await res.json();
         
         const titulo = midia.title || midia.name;
@@ -158,23 +196,17 @@ async function exibirPretelaDetalhes(id, tipo) {
         document.getElementById('modal-media-year').innerText = ano;
         document.getElementById('modal-netflix-banner').style.backgroundImage = banner ? `url('${banner}')` : 'none';
 
-        document.getElementById('modal-play-btn').onclick = () => {
-            fecharModalDetalhes();
-            abrirPlayer(id, tipo);
-        };
+        document.getElementById('modal-play-btn').onclick = () => { fecharModalDetalhes(); abrirPlayer(id, tipo); };
 
         document.getElementById('detailsModal').style.display = 'flex';
         alternarScrollBody(true);
     } catch (error) { console.error(error); }
 }
 
-function fecharModalDetalhes() {
-    document.getElementById('detailsModal').style.display = 'none';
-    alternarScrollBody(false);
-}
+function fecharModalDetalhes() { document.getElementById('detailsModal').style.display = 'none'; alternarScrollBody(false); }
 
 // ==========================================
-// CARREGAMENTO DE MÍDIAS (TMDB)
+// CARREGAMENTO DO CATÁLOGO PRINCIPAL
 // ==========================================
 async function inicializarApp() {
     try {
@@ -187,7 +219,7 @@ async function inicializarApp() {
 }
 
 async function carregarDestaquePrincipal() {
-    const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-BR`);
+    const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=pt-PT`);
     const data = await res.json();
     const item = data.results[0];
     if (item) {
@@ -201,16 +233,11 @@ async function carregarDestaquePrincipal() {
 async function carregarFileira(endpoint, elementId, type, extraParams = '') {
     const container = document.getElementById(elementId);
     if (!container) return;
-    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_KEY}&language=pt-BR&page=1${extraParams}`);
+    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_KEY}&language=pt-PT&page=1${extraParams}`);
     const data = await res.json();
-    
     container.innerHTML = data.results.map(media => {
         if(!media.poster_path) return '';
-        return `
-            <div class="movie-card" onclick="exibirPretelaDetalhes('${media.id}', '${type}')">
-                <img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="Poster">
-            </div>
-        `;
+        return `<div class="movie-card" onclick="exibirPretelaDetalhes('${media.id}', '${type}')"><img src="https://image.tmdb.org/t/p/w300${media.poster_path}" alt="Poster"></div>`;
     }).join('');
 }
 
@@ -218,19 +245,12 @@ async function carregarFileira(endpoint, elementId, type, extraParams = '') {
 // REPRODUTOR DE VÍDEO
 // ==========================================
 function abrirPlayer(id, tipo) {
-    itemSelecionado = id;
-    modoPlayerAtual = tipo === 'tv' ? 'series' : 'geral';
+    itemSelecionado = id; modoPlayerAtual = tipo === 'tv' ? 'series' : 'geral';
     document.getElementById('episodes-selectors-box').style.display = modoPlayerAtual === 'series' ? 'flex' : 'none';
-    document.getElementById('playerModal').style.display = 'flex';
-    alternarScrollBody(true);
-    atualizarIframePlayer();
+    document.getElementById('playerModal').style.display = 'flex'; alternarScrollBody(true); atualizarIframePlayer();
 }
 
-function fecharPlayer() {
-    document.getElementById('playerModal').style.display = 'none';
-    document.getElementById('videoPlayer').src = "";
-    alternarScrollBody(false);
-}
+function fecharPlayer() { document.getElementById('playerModal').style.display = 'none'; document.getElementById('videoPlayer').src = ""; alternarScrollBody(false); }
 
 function atualizarIframePlayer() {
     const player = document.getElementById('videoPlayer');

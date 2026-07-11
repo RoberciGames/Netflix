@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -52,17 +52,21 @@
         
         <header id="desktop-navbar" class="pc-only">
             <div class="nav-container">
-                <a href="#" class="app-brand" onclick="window.scrollTo(0,0);">
+                <a href="#" class="app-brand" onclick="fecharResultadosBusca(); window.scrollTo(0,0);">
                     <span class="brand-accent">CINE</span><span class="brand-light">NET</span>
                 </a>
                 <ul class="nav-menu">
-                    <li><a href="#homepage-content" class="active">Início</a></li>
-                    <li><a href="#row-movies-section">Filmes</a></li>
-                    <li><a href="#row-series-section">Séries</a></li>
-                    <li><a href="#row-animes-section">Animes</a></li>
-                    <li><a href="#row-cartoons-section">Desenhos</a></li>
+                    <li><a href="#homepage-content" class="active" onclick="fecharResultadosBusca()">Início</a></li>
+                    <li><a href="#row-movies-section" onclick="fecharResultadosBusca()">Filmes</a></li>
+                    <li><a href="#row-series-section" onclick="fecharResultadosBusca()">Séries</a></li>
+                    <li><a href="#row-animes-section" onclick="fecharResultadosBusca()">Animes</a></li>
                 </ul>
                 <div class="nav-actions">
+                    <div class="search-box-pc">
+                        <span>🔍</span>
+                        <input type="text" id="search-input-pc" placeholder="Títulos, atores ou géneros..." oninput="iniciarBusca(this.value)">
+                    </div>
+                    
                     <div class="profile-menu-container" onclick="abrirModalPerfil()">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" class="nav-avatar display-avatar">
                         <span class="nav-username display-username">Utilizador</span>
@@ -73,7 +77,7 @@
         </header>
 
         <header id="mobile-topbar" class="mobile-only">
-            <a href="#" class="app-brand" onclick="window.scrollTo(0,0);">
+            <a href="#" class="app-brand" onclick="fecharResultadosBusca(); window.scrollTo(0,0);">
                 <span class="brand-accent" style="font-size: 24px;">CINE</span><span class="brand-light" style="font-size: 24px;">NET</span>
             </a>
             <div class="mobile-top-actions">
@@ -82,19 +86,31 @@
             </div>
         </header>
 
+        <div id="mobile-search-bar" class="mobile-only" style="display:none;">
+            <span>🔍</span>
+            <input type="text" id="search-input-mobile" placeholder="Pesquisar..." oninput="iniciarBusca(this.value)">
+            <button class="btn-cancel-search" onclick="fecharBuscaMobile()">Cancelar</button>
+        </div>
+
         <nav class="mobile-bottom-nav mobile-only">
-            <a href="#homepage-content" onclick="window.scrollTo(0,0);" class="active-nav">🏠<span>Início</span></a>
-            <a href="#row-movies-section">🎬<span>Filmes</span></a>
-            <a href="#row-series-section">📺<span>Séries</span></a>
-            <a href="#row-animes-section">💥<span>Animes</span></a>
+            <a href="#homepage-content" onclick="fecharBuscaMobile(); window.scrollTo(0,0);" class="active-nav">🏠<span>Início</span></a>
+            <a href="#" onclick="abrirBuscaMobile()">🔍<span>Buscar</span></a>
+            <a href="#row-movies-section" onclick="fecharBuscaMobile()">🎬<span>Filmes</span></a>
+            <a href="#row-series-section" onclick="fecharBuscaMobile()">📺<span>Séries</span></a>
+            <a href="#row-animes-section" onclick="fecharBuscaMobile()">💥<span>Animes</span></a>
         </nav>
+
+        <div id="search-results-container" style="display:none;" class="main-container">
+            <h2 class="section-title">Resultados da Pesquisa</h2>
+            <div id="search-grid" class="search-grid-layout"></div>
+        </div>
 
         <div id="homepage-content">
             <section class="hero-showcase" id="hero-banner">
                 <div class="hero-overlay-shadow"></div>
                 <div class="hero-inner">
                     <span class="hero-badge">EM DESTAQUE</span>
-                    <h1 class="hero-title-text" id="hero-title">Carregando...</h1>
+                    <h1 class="hero-title-text" id="hero-title">A carregar...</h1>
                     <p class="hero-description" id="hero-synopsis"></p>
                     <div class="hero-cta-group">
                         <button class="btn-primary-action" id="hero-play-btn">▶ ASSISTIR</button>
@@ -137,7 +153,7 @@
                         <span id="modal-media-year" class="meta-year">2026</span>
                         <span class="meta-hd">HD</span>
                     </div>
-                    <p id="modal-media-overview" class="modal-overview-text">Carregando sinopse...</p>
+                    <p id="modal-media-overview" class="modal-overview-text">A carregar sinopse...</p>
                     <button class="btn-play-netflix-modal" id="modal-play-btn">▶ Assistir Agora</button>
                 </div>
             </div>
@@ -158,7 +174,7 @@
                         <input type="text" id="input-profile-username" required placeholder=" ">
                         <label for="input-profile-username">Nome do Perfil</label>
                     </div>
-                    <button onclick="salvarConfiguracoesPerfil()" class="btn-netflix-main" style="margin-top:10px;">Salvar Mudanças</button>
+                    <button onclick="salvarConfiguracoesPerfil()" class="btn-netflix-main" style="margin-top:10px;">Guardar Alterações</button>
                 </div>
             </div>
         </div>

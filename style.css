@@ -16,7 +16,7 @@ body {
 
 body.modal-open { overflow: hidden !important; }
 
-/* REGRAS DE SEPARAÇÃO: PC VS CELULAR */
+/* REGRAS DE SEPARAÇÃO: PC VS TELEMÓVEL */
 @media (min-width: 769px) {
     .pc-only { display: flex !important; }
     .mobile-only { display: none !important; }
@@ -25,11 +25,11 @@ body.modal-open { overflow: hidden !important; }
 @media (max-width: 768px) {
     .pc-only { display: none !important; }
     .mobile-only { display: flex !important; }
-    body { padding-top: 60px; padding-bottom: 60px; } /* Espaço pro Topbar e Bottom Nav */
+    body { padding-top: 60px; padding-bottom: 60px; }
 }
 
 /* ==========================================
-   TELA DE LOGIN
+   ECRÃ DE LOGIN
 ========================================== */
 #auth-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #000; }
 .auth-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, #050505 100%), url('https://assets.nflxext.com/ffe/siteui/vlv3/ca6a7616-0acb-4bc7-9356-97ff199fa6fe/f55a734a-9b77-440a-b333-ac4f0c1df473/BR-pt-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg'); background-size: cover; background-position: center; opacity: 0.4; z-index: 1; }
@@ -51,7 +51,7 @@ body.modal-open { overflow: hidden !important; }
 .alert-box-netflix { background: #e87c03; color: #fff; border-radius: 4px; padding: 12px; margin-top: 15px; text-align: center; }
 
 /* ==========================================
-   NAVBAR (PC) E TOPBAR (MOBILE)
+   NAVBAR (PC) E TOPBAR (TELEMÓVEL)
 ========================================== */
 #desktop-navbar { position: fixed; top: 0; left:0; width: 100%; height: 68px; background: linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(0,0,0,0.8)); z-index: 100; display: flex; align-items: center; padding: 0 4%; }
 .nav-container { display: flex; width: 100%; justify-content: space-between; align-items: center; }
@@ -64,13 +64,33 @@ body.modal-open { overflow: hidden !important; }
 .nav-username { font-size: 14px; font-weight: 500; }
 .btn-disconnect { background: none; border: 1px solid #555; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
-#mobile-topbar { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.95); z-index: 100; justify-content: space-between; align-items: center; padding: 0 15px; }
+#mobile-topbar { position: fixed; top: 0; left:0; width: 100%; height: 60px; background: rgba(0,0,0,0.95); z-index: 100; justify-content: space-between; align-items: center; padding: 0 15px; }
 .mobile-top-actions { display: flex; align-items: center; gap: 12px; }
 .mobile-avatar { width: 30px; height: 30px; border-radius: 4px; cursor: pointer; object-fit: cover; }
 .btn-disconnect-mobile { background: none; border: 1px solid #777; color: #fff; padding: 4px 8px; font-size: 12px; border-radius: 3px; }
 
 /* ==========================================
-   BANNER PRINCIPAL
+   SISTEMA DE PESQUISA
+========================================== */
+.search-box-pc { display: flex; align-items: center; background: rgba(0,0,0,0.7); border: 1px solid #444; border-radius: 4px; padding: 6px 12px; }
+.search-box-pc input { background: transparent; border: none; color: white; outline: none; margin-left: 8px; width: 180px; font-family: 'Outfit'; transition: width 0.3s; }
+.search-box-pc input:focus { width: 250px; }
+
+#mobile-search-bar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: #141414; z-index: 101; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #333; }
+#mobile-search-bar span { font-size: 20px; }
+#mobile-search-bar input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; margin: 0 10px; font-family: 'Outfit'; }
+.btn-cancel-search { background: none; border: none; color: #aaa; font-size: 14px; cursor: pointer; }
+
+#search-results-container { padding-top: 100px; min-height: 100vh; }
+.search-grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
+.search-grid-layout .movie-card { min-width: 100%; max-width: 100%; }
+@media (max-width: 768px) {
+    #search-results-container { padding-top: 80px; }
+    .search-grid-layout { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+}
+
+/* ==========================================
+   BANNER PRINCIPAL E VITRINES
 ========================================== */
 .hero-showcase { height: 60vh; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 0 4% 40px 4%; position: relative; margin-top: 68px; }
 .hero-overlay-shadow { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #050505 10%, transparent 70%), linear-gradient(to right, rgba(5,5,5,0.7), transparent); }
@@ -79,16 +99,12 @@ body.modal-open { overflow: hidden !important; }
 .hero-description { font-size: 1rem; color: #ddd; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .btn-primary-action { background: #fff; color: #000; border: none; padding: 12px 28px; font-size: 16px; font-weight: 700; border-radius: 4px; cursor: pointer; transition: 0.2s; }
 .btn-primary-action:hover { background: #e5e5e5; }
-
 @media (max-width: 768px) {
     .hero-showcase { height: 45vh; margin-top: 0; padding-bottom: 20px; }
     .hero-title-text { font-size: 1.8rem; }
     .hero-description { display: none; }
 }
 
-/* ==========================================
-   VITRINES (FILEIRAS)
-========================================== */
 .main-container { padding: 10px 4% 80px 4%; }
 .movie-section { margin-bottom: 30px; }
 .section-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: #e5e5e5; }
@@ -96,25 +112,23 @@ body.modal-open { overflow: hidden !important; }
 .movie-row::-webkit-scrollbar { display: none; }
 .movie-card { min-width: 110px; max-width: 110px; cursor: pointer; transition: transform 0.25s ease; border-radius: 4px; }
 .movie-card img { width: 100%; border-radius: 4px; display: block; }
-
 @media (min-width: 769px) {
     .movie-card { min-width: 155px; max-width: 155px; }
     .movie-card:hover { transform: scale(1.08); z-index: 5; }
 }
 
 /* ==========================================
-   MODAIS (SINOPSE E PERFIL)
+   MODAIS (DETALHES E PERFIL)
 ========================================== */
 .modal-netflix { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 15px; }
 .modal-netflix-content { background: #181818; width: 100%; max-width: 650px; border-radius: 8px; overflow: hidden; position: relative; animation: zoomIn 0.2s ease-out; }
 .modal-netflix-content.small-modal { max-width: 400px; padding: 30px; }
 @keyframes zoomIn { from { transform: scale(0.92); opacity:0; } to { transform: scale(1); opacity:1; } }
-
 .close-netflix-modal { position: absolute; top: 15px; right: 15px; font-size: 30px; color: #fff; cursor: pointer; z-index: 10; background: rgba(0,0,0,0.5); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
 .modal-netflix-banner { height: 260px; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; padding: 20px; }
 .modal-banner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #181818, transparent); }
 #modal-media-title { position: relative; z-index: 2; font-size: 24px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-
 .modal-netflix-info { padding: 20px; }
 .info-metadata { display: flex; gap: 15px; align-items: center; margin-bottom: 12px; font-size: 14px; }
 .meta-rating { color: #46d369; font-weight: 700; }
@@ -128,7 +142,7 @@ body.modal-open { overflow: hidden !important; }
 .avatar-option.active { border-color: var(--primary-neon); }
 
 /* ==========================================
-   PLAYER COMPLETO RESPONSIVO E BOTTOM NAV
+   REPRODUTOR E NAVEGAÇÃO MOBILE INFERIOR
 ========================================== */
 .player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; flex-direction: column; }
 .player-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0,0,0,0.85); }
