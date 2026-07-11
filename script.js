@@ -133,7 +133,6 @@ function irParaBusca() {
     document.getElementById('main-search-input').focus();
 }
 
-// NOVA FUNÇÃO: IR PARA A LISTA DE FAVORITOS DEDICADA
 function irParaWatchlist() {
     setNavActive('nav-watchlist', 'mob-nav-watchlist');
     document.getElementById('main-content').style.display = 'none';
@@ -216,10 +215,7 @@ function renderizarWatchlist() {
     const emptyState = document.getElementById('watchlist-empty-state');
     container.innerHTML = '';
 
-    // Organiza para os mais recentes ficarem primeiro
     const itens = Object.values(biblioteca.watchlist).sort((a, b) => b.adicionadoEm - a.adicionadoEm);
-    
-    // Filtra caso haja itens antigos na base de dados guardados da maneira antiga sem poster
     const itensValidos = itens.filter(item => item && item.poster_path);
 
     if (itensValidos.length === 0) {
@@ -295,7 +291,6 @@ async function executarBuscaTMDB(termo) {
 async function abrirDetalhes(id, tipo) {
     const data = await fetchTMDB(`/${tipo}/${id}`);
     
-    // Armazena todas as infos importantes no item selecionado (para guardar com a foto)
     itemSelecionado = { 
         id: id, 
         tipo: tipo, 
@@ -325,7 +320,6 @@ function fecharDetalhes() {
     alternarScrollBody(false);
 }
 
-// ATUALIZADA: Agora guarda o Objeto Completo com Foto (Bugs Resolvidos)
 function alternarWatchlist() {
     if (!itemSelecionado) return;
     const id = itemSelecionado.id;
@@ -344,7 +338,6 @@ function alternarWatchlist() {
     atualizarBotaoWatchlist();
     salvarDados();
 
-    // Se estiver na aba da watchlist, atualiza a grelha em tempo real
     if (document.getElementById('watchlist-section').style.display === 'block') {
         renderizarWatchlist();
     }
