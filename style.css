@@ -84,19 +84,88 @@ body.modal-open { overflow: hidden !important; }
 .mobile-bottom-nav a.active-nav { color: #fff; transform: translateY(-2px); }
 
 /* ==========================================
-   SECÇÃO DE BUSCA E FILTROS INTEGRAIS
+   INTERFACES DA ABA DE BUSCA DEDICADA
 ========================================== */
-#search-results-section { padding: 110px 4% 40px; min-height: 90vh; }
-.search-page-container { max-width: 750px; margin: 0 auto 35px auto; text-align: center; }
-.search-input-wrapper { position: relative; margin: 25px 0; display: flex; align-items: center; }
-.search-icon-inside { position: absolute; left: 20px; font-size: 18px; color: #888; }
-#main-search-input { width: 100%; padding: 18px 55px 18px 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 30px; color: white; font-size: 16px; outline: none; transition: 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-#main-search-input:focus { border-color: var(--primary-neon); background: rgba(255,255,255,0.08); }
-.search-clear-btn { position: absolute; right: 20px; color: #888; cursor: pointer; font-size: 18px; padding: 5px; }
-.search-filter-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.filter-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #aaa; padding: 8px 22px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Outfit'; text-transform: uppercase; letter-spacing: 0.5px; }
-.filter-pill:hover { background: rgba(255,255,255,0.1); color: white; }
-.filter-pill.active { background: var(--primary-neon); color: white; border-color: var(--primary-neon); box-shadow: 0 0 15px var(--primary-glow); }
+#search-results-section {
+    padding: 110px 4% 40px !important;
+    min-height: 90vh;
+}
+@media (max-width: 768px) {
+    #search-results-section { padding-top: 40px !important; }
+}
+.search-page-container {
+    max-width: 750px;
+    margin: 0 auto 35px auto;
+    text-align: center;
+}
+.search-input-wrapper {
+    position: relative;
+    margin: 25px 0;
+    display: flex;
+    align-items: center;
+}
+#main-search-input {
+    width: 100%;
+    padding: 16px 55px 16px 24px;
+    background: #121212;
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    color: white;
+    font-size: 16px;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+}
+#main-search-input:focus {
+    border-color: var(--primary-neon);
+    box-shadow: 0 0 18px var(--primary-glow);
+    background: #161616;
+}
+.search-clear-btn {
+    position: absolute;
+    right: 22px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s;
+    user-select: none;
+}
+.search-clear-btn:hover {
+    color: white;
+}
+.search-filter-pills {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.filter-pill {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 8px 22px;
+    border-radius: 20px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+.filter-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255,255,255,0.3);
+}
+.filter-pill.active {
+    background: var(--primary-neon);
+    color: white;
+    border-color: var(--primary-neon);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
 .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
 .grid-layout .movie-card { min-width: 100%; max-width: 100%; }
 
@@ -181,86 +250,3 @@ body.modal-open { overflow: hidden !important; }
 .input-number-glass { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; width: 55px; text-align: center; padding: 6px; border-radius: 6px; font-family: 'Outfit'; outline: none; }
 .player-viewport { flex: 1; width: 100%; background: #000; }
 .player-viewport iframe { width: 100%; height: 100%; border: none; }
-/* ==========================================
-   INTERFACES DA ABA DE BUSCA DEDICADA
-========================================== */
-#search-results-section {
-    padding: 110px 4% 40px !important;
-    min-height: 90vh;
-}
-@media (max-width: 768px) {
-    #search-results-section { padding-top: 40px !important; }
-}
-.search-page-container {
-    max-width: 750px;
-    margin: 0 auto 35px auto;
-    text-align: center;
-}
-.search-input-wrapper {
-    position: relative;
-    margin: 25px 0;
-    display: flex;
-    align-items: center;
-}
-#main-search-input {
-    width: 100%;
-    padding: 16px 55px 16px 24px;
-    background: #121212;
-    border: 1px solid var(--glass-border);
-    border-radius: 30px;
-    color: white;
-    font-size: 16px;
-    font-family: 'Outfit', sans-serif;
-    outline: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
-}
-#main-search-input:focus {
-    border-color: var(--primary-neon);
-    box-shadow: 0 0 18px var(--primary-glow);
-    background: #161616;
-}
-.search-clear-btn {
-    position: absolute;
-    right: 22px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 18px;
-    transition: 0.2s;
-    user-select: none;
-}
-.search-clear-btn:hover {
-    color: white;
-}
-.search-filter-pills {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-.filter-pill {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--glass-border);
-    color: var(--text-secondary);
-    padding: 8px 22px;
-    border-radius: 20px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s ease;
-}
-.filter-pill:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-color: rgba(255,255,255,0.3);
-}
-.filter-pill.active {
-    background: var(--primary-neon);
-    color: white;
-    border-color: var(--primary-neon);
-    box-shadow: 0 0 12px var(--primary-glow);
-}
