@@ -1,5 +1,5 @@
 // ==========================================
-// INFRAESTRUTURA CORE & CONFIGURAÇÃO
+// INFRAESTRUTURA CORE
 // ==========================================
 const TMDB_KEY = '17c56e3825d7fbae6581866083d0d778'; 
 let itemSelecionado = null;
@@ -28,7 +28,7 @@ function alternarScrollBody(bloquear) {
 }
 
 // ==========================================
-// SISTEMA DE AUTENTICAÇÃO
+// AUTENTICAÇÃO
 // ==========================================
 function handleAuth(event) {
     event.preventDefault();
@@ -70,9 +70,7 @@ function toggleAuthMode() {
     document.getElementById('auth-error').style.display = 'none';
 }
 
-function fazerLogout() {
-    auth.signOut();
-}
+function fazerLogout() { auth.signOut(); }
 
 auth.onAuthStateChanged((user) => {
     if (user) {
@@ -89,36 +87,34 @@ auth.onAuthStateChanged((user) => {
 });
 
 // ==========================================
-// CONTROLE DO PERFIL (SEM BUG)
+// CONTROLE DO PERFIL (PC E MOBILE UNIFICADOS)
 // ==========================================
 function carregarDadosPerfilFirebase() {
     if (!currentUserUID) return;
     db.collection("usuarios").doc(currentUserUID).get().then((doc) => {
         if (doc.exists && doc.data().perfil) {
             const dados = doc.data().perfil;
-            document.getElementById('nav-username-txt').innerText = dados.username || "Utilizador";
-            document.getElementById('nav-avatar-img').src = dados.avatar || "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png";
             avatarSelecionadoTemporario = dados.avatar;
+            // Atualiza TODOS os avatares e nomes na tela (PC e Mobile)
+            document.querySelectorAll('.display-username').forEach(el => el.innerText = dados.username || "Utilizador");
+            document.querySelectorAll('.display-avatar').forEach(el => el.src = dados.avatar || "https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png");
         }
     });
 }
 
 function abrirModalPerfil() {
     document.getElementById('profileModal').style.display = 'flex';
-    const nomeAtual = document.getElementById('nav-username-txt').innerText;
-    document.getElementById('input-profile-username').value = nomeAtual;
+    const nomeAtualElemento = document.querySelector('.display-username');
+    document.getElementById('input-profile-username').value = nomeAtualElemento ? nomeAtualElemento.innerText : "Utilizador";
     
-    // Marca visualmente o avatar ativo no grid do modal
-    const imagensGrid = document.querySelectorAll('.avatar-option');
-    imagensGrid.forEach(img => {
+    // Marca o avatar selecionado com a borda
+    document.querySelectorAll('.avatar-option').forEach(img => {
         if(img.src === avatarSelecionadoTemporario) img.classList.add('active');
         else img.classList.remove('active');
     });
 }
 
-function fecharModalPerfil() {
-    document.getElementById('profileModal').style.display = 'none';
-}
+function fecharModalPerfil() { document.getElementById('profileModal').style.display = 'none'; }
 
 function selecionarAvatarLocal(elementoImg) {
     document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('active'));
@@ -134,14 +130,15 @@ function salvarConfiguracoesPerfil() {
         "perfil.username": novoNome,
         "perfil.avatar": avatarSelecionadoTemporario
     }).then(() => {
-        document.getElementById('nav-username-txt').innerText = novoNome;
-        document.getElementById('nav-avatar-img').src = avatarSelecionadoTemporario;
+        // Atualiza a tela instantaneamente (PC e Mobile)
+        document.querySelectorAll('.display-username').forEach(el => el.innerText = novoNome);
+        document.querySelectorAll('.display-avatar').forEach(el => el.src = avatarSelecionadoTemporario);
         fecharModalPerfil();
-    }).catch(err => console.error("Erro ao salvar perfil:", err));
+    }).catch(err => alert("Erro ao salvar perfil: " + err.message));
 }
 
 // ==========================================
-// SISTEMA DA PRE-TELA DE DETALHES (ESTILO NETFLIX)
+// PRE-TELA DE DETALHES (ESTILO NETFLIX)
 // ==========================================
 async function exibirPretelaDetalhes(id, tipo) {
     try {
@@ -149,7 +146,7 @@ async function exibirPretelaDetalhes(id, tipo) {
         const midia = await res.json();
         
         const titulo = midia.title || midia.name;
-        const sinopse = midia.overview || "Nenhuma sinopse disponível para esta mídia.";
+        const sinopse = midia.overview || "Nenhuma sinopse disponível para esta produção.";
         const nota = midia.vote_average ? midia.vote_average.toFixed(1) : "N/A";
         const dataLancamento = midia.release_date || midia.first_air_date || "";
         const ano = dataLancamento ? dataLancamento.split('-')[0] : "----";
@@ -159,12 +156,7 @@ async function exibirPretelaDetalhes(id, tipo) {
         document.getElementById('modal-media-overview').innerText = sinopse;
         document.getElementById('modal-media-rating').innerText = `⭐ ${nota}`;
         document.getElementById('modal-media-year').innerText = ano;
-        
-        if (banner) {
-            document.getElementById('modal-netflix-banner').style.backgroundImage = `url('${banner}')`;
-        } else {
-            document.getElementById('modal-netflix-banner').style.backgroundImage = 'none';
-        }
+        document.getElementById('modal-netflix-banner').style.backgroundImage = banner ? `url('${banner}')` : 'none';
 
         document.getElementById('modal-play-btn').onclick = () => {
             fecharModalDetalhes();
@@ -173,9 +165,7 @@ async function exibirPretelaDetalhes(id, tipo) {
 
         document.getElementById('detailsModal').style.display = 'flex';
         alternarScrollBody(true);
-    } catch (error) {
-        console.error("Erro ao buscar detalhes:", error);
-    }
+    } catch (error) { console.error(error); }
 }
 
 function fecharModalDetalhes() {
@@ -201,11 +191,10 @@ async function carregarDestaquePrincipal() {
     const data = await res.json();
     const item = data.results[0];
     if (item) {
-        const tipo = item.media_type || 'movie';
         document.getElementById('hero-title').innerText = item.title || item.name;
         document.getElementById('hero-synopsis').innerText = (item.overview || "").substring(0, 140) + '...';
         document.getElementById('hero-banner').style.backgroundImage = `linear-gradient(to top, #050505 8%, transparent 95%), url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
-        document.getElementById('hero-play-btn').onclick = () => exibirPretelaDetalhes(item.id, tipo);
+        document.getElementById('hero-play-btn').onclick = () => exibirPretelaDetalhes(item.id, item.media_type || 'movie');
     }
 }
 
@@ -231,7 +220,6 @@ async function carregarFileira(endpoint, elementId, type, extraParams = '') {
 function abrirPlayer(id, tipo) {
     itemSelecionado = id;
     modoPlayerAtual = tipo === 'tv' ? 'series' : 'geral';
-    
     document.getElementById('episodes-selectors-box').style.display = modoPlayerAtual === 'series' ? 'flex' : 'none';
     document.getElementById('playerModal').style.display = 'flex';
     alternarScrollBody(true);
@@ -247,7 +235,6 @@ function fecharPlayer() {
 function atualizarIframePlayer() {
     const player = document.getElementById('videoPlayer');
     if (!itemSelecionado) return;
-
     if (modoPlayerAtual === 'geral') {
         player.src = `https://mgeb.top/embed/${itemSelecionado}?player=vidstack#color:${corDestaque}`;
     } else {

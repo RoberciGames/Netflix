@@ -2,7 +2,6 @@
     --primary-neon: #E50914; 
     --surface-dark: #050505;
     --text-primary: #ffffff;
-    --text-secondary: #aaaaaa;
 }
 
 * { box-sizing: border-box; }
@@ -17,149 +16,103 @@ body {
 
 body.modal-open { overflow: hidden !important; }
 
-/* REGRAS DE VISIBILIDADE MOBILE/DESKTOP */
-.pc-only { display: flex; }
-.mobile-only { display: none; }
+/* REGRAS DE SEPARAÇÃO: PC VS CELULAR */
+@media (min-width: 769px) {
+    .pc-only { display: flex !important; }
+    .mobile-only { display: none !important; }
+}
 
 @media (max-width: 768px) {
     .pc-only { display: none !important; }
     .mobile-only { display: flex !important; }
+    body { padding-top: 60px; padding-bottom: 60px; } /* Espaço pro Topbar e Bottom Nav */
 }
 
 /* ==========================================
-   TELA DE LOGIN ESTILO NETFLIX PREMIUM
+   TELA DE LOGIN
 ========================================== */
-#auth-screen {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: 9999; display: flex; align-items: center; justify-content: center; background: #000;
-}
-
-.auth-bg-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, #050505 100%),
-                url('https://assets.nflxext.com/ffe/siteui/vlv3/ca6a7616-0acb-4bc7-9356-97ff199fa6fe/f55a734a-9b77-440a-b333-ac4f0c1df473/BR-pt-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg');
-    background-size: cover; background-position: center; z-index: 1; opacity: 0.4;
-}
-
+#auth-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #000; }
+.auth-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, #050505 100%), url('https://assets.nflxext.com/ffe/siteui/vlv3/ca6a7616-0acb-4bc7-9356-97ff199fa6fe/f55a734a-9b77-440a-b333-ac4f0c1df473/BR-pt-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg'); background-size: cover; background-position: center; opacity: 0.4; z-index: 1; }
 .auth-container-netflix { position: relative; z-index: 2; width: 100%; max-width: 440px; padding: 20px; }
 .auth-card-netflix { background-color: rgba(0, 0, 0, 0.75); border-radius: 8px; padding: 50px 45px; }
-
-@media (max-width: 480px) {
-    .auth-card-netflix { padding: 30px 15px; background-color: #000; }
-}
-
+@media (max-width: 480px) { .auth-card-netflix { padding: 30px 15px; background-color: #000; } }
 .app-brand-netflix, .app-brand { text-align: center; font-size: 32px; font-weight: 800; letter-spacing: 1px; text-decoration: none; }
 .brand-accent { color: var(--primary-neon); }
 .brand-light { color: #fff; }
-
 .auth-card-netflix h2 { font-size: 28px; margin: 20px 0; }
-
 .netflix-input-group { position: relative; margin-bottom: 16px; width: 100%; }
-.netflix-input-group input {
-    width: 100%; height: 56px; background: #333; border: none; border-radius: 4px;
-    padding: 20px 20px 0 20px; color: #fff; font-size: 16px; outline: none;
-}
-.netflix-input-group label {
-    position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
-    color: #8c8c8c; font-size: 15px; transition: all 0.15s; pointer-events: none;
-}
-.netflix-input-group input:focus ~ label,
-.netflix-input-group input:not(:placeholder-shown) ~ label { top: 15px; font-size: 11px; }
-
-.btn-netflix-main {
-    width: 100%; height: 48px; background: var(--primary-neon); color: #fff;
-    border: none; border-radius: 4px; font-size: 16px; font-weight: 700; cursor: pointer;
-}
-
+.netflix-input-group input { width: 100%; height: 56px; background: #333; border: none; border-radius: 4px; padding: 20px 20px 0 20px; color: #fff; font-size: 16px; outline: none; }
+.netflix-input-group label { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #8c8c8c; font-size: 15px; transition: all 0.15s; pointer-events: none; }
+.netflix-input-group input:focus ~ label, .netflix-input-group input:not(:placeholder-shown) ~ label { top: 15px; font-size: 11px; }
+.btn-netflix-main { width: 100%; height: 48px; background: var(--primary-neon); color: #fff; border: none; border-radius: 4px; font-size: 16px; font-weight: 700; cursor: pointer; }
 .auth-extra-netflix { display: flex; justify-content: space-between; margin-top: 15px; font-size: 13px; color: #b3b3b3; }
 .auth-footer-netflix { margin-top: 30px; color: #737373; font-size: 14px; }
 .auth-footer-netflix button { background: none; border: none; color: #fff; cursor: pointer; margin-left: 5px; font-weight: 600; }
-
 .alert-box-netflix { background: #e87c03; color: #fff; border-radius: 4px; padding: 12px; margin-top: 15px; text-align: center; }
 
 /* ==========================================
-   HEADER / NAVBAR ULTRA RESPONSIVA
+   NAVBAR (PC) E TOPBAR (MOBILE)
 ========================================== */
-#desktop-navbar {
-    position: fixed; top: 0; left:0; width: 100%; height: 68px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(0,0,0,0.8));
-    z-index: 100; display: flex; align-items: center; padding: 0 4%;
-}
+#desktop-navbar { position: fixed; top: 0; left:0; width: 100%; height: 68px; background: linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(0,0,0,0.8)); z-index: 100; display: flex; align-items: center; padding: 0 4%; }
 .nav-container { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+.nav-menu { display: flex; list-style: none; gap: 20px; }
+.nav-menu a { color: #e5e5e5; text-decoration: none; font-size: 14px; }
+.nav-menu a:hover, .nav-menu a.active { color: #fff; font-weight: bold; }
 .nav-actions { display: flex; align-items: center; gap: 15px; }
 .profile-menu-container { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .nav-avatar { width: 34px; height: 34px; border-radius: 4px; object-fit: cover; }
 .nav-username { font-size: 14px; font-weight: 500; }
 .btn-disconnect { background: none; border: 1px solid #555; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
+#mobile-topbar { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.95); z-index: 100; justify-content: space-between; align-items: center; padding: 0 15px; }
+.mobile-top-actions { display: flex; align-items: center; gap: 12px; }
+.mobile-avatar { width: 30px; height: 30px; border-radius: 4px; cursor: pointer; object-fit: cover; }
+.btn-disconnect-mobile { background: none; border: 1px solid #777; color: #fff; padding: 4px 8px; font-size: 12px; border-radius: 3px; }
+
 /* ==========================================
-   BANNER PRINCIPAL (HERO) ADAPTADO PARA MOBILE
+   BANNER PRINCIPAL
 ========================================== */
-.hero-showcase {
-    height: 55vh; background-size: cover; background-position: center top;
-    display: flex; align-items: flex-end; padding: 0 4% 40px 4%; position: relative; margin-top: 68px;
-}
-.hero-overlay-shadow {
-    position: absolute; top:0; left:0; width:100%; height:100%;
-    background: linear-gradient(to top, #050505 12%, transparent 70%), linear-gradient(to right, rgba(5,5,5,0.6), transparent);
-}
+.hero-showcase { height: 60vh; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 0 4% 40px 4%; position: relative; margin-top: 68px; }
+.hero-overlay-shadow { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #050505 10%, transparent 70%), linear-gradient(to right, rgba(5,5,5,0.7), transparent); }
 .hero-inner { position: relative; z-index: 2; max-width: 550px; }
-.hero-title-text { font-size: 2.2rem; margin: 5px 0; font-weight: 800; line-height: 1.1; }
-.hero-description { font-size: 0.95rem; color: #ddd; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.hero-title-text { font-size: 2.5rem; margin: 5px 0; font-weight: 800; line-height: 1.1; }
+.hero-description { font-size: 1rem; color: #ddd; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.btn-primary-action { background: #fff; color: #000; border: none; padding: 12px 28px; font-size: 16px; font-weight: 700; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+.btn-primary-action:hover { background: #e5e5e5; }
 
 @media (max-width: 768px) {
-    .hero-showcase { height: 40vh; padding-bottom: 20px; }
-    .hero-title-text { font-size: 1.6rem; }
+    .hero-showcase { height: 45vh; margin-top: 0; padding-bottom: 20px; }
+    .hero-title-text { font-size: 1.8rem; }
     .hero-description { display: none; }
 }
 
-.btn-primary-action {
-    background: #fff; color: #000; border: none; padding: 10px 24px; font-size: 14px; font-weight: 700; border-radius: 4px; cursor: pointer;
-}
-
 /* ==========================================
-   VITRINES DE MIDIAS (FILEIRAS)
+   VITRINES (FILEIRAS)
 ========================================== */
 .main-container { padding: 10px 4% 80px 4%; }
-.movie-section { margin-bottom: 25px; }
+.movie-section { margin-bottom: 30px; }
 .section-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: #e5e5e5; }
 .movie-row { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
 .movie-row::-webkit-scrollbar { display: none; }
-
-.movie-card { min-width: 110px; max-width: 110px; cursor: pointer; transition: transform 0.25s ease; }
+.movie-card { min-width: 110px; max-width: 110px; cursor: pointer; transition: transform 0.25s ease; border-radius: 4px; }
 .movie-card img { width: 100%; border-radius: 4px; display: block; }
 
 @media (min-width: 769px) {
     .movie-card { min-width: 155px; max-width: 155px; }
-    .movie-card:hover { transform: scale(1.08); }
+    .movie-card:hover { transform: scale(1.08); z-index: 5; }
 }
 
 /* ==========================================
-   MODAIS MODERNOS (DETALHES / PERFIL)
+   MODAIS (SINOPSE E PERFIL)
 ========================================== */
-.modal-netflix {
-    position: fixed; top:0; left:0; width:100vw; height:100vh;
-    background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 15px;
-}
-.modal-netflix-content {
-    background: #181818; width: 100%; max-width: 650px; border-radius: 8px; overflow: hidden; position: relative;
-    animation: zoomIn 0.2s ease-out;
-}
+.modal-netflix { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 15px; }
+.modal-netflix-content { background: #181818; width: 100%; max-width: 650px; border-radius: 8px; overflow: hidden; position: relative; animation: zoomIn 0.2s ease-out; }
 .modal-netflix-content.small-modal { max-width: 400px; padding: 30px; }
-
 @keyframes zoomIn { from { transform: scale(0.92); opacity:0; } to { transform: scale(1); opacity:1; } }
 
-.close-netflix-modal {
-    position: absolute; top: 15px; right: 15px; font-size: 30px; color: #fff; cursor: pointer; z-index: 10;
-    background: rgba(0,0,0,0.5); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
-}
-
-.modal-netflix-banner {
-    height: 260px; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; padding: 20px;
-}
-.modal-banner-overlay {
-    position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #181818, transparent);
-}
+.close-netflix-modal { position: absolute; top: 15px; right: 15px; font-size: 30px; color: #fff; cursor: pointer; z-index: 10; background: rgba(0,0,0,0.5); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.modal-netflix-banner { height: 260px; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; padding: 20px; }
+.modal-banner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #181818, transparent); }
 #modal-media-title { position: relative; z-index: 2; font-size: 24px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
 .modal-netflix-info { padding: 20px; }
@@ -168,18 +121,14 @@ body.modal-open { overflow: hidden !important; }
 .meta-year { color: #a3a3a3; }
 .meta-hd { border: 1px solid #777; font-size: 10px; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
 .modal-overview-text { color: #ddd; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0; }
+.btn-play-netflix-modal { background: var(--primary-neon); color: white; border: none; width: 100%; height: 46px; border-radius: 4px; font-weight: 700; font-size: 15px; cursor: pointer; }
 
-.btn-play-netflix-modal {
-    background: var(--primary-neon); color: white; border: none; width: 100%; height: 46px; border-radius: 4px; font-weight: 700; font-size: 15px; cursor: pointer;
-}
-
-/* GRID SELEÇÃO DE AVATAR (CORRIGIDO) */
 .avatar-selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
 .avatar-option { width: 100%; border-radius: 4px; cursor: pointer; border: 3px solid transparent; transition: border 0.15s; }
 .avatar-option.active { border-color: var(--primary-neon); }
 
 /* ==========================================
-   PLAYER COMPLETO RESPONSIVO
+   PLAYER COMPLETO RESPONSIVO E BOTTOM NAV
 ========================================== */
 .player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; flex-direction: column; }
 .player-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0,0,0,0.85); }
@@ -190,12 +139,7 @@ body.modal-open { overflow: hidden !important; }
 .player-viewport { flex: 1; width: 100%; background: #000; }
 .player-viewport iframe { width: 100%; height: 100%; border: none; }
 
-/* BARRA DE NAVEGAÇÃO INFERIOR PARA MOBILE */
-.mobile-bottom-nav {
-    position: fixed; bottom: 0; left: 0; width: 100%; height: 56px;
-    background: rgba(10, 10, 10, 0.96); border-top: 1px solid #222;
-    z-index: 90; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.mobile-bottom-nav a { color: #777; text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 18px; }
-.mobile-bottom-nav a span { font-size: 10px; margin-top: 2px; font-family: 'Outfit'; }
+.mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: rgba(15, 15, 15, 0.98); border-top: 1px solid #222; z-index: 100; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.mobile-bottom-nav a { color: #777; text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 20px; }
+.mobile-bottom-nav a span { font-size: 10px; margin-top: 4px; font-family: 'Outfit'; }
 .mobile-bottom-nav a.active-nav { color: #fff; }
